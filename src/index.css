@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  font-family: "Poppins", sans-serif;
+  padding: 0;
+  margin: 0;
+}
+
+/* Ant Design modal footer top margin remove */
+.ant-modal-footer {
+  margin-top: 0 !important;
+}
+
+/* Ensure selected route icon is white */
+.ant-menu-item-selected .ant-menu-item-icon {
+  color: white !important;
+}
+
+
+/* Ant Design menu item text color - default */
+.ant-menu-item {
+  color: black !important;
+}
+
+/* Hover effect - change text color to white and background gradient */
+.ant-menu-item:hover {
+  background: linear-gradient(90deg, #3FC7EE 0%, #0090B9 100%) !important;
+  color: white !important; /* Text color to white */
+}
+
+
+.ant-menu-item-selected {
+  background: linear-gradient(90deg,#3FC7EE 0% , #0090B9 100%) !important;
+  color: white !important; 
+  font-weight: bold; 
+  border-radius: 8px; 
+}
+
+/* Icon color change on hover */
+.ant-menu-item:hover .ant-menu-item-icon {
+  color: white !important;  
+}
+
+/* Ant Design Badge */
+.ant-badge .ant-badge-count {
+  background: #0090B9 !important;
+  color: white !important;
+}
+
+/* Jodit Editor Height */
+.jodit-workplace {
+  height: 550px !important;
+}
+
+/* Add this to your CSS */
+.custom-row {
+  margin-bottom: 10px !important; 
+}
+
+/* Optional: To add padding to the rows */
+.custom-row .ant-table-cell {
+  padding: 12px 20px; 
+}
+
+/* Custom table styling */
+.custom-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #ddd;  
+}
+
+.custom-table .ant-table-thead > tr > th {
+  border-bottom: 2px solid #ddd; 
+}
+
+
+
+/* Hide number input arrows in WebKit browsers */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+
+/* Selected menu item image color change to white */
+.ant-menu-item-selected .icon-image {
+  filter: invert(1) grayscale(0) brightness(100%) !important;
+}
+
+/* Table Head Gradient */
+/* Table Head Background */
+/* .ant-table-thead > tr > th {
+  background: #4E9DAB !important;
+  color: white !important;
+  font-weight: bold !important;
+  text-align: center;
+} */
+
+/* Add margin bottom to each row in the table body */
+.ant-table-tbody > tr {
+  margin-bottom: 5px;
+}
+/* Add space between rows */
+.ant-table {
+  border-spacing: 0 5px; /* Adds 5px space between rows */
+}
+
+
