@@ -4,7 +4,7 @@ import { HiMiniUsers } from "react-icons/hi2";
 import { MdArrowUpward, MdOutlineHome } from "react-icons/md";
 import { PiHouseLine } from "react-icons/pi";
 import { Bar } from "react-chartjs-2";
-import LineChart from "./LineChart"; 
+import LineChart from "./LineChart";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -94,55 +94,70 @@ const Home = () => {
           <LineChart />
         </div>
         {/* Card Section */}
-        <div className="grid grid-cols-2 w-1/3 gap-6 h-[340px] bg-gradient-to-r from-primary  to-secondary p-6 rounded-lg">
-          <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div>
-                <h2 className="text-center text-xl font-bold mb-3">Total Sales</h2>
-                <h3 className="text-primary text-3xl font-bold">$12100</h3>
-              </div>
-              <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
-                <MdArrowUpward color="" size={24} />
-                <p>12%</p>
-              </div>
-            </div>
+        <div className=" w-1/3  h-[340px] bg-gradient-to-r from-primary  to-secondary p-6 rounded-lg">
+          <div className="flex justify-between mb-4 text-white">
+            <h2 className=" mt-4"> Statistics</h2>
+            <p className=" border-2  py-2 px-4 rounded-lg">Last 7 Days</p>
           </div>
 
-          <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div>
-                <h2 className="text-center text-xl font-bold mb-3">Total Order</h2>
-                <h3 className="text-primary text-3xl font-bold">$12100</h3>
-              </div>
-              <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
-                <MdArrowUpward color="" size={24} />
-                <p>12%</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div>
-                <h2 className="text-center text-xl font-bold mb-3">Commission</h2>
-                <h3 className="text-primary text-3xl font-bold">$12100</h3>
-              </div>
-              <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
-                <MdArrowUpward color="" size={24} />
-                <p>12%</p>
+          <div className="grid grid-cols-2 gap-3 h-[240px]">
+            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div>
+                  <h2 className="text-center text-xl font-bold mb-3">
+                    Total Sales
+                  </h2>
+                  <h3 className="text-primary text-3xl font-bold">$12100</h3>
+                </div>
+                <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
+                  <MdArrowUpward color="" size={24} />
+                  <p>12%</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
-            <div className="flex items-center  gap-3">
-              <div>
-                <h2 className="text-center text-xl font-bold mb-3">Retailers</h2>
-                <h3 className="text-primary text-3xl font-bold">$12100</h3>
+            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div>
+                  <h2 className="text-center text-xl font-bold mb-3">
+                    Total Order
+                  </h2>
+                  <h3 className="text-primary text-3xl font-bold">$12100</h3>
+                </div>
+                <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
+                  <MdArrowUpward color="" size={24} />
+                  <p>12%</p>
+                </div>
               </div>
-              <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
-                <MdArrowUpward color="" size={24} />
-                <p>12%</p>
+            </div>
+
+            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div>
+                  <h2 className="text-center text-xl font-bold mb-3">
+                    Commission
+                  </h2>
+                  <h3 className="text-primary text-3xl font-bold">$12100</h3>
+                </div>
+                <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
+                  <MdArrowUpward color="" size={24} />
+                  <p>12%</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
+              <div className="flex items-center  gap-3">
+                <div>
+                  <h2 className="text-center text-xl font-bold mb-3">
+                    Retailers
+                  </h2>
+                  <h3 className="text-primary text-3xl font-bold">$12100</h3>
+                </div>
+                <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
+                  <MdArrowUpward color="" size={24} />
+                  <p>12%</p>
+                </div>
               </div>
             </div>
           </div>

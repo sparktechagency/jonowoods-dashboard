@@ -17,8 +17,8 @@ const Main = () => {
                     <Header/>
                 </div> */}
 
-          <div className="bg-baseBg h-screen ">
-            <div className=" overflow-y-auto rounded-md pt-6 px-4 lg:px-10">
+          <div className="bg-baseBg h-screen overflow-y-auto ">
+            <div className=" overflow-y-auto rounded-md py-6 px-4 lg:px-10">
               <Outlet />
             </div>
           </div>

@@ -28,6 +28,7 @@ import ViewSalesReps from "../components/SalesRepsManagement/detailsSalesReps/Vi
 import Products from "../Pages/Dashboard/Products";
 import LoyaltyProgram from "../Pages/Dashboard/LoyaltyProgram";
 import SubscriptionTable from "../components/subscriber/SubscriberTable";
+import OrderManagementContainer from "../components/orderMangement/OrderManagementContainer";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
@@ -39,6 +40,10 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <Home />,
+      },
+      {
+        path: "/orderManagement",
+        element: <OrderManagementContainer />,
       },
       {
         path: "/salesManagement",

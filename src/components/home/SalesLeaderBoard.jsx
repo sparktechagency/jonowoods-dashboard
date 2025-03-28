@@ -107,8 +107,8 @@ const columns = [
     key: "commission",
     align: "center",
   },
-  { title: "Tier", dataIndex: "tier", key: "tier", align: "center" },
-  { title: "Status", dataIndex: "status", key: "status", align: "center" },
+  // { title: "Tier", dataIndex: "tier", key: "tier", align: "center" },
+  // { title: "Status", dataIndex: "status", key: "status", align: "center" },
 ];
 
 

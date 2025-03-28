@@ -1,7 +1,15 @@
 import React, { useState } from "react";
-import { Table, Button, Input, Space, ConfigProvider } from "antd";
+import {
+  Table,
+  Button,
+  Input,
+  Space,
+  Modal,
+  Form,
+  Select,
+  InputNumber,
+} from "antd";
 import Swal from "sweetalert2";
-import UpdateModal from "../common/UpdateModal";
 import GradientButton from "../common/GradiantButton";
 
 const retailersData = Array.from({ length: 25 }, (_, i) => ({
@@ -22,100 +30,98 @@ const RetailerManageTable = () => {
   const [retailers, setRetailers] = useState(retailersData);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [form] = Form.useForm();
 
- const columns = [
-   {
-     title: "#",
-     dataIndex: "id",
-     key: "id",
-     align: "center",
-     render: (text, record, index) => index + 1,
-   },
-   {
-     title: "Retailer Name",
-     dataIndex: "name",
-     key: "name",
-     align: "center",
-     render: (text, record) => (
-       <div className="flex items-center justify-center">
-         {/* <img
-           src={record.image}
-           alt={record.name}
-           className="w-10 h-10 rounded-full mr-3"
-         /> */}
-         {record.name}
-       </div>
-     ),
-   },
-   {
-     title: "Email",
-     dataIndex: "email",
-     key: "email",
-     align: "center",
-   },
-   {
-     title: "Assigned Sales Rep",
-     dataIndex: "phone",
-     key: "phone",
-     align: "center",
-   },
-   {
-     title: "Total Order",
-     dataIndex: "totalOrder",
-     key: "totalOrder",
-     align: "center",
-   },
-   {
-     title: "Total Sales",
-     dataIndex: "totalSales",
-     key: "totalSales",
-     align: "center",
-   },
-   {
-     title: "Account Status",
-     dataIndex: "accountStatus",
-     key: "accountStatus",
-     align: "center",
-    
-   },
-   {
-     title: "Action",
-     key: "action",
-     align: "center",
-     render: (_, record) => (
-       <Space>
-           <GradientButton
-             onClick={() => handleEdit(record)}
-           >
-             Edit
-           </GradientButton>
-         
-         <ConfigProvider
-           theme={{
-             token: {
-               colorPrimary: "#FF4D4F",
-               colorPrimaryHover: "#FF7875",
-             },
-           }}
-         >
-           <Button
-             onClick={() => handleDelete(record.id)}
-             type="primary"
-             danger
-             size="large"
-           >
-             Delete
-           </Button>
-         </ConfigProvider>
-       </Space>
-     ),
-   },
- ];
-
+  const columns = [
+    {
+      title: "#",
+      dataIndex: "id",
+      key: "id",
+      align: "center",
+      render: (text, record, index) => index + 1,
+    },
+    {
+      title: "Retailer Name",
+      dataIndex: "name",
+      key: "name",
+      align: "center",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      align: "center",
+    },
+    {
+      title: "Assigned Sales Rep",
+      dataIndex: "phone",
+      key: "phone",
+      align: "center",
+    },
+    {
+      title: "Total Order",
+      dataIndex: "totalOrder",
+      key: "totalOrder",
+      align: "center",
+    },
+    {
+      title: "Total Sales",
+      dataIndex: "totalSales",
+      key: "totalSales",
+      align: "center",
+    },
+    {
+      title: "Account Status",
+      dataIndex: "accountStatus",
+      key: "accountStatus",
+      align: "center",
+    },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      render: (_, record) => (
+        <Space>
+          <GradientButton onClick={() => handleEdit(record)}>
+            Edit
+          </GradientButton>
+          <GradientButton onClick={() => handleViewDetails(record)}>
+            View
+          </GradientButton>
+          <GradientButton onClick={() => handleDelete(record.id)}>
+            Delete
+          </GradientButton>
+        </Space>
+      ),
+    },
+  ];
 
   const handleEdit = (user) => {
     setSelectedUser(user);
+    form.setFieldsValue({
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      totalOrder: user.totalOrder,
+      totalSales: user.totalSales,
+      accountStatus: user.accountStatus,
+    });
     setIsModalOpen(true);
+  };
+
+  const handleViewDetails = (user) => {
+    Swal.fire({
+      title: "Retailer Details",
+      text: `
+        Name: ${user.name}
+        Email: ${user.email}
+        Phone: ${user.phone}
+        Total Order: ${user.totalOrder}
+        Total Sales: ${user.totalSales}
+        Account Status: ${user.accountStatus}
+      `,
+      icon: "info",
+    });
   };
 
   const handleDelete = (id) => {
@@ -135,18 +141,20 @@ const RetailerManageTable = () => {
     });
   };
 
-  const handleSave = (updatedUserData) => {
+  const handleSave = (values) => {
     if (selectedUser) {
       // Update existing retailer
       setRetailers(
         retailers.map((retailer) =>
-          retailer.id === updatedUserData.id ? updatedUserData : retailer
+          retailer.id === selectedUser.id
+            ? { ...selectedUser, ...values }
+            : retailer
         )
       );
     } else {
       // Add new retailer
       const newRetailer = {
-        ...updatedUserData,
+        ...values,
         id: retailers.length + 1,
         image:
           "https://img.freepik.com/free-photo/portrait-handsome-young-man-with-arms-crossed-holding-white-headphone-around-his-neck_23-2148096439.jpg",
@@ -155,19 +163,17 @@ const RetailerManageTable = () => {
     }
     setIsModalOpen(false);
     setSelectedUser(null);
+    form.resetFields();
   };
 
   return (
-    <div className="">
+    <div>
       <div className="flex justify-between items-center mb-10">
-        <div>
-          <h2 className="text-2xl font-bold">
-            Retailer List{" "}
-            <span className="text-secondary">{retailersData.length}</span>{" "}
-          </h2>
-        </div>
-        {/* Search and Add Retailer Button */}
-        <div className="flex gap-5 items-center ">
+        <h2 className="text-2xl font-bold">
+          Retailer List{" "}
+          <span className="text-secondary">{retailers.length}</span>{" "}
+        </h2>
+        <div className="flex gap-5 items-center">
           <Input
             placeholder="Search Retailers Name..."
             value={searchTerm}
@@ -175,43 +181,79 @@ const RetailerManageTable = () => {
             style={{ width: 300 }}
             className="py-2.5"
           />
-          <GradientButton
-            onClick={() => {
-              setSelectedUser(null);
-              setIsModalOpen(true);
-            }}
-          >
+          <GradientButton onClick={() => setIsModalOpen(true)}>
             Add Retailer
           </GradientButton>
         </div>
       </div>
-      {/* Table */}
-      <div className="bg-gradient-to-r from-primary to-secondary p-6 rounded-xl">
-        <Table
-          dataSource={retailers.filter(
-            (retailer) =>
-              retailer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              retailer.email.toLowerCase().includes(searchTerm.toLowerCase())
-          )}
-          columns={columns}
-          pagination={{ pageSize: 10 }}
-          bordered={false}
-          size="small"
-          rowClassName="custom-row"
-          className="custom-table"
-        />
-      </div>
 
-      {/* Update Modal */}
-      {isModalOpen && (
-        <UpdateModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onSave={handleSave}
-          userData={selectedUser}
-          editingId={selectedUser ? selectedUser.id : null}
-        />
-      )}
+      <Table
+        dataSource={retailers.filter(
+          (retailer) =>
+            retailer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            retailer.email.toLowerCase().includes(searchTerm.toLowerCase())
+        )}
+        columns={columns}
+        pagination={{ pageSize: 10 }}
+        bordered={false}
+        size="small"
+        rowClassName="custom-row"
+      />
+
+      {/* Modal for Add/Edit Retailer */}
+      <Modal
+        title={selectedUser ? "Edit Retailer" : "Add Retailer"}
+        visible={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setIsModalOpen(false)}>
+            Cancel
+          </Button>,
+          <Button key="submit" type="primary" onClick={() => form.submit()}>
+            Save Changes
+          </Button>,
+        ]}
+      >
+        <Form
+          form={form}
+          onFinish={handleSave}
+          layout="vertical"
+          initialValues={{
+            name: "",
+            email: "",
+            phone: "",
+            totalOrder: "",
+            totalSales: "",
+            accountStatus: "Active",
+          }}
+        >
+          <Form.Item
+            label="Retailer Name"
+            name="name"
+            rules={[{ required: true }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item label="Email" name="email" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="Assigned Sales Rep" name="phone">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Total Order" name="totalOrder">
+            <InputNumber style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item label="Total Sales" name="totalSales">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Account Status" name="accountStatus">
+            <Select>
+              <Select.Option value="Active">Active</Select.Option>
+              <Select.Option value="Inactive">Inactive</Select.Option>
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
