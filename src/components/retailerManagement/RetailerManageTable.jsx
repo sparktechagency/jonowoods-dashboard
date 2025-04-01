@@ -10,10 +10,11 @@ import {
   InputNumber,
   Row,
   Col,
+  Tooltip,
 } from "antd";
 import Swal from "sweetalert2";
-import GradientButton from "../common/GradiantButton";
 import { CloseOutlined, LockOutlined } from "@ant-design/icons";
+import { FaEdit, FaEye, FaTrashAlt } from "react-icons/fa";
 
 const retailersData = Array.from({ length: 25 }, (_, i) => ({
   id: i + 1,
@@ -48,7 +49,7 @@ const RetailerManageTable = () => {
 
   const columns = [
     {
-      title: "#",
+      title: "SL",
       dataIndex: "id",
       key: "id",
       align: "center",
@@ -73,7 +74,7 @@ const RetailerManageTable = () => {
       align: "center",
     },
     {
-      title: "Total Order",
+      title: "Total Order Placed",
       dataIndex: "totalOrder",
       key: "totalOrder",
       align: "center",
@@ -85,7 +86,7 @@ const RetailerManageTable = () => {
       align: "center",
     },
     {
-      title: "Account Status",
+      title: "Subscription",
       dataIndex: "accountStatus",
       key: "accountStatus",
       align: "center",
@@ -106,17 +107,34 @@ const RetailerManageTable = () => {
       key: "action",
       align: "center",
       render: (_, record) => (
-        <Space>
-          <GradientButton onClick={() => handleEdit(record)}>
-            Edit
-          </GradientButton>
-          <GradientButton onClick={() => handleViewDetails(record)}>
-            View
-          </GradientButton>
-          <GradientButton onClick={() => handleDelete(record.id)}>
-            Delete
-          </GradientButton>
-        </Space>
+        <div className="flex justify-center space-x-3">
+          <Tooltip title="Edit">
+            <button
+              onClick={() => handleEdit(record)}
+              className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
+            >
+              <FaEdit size={16} />
+            </button>
+          </Tooltip>
+
+          <Tooltip title="View">
+            <button
+              onClick={() => handleViewDetails(record)}
+              className="p-2 text-green-500 hover:bg-green-50 rounded-full transition-colors"
+            >
+              <FaEye size={16} />
+            </button>
+          </Tooltip>
+
+          <Tooltip title="Delete">
+            <button
+              onClick={() => handleDelete(record.id)}
+              className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+            >
+              <FaTrashAlt size={16} />
+            </button>
+          </Tooltip>
+        </div>
       ),
     },
   ];
@@ -230,15 +248,17 @@ const RetailerManageTable = () => {
             style={{ width: 300 }}
             className="py-2.5"
           />
-          <GradientButton
+          <Button
+            type="primary"
             onClick={() => {
               setSelectedUser(null);
               form.resetFields();
               setIsModalOpen(true);
             }}
+            className="bg-teal-500 hover:bg-teal-600 text-white"
           >
             Add Retailer
-          </GradientButton>
+          </Button>
         </div>
       </div>
 
@@ -457,11 +477,6 @@ const RetailerManageTable = () => {
         title={
           <div className="flex justify-between items-center">
             <span>View Retailer Information</span>
-            <Button
-              icon={<CloseOutlined />}
-              type="text"
-              onClick={() => setIsViewModalOpen(false)}
-            />
           </div>
         }
         visible={isViewModalOpen}
@@ -476,7 +491,7 @@ const RetailerManageTable = () => {
             Done
           </Button>,
         ]}
-        width={500}
+        width={800}
       >
         {selectedUser && (
           <div className="bg-gray-50 p-6 rounded-md">
@@ -500,38 +515,43 @@ const RetailerManageTable = () => {
               </div>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <p className="text-gray-500 text-sm">Email</p>
-                <p className="font-medium">{selectedUser.email}</p>
+            <div className="flex gap-8">
+              {/* Left side - Retail Information */}
+              <div className="w-1/2 space-y-4">
+                <h3 className="font-bold text-lg mb-3">Retail Information</h3>
+                <div>
+                  <p className="text-gray-500 text-sm">Email</p>
+                  <p className="font-medium">{selectedUser.email}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500 text-sm">Phone</p>
+                  <p className="font-medium">{selectedUser.phone}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500 text-sm">Assigned Sales Rep</p>
+                  <p className="font-medium">{selectedUser.salesRep}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500 text-sm">Total Orders</p>
+                  <p className="font-medium">{selectedUser.totalOrder}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500 text-sm">Total Sales</p>
+                  <p className="font-medium">{selectedUser.totalSales}</p>
+                </div>
+
+                <div>
+                  <p className="text-gray-500 text-sm">Shipping Address</p>
+                  <p className="font-medium">{selectedUser.shippingAddress}</p>
+                </div>
               </div>
 
-              <div>
-                <p className="text-gray-500 text-sm">Phone</p>
-                <p className="font-medium">{selectedUser.phone}</p>
-              </div>
-
-              <div>
-                <p className="text-gray-500 text-sm">Assigned Sales Rep</p>
-                <p className="font-medium">{selectedUser.salesRep}</p>
-              </div>
-
-              <div>
-                <p className="text-gray-500 text-sm">Total Orders</p>
-                <p className="font-medium">{selectedUser.totalOrder}</p>
-              </div>
-
-              <div>
-                <p className="text-gray-500 text-sm">Total Sales</p>
-                <p className="font-medium">{selectedUser.totalSales}</p>
-              </div>
-
-              <div>
-                <p className="text-gray-500 text-sm">Shipping Address</p>
-                <p className="font-medium">{selectedUser.shippingAddress}</p>
-              </div>
-
-              <div className="pt-4 mt-4 border-t border-gray-200">
+              {/* Right side - Payment Information */}
+              <div className="w-1/2 space-y-4">
                 <h3 className="font-bold text-lg mb-3">Payment Information</h3>
                 <div className="space-y-3">
                   <div>

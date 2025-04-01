@@ -276,7 +276,7 @@ const OrderManagementTable = () => {
           value={selectedStatus}
           onChange={(value) => setSelectedStatus(value)}
           placeholder="Select Order Status"
-          style={{ width: "100%" }}
+          style={{ width: "100%" , marginBottom:'20px'}}
         >
           {Object.keys(statusVariants).map((status) => (
             <Select.Option key={status} value={status}>
