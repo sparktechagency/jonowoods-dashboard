@@ -21,6 +21,7 @@ const initialOrders = [
     userName: "Alice Johnson",
     source: "Retailer",
     orderBox: 12,
+    freeBox: 2,
     amount: "$200",
     status: "Pending",
     image:
@@ -32,6 +33,7 @@ const initialOrders = [
     userName: "Alice Johnson",
     source: "Retailer",
     orderBox: 12,
+    freeBox: 2,
     amount: "$300",
     status: "Completed",
     image:
@@ -43,6 +45,7 @@ const initialOrders = [
     userName: "Alice Johnson",
     source: "Retailer",
     orderBox: 12,
+    freeBox: 2,
     amount: "$200",
     status: "Pending",
     image:
@@ -54,6 +57,7 @@ const initialOrders = [
     userName: "Alice Johnson",
     source: "Retailer",
     orderBox: 12,
+    freeBox: 2,
     amount: "$300",
     status: "Completed",
     image:
@@ -65,6 +69,7 @@ const initialOrders = [
     userName: "Alice Johnson",
     source: "Retailer",
     orderBox: 12,
+    freeBox: 2,
     amount: "$200",
     status: "Pending",
     image:
@@ -76,6 +81,7 @@ const initialOrders = [
     userName: "Alice Johnson",
     source: "Retailer",
     orderBox: 12,
+    freeBox: 2,
     amount: "$300",
     status: "Completed",
     image:
@@ -176,8 +182,8 @@ const OrderManagementTable = () => {
     //   render: (status) => <Tag color={statusVariants[status]}>{status}</Tag>,
     },
     {
-      title: "Actions",
-      key: "actions",
+      title: "Action",
+      key: "action",
       align: "center",
       render: (_, order) => (
         <div className="flex space-x-2 justify-center">
@@ -211,9 +217,8 @@ const OrderManagementTable = () => {
   return (
     <div className=" space-y-4">
       <div className="flex justify-between items-center">
-        <h2>All Orders</h2>
+        <h2 className="text-xl font-semibold">Order List</h2>
         <div className="flex items-center">
-          <p>Filter by status: </p>
           <Select
             value={selectedStatus}
             onChange={handleFilterChange}
@@ -228,7 +233,7 @@ const OrderManagementTable = () => {
               </Select.Option>
             ))}
           </Select>
-          <FilterOutlined style={{ fontSize: 20, marginLeft: 8 }} />
+
         </div>
       </div>
 

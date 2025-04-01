@@ -22,7 +22,7 @@ const DetailsModalInOrder = ({handleSubmit,detailModalVisible, setDetailModalVis
                 src={selectedOrder.image}
                 alt="Product"
                 style={{ width: "150px", height: "150px", objectFit: "cover" }}
-                className='rounded-lg'
+                className="rounded-lg"
               />
               <div>
                 <p>
@@ -36,6 +36,9 @@ const DetailsModalInOrder = ({handleSubmit,detailModalVisible, setDetailModalVis
                 </p>
                 <p>
                   <strong>Order Boxes:</strong> {selectedOrder.orderBox}
+                </p>
+                <p>
+                  <strong>Free Boxes:</strong> {selectedOrder.freeBox}
                 </p>
                 <p>
                   <strong>Price:</strong> {selectedOrder.amount}
@@ -58,7 +61,7 @@ const DetailsModalInOrder = ({handleSubmit,detailModalVisible, setDetailModalVis
                 onChange={(e) => setFreeBoxes(e.target.value)}
                 placeholder="Enter number of free boxes "
                 min={0}
-                className='mb-4'
+                className="mb-4"
               />
             </div>
           </div>

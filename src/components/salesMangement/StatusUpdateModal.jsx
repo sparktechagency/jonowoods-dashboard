@@ -7,6 +7,7 @@ const StatusUpdateModal = ({ isVisible, onClose, orderData, onUpdateStatus }) =>
 
   return (
     <Modal
+    centered
       title={`Update Status - ${orderData?.orderId}`}
       visible={isVisible}
       onCancel={onClose}

@@ -1,11 +1,11 @@
 import React from 'react'
 import ProductInfo from '../../components/Products/ProductsInfo'
-import SalesCardInfo from '../../components/SalesRepsManagement/SalesCardInfo'
+import InventorCard from '../../components/Products/InventorCard'
 
 const Products = () => {
   return (
     <div>
-        <SalesCardInfo />
+        <InventorCard />
       <ProductInfo />
     </div>
   )

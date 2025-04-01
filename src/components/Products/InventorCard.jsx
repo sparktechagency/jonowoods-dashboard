@@ -1,14 +1,13 @@
 import React from "react";
 import { LuBadgeDollarSign, LuBox } from "react-icons/lu";
-import SalesRepsCard from "./SalesRepsCard";
-import { FaUsers } from "react-icons/fa6";
+import SalesRepsCard from "../SalesRepsManagement/SalesRepsCard";
 
-const SalesCardInfo = () => {
+const InventorCard = () => {
   // Data for cards
   const cardData = [
-    { icon: LuBox, value: "50", label: "Total Box sold" },
-    { icon: LuBox, value: "$12", label: "Total Free Boxes Given" },
-    { icon: LuBadgeDollarSign, value: "$5000", label: "Total Sales" },
+    { icon: LuBox, value: "337", label: "Total Product Available" },
+    { icon: LuBox, value: "5", label: "Low Stock Alert" },
+    { icon: LuBadgeDollarSign, value: "$6000", label: "Stock Value" },
   ];
 
   return (
@@ -25,4 +24,4 @@ const SalesCardInfo = () => {
   );
 };
 
-export default SalesCardInfo;
+export default InventorCard;

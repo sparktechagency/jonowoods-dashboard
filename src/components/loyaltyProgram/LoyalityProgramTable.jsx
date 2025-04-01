@@ -191,13 +191,8 @@ const LoyalityProgramTable = () => {
       key: "totalSales",
       align: "center",
     },
-    { title: "Tier", dataIndex: "tier", key: "tier", align: "center" },
-    {
-      title: "Eligibility",
-      dataIndex: "eligibility",
-      key: "eligibility",
-      align: "center",
-    },
+    { title: "Point", dataIndex: "tier", key: "tier", align: "center" },
+    
   ];
 
   return (
@@ -238,6 +233,7 @@ const LoyalityProgramTable = () => {
       {/* Add Tier Modal */}
       <Modal
         title="Add Tier"
+        centered
         open={isAddTierModalOpen}
         onCancel={() => setIsAddTierModalOpen(false)}
         onOk={() => form.submit()}
@@ -280,6 +276,7 @@ const LoyalityProgramTable = () => {
       {/* Manage Eligibility Modal */}
       <Modal
         title="Manage Eligibility"
+        centered
         open={isManageEligibilityModalOpen}
         onCancel={() => setIsManageEligibilityModalOpen(false)}
         onOk={() => form.submit()}

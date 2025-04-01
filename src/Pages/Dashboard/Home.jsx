@@ -150,7 +150,7 @@ const Home = () => {
               <div className="flex items-center  gap-3">
                 <div>
                   <h2 className="text-center text-xl font-bold mb-3">
-                    Retailers
+                   Retailers
                   </h2>
                   <h3 className="text-primary text-3xl font-bold">$12100</h3>
                 </div>

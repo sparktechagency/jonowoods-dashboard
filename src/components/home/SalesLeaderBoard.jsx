@@ -129,7 +129,7 @@ const SalesLeaderBoard = () => {
   return (
     <div>
       <div className="flex justify-between mb-4 items-center">
-        <h1 className="text-2xl font-bold text-gray-800">Sales Leaderboard</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Sales Rep Leaderboard</h1>
         <Input
           placeholder="Search Order, Retailer, Sales"
           value={searchText}

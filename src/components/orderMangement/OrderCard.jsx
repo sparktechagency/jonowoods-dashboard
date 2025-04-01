@@ -1,14 +1,15 @@
 import React from "react";
 import { LuBadgeDollarSign } from "react-icons/lu";
 import { FaUsers } from "react-icons/fa6";
+import { BiBox, BiDollar } from "react-icons/bi";
 
 const OrderCard = () => {
   // Data for cards
   const cardData = [
-    { icon: FaUsers, value: "100", label: "Total Sales" },
-    { icon: FaUsers, value: "$12", label: "Total Commission" },
-    { icon: LuBadgeDollarSign, value: "$5000", label: "Total Orders" },
-    { icon: LuBadgeDollarSign, value: "$5000", label: "Total Orders" },
+    { icon:BiDollar, value: "$3570", label: "Total Revinue" },
+    { icon: FaUsers, value: "100", label: "Total Order boxes" },
+    { icon: BiBox, value: "150", label: "Total Free Boxes Given" },
+    { icon: LuBadgeDollarSign, value: "5", label: "Pending order" },
   ];
 
   return (
@@ -35,7 +36,7 @@ const SalesRepsCard = ({ icon: Icon, value, label }) => {
         </div>
         <div>
           <h3 className="text-white text-[32px] font-semibold">{value}</h3>
-          <h2 className="text-white text-center text-xl">{label}</h2>
+          <h2 className="text-white text-center text-md">{label}</h2>
         </div>
       </div>
     </div>

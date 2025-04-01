@@ -5,7 +5,8 @@ import { imageUrl } from "../../redux/api/baseApi";
 const DetailsModal = ({ isVisible, onClose, orderData }) => {
     console.log(orderData?.image)
   return (
-    <Modal
+    <Modal 
+    centered
       title={`Order Details - ${orderData?.orderId}`}
       visible={isVisible}
       onCancel={onClose}

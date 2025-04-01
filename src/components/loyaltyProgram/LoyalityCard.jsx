@@ -5,8 +5,8 @@ import { FaUsers } from "react-icons/fa6";
 const LoyalityCard = () => {
   // Data for cards
   const cardData = [
-    { icon: FaUsers, value: "100", label: "Total Retailers" },
-    { icon: FaUsers, value: "$12", label: "Total Sales Reps" },
+    { icon: FaUsers, value: "357", label: "Total Member" },
+    { icon: FaUsers, value: "John Doe", label: "Top Retailer" },
   ];
 
   return (
@@ -33,7 +33,7 @@ const SalesRepsCard = ({ icon: Icon, value, label }) => {
         </div>
         <div>
           <h3 className="text-white text-[32px] font-semibold">{value}</h3>
-          <h2 className="text-white text-center text-xl">{label}</h2>
+          <h2 className="text-white text-center text-md">{label}</h2>
         </div>
       </div>
     </div>

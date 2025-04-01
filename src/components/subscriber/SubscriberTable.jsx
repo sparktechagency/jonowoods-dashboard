@@ -149,9 +149,9 @@ const SubscriptionTable = () => {
         />
       </div>
 
-      {/* View Details Modal */}
       <Modal
         title="Subscriber Details"
+        centered
         visible={isDetailsModalVisible}
         onCancel={() => setIsDetailsModalVisible(false)}
         footer={null}
@@ -181,6 +181,7 @@ const SubscriptionTable = () => {
 
       {/* Update Status Modal */}
       <Modal
+      centered
         title="Update Subscriber Status"
         visible={isStatusModalVisible}
         onCancel={() => setIsStatusModalVisible(false)}

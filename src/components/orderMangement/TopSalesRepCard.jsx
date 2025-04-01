@@ -47,8 +47,8 @@ const SalesRepsCard = ({ image, value, label }) => {
           />
         </div>
         <div>
+          <h2 className="text-white text-center text-md">{label}</h2>
           <h3 className="text-white text-[32px] font-semibold">{value}</h3>
-          <h2 className="text-white text-center text-xl">{label}</h2>
         </div>
       </div>
     </div>

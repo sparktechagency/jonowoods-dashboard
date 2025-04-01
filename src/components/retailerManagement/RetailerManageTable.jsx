@@ -8,9 +8,12 @@ import {
   Form,
   Select,
   InputNumber,
+  Row,
+  Col,
 } from "antd";
 import Swal from "sweetalert2";
 import GradientButton from "../common/GradiantButton";
+import { CloseOutlined, LockOutlined } from "@ant-design/icons";
 
 const retailersData = Array.from({ length: 25 }, (_, i) => ({
   id: i + 1,
@@ -23,13 +26,24 @@ const retailersData = Array.from({ length: 25 }, (_, i) => ({
   image: `https://img.freepik.com/free-photo/portrait-handsome-young-man-with-arms-crossed-holding-white-headphone-around-his-neck_23-2148096439.jpg?semt=ais_hybrid/50?text=R${
     i + 1
   }`,
+  salesRep: `Sales Rep ${(i % 5) + 1}`,
+  shippingAddress: `${i + 100} Example Street, City ${(i % 10) + 1}`,
+  nameOnCard: "Alice Johnson",
+  cardNumber: "1234567891023",
+  expiry: "25/29",
+  cvc: "956",
+  zipCode: "123456",
 }));
+
+const statusOptions = ["Active", "Inactive"];
 
 const RetailerManageTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [retailers, setRetailers] = useState(retailersData);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedStatus, setSelectedStatus] = useState(null);
   const [form] = Form.useForm();
 
   const columns = [
@@ -54,8 +68,8 @@ const RetailerManageTable = () => {
     },
     {
       title: "Assigned Sales Rep",
-      dataIndex: "phone",
-      key: "phone",
+      dataIndex: "salesRep",
+      key: "salesRep",
       align: "center",
     },
     {
@@ -75,6 +89,17 @@ const RetailerManageTable = () => {
       dataIndex: "accountStatus",
       key: "accountStatus",
       align: "center",
+      render: (status) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs ${
+            status === "Active"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {status}
+        </span>
+      ),
     },
     {
       title: "Action",
@@ -102,6 +127,13 @@ const RetailerManageTable = () => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      salesRep: user.salesRep,
+      shippingAddress: user.shippingAddress,
+      nameOnCard: user.nameOnCard,
+      cardNumber: user.cardNumber,
+      expiry: user.expiry,
+      cvc: user.cvc,
+      zipCode: user.zipCode,
       totalOrder: user.totalOrder,
       totalSales: user.totalSales,
       accountStatus: user.accountStatus,
@@ -110,18 +142,8 @@ const RetailerManageTable = () => {
   };
 
   const handleViewDetails = (user) => {
-    Swal.fire({
-      title: "Retailer Details",
-      text: `
-        Name: ${user.name}
-        Email: ${user.email}
-        Phone: ${user.phone}
-        Total Order: ${user.totalOrder}
-        Total Sales: ${user.totalSales}
-        Account Status: ${user.accountStatus}
-      `,
-      icon: "info",
-    });
+    setSelectedUser(user);
+    setIsViewModalOpen(true);
   };
 
   const handleDelete = (id) => {
@@ -166,6 +188,18 @@ const RetailerManageTable = () => {
     form.resetFields();
   };
 
+  const filteredRetailers = retailers.filter((retailer) => {
+    const matchesSearch =
+      retailer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      retailer.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = selectedStatus
+      ? retailer.accountStatus === selectedStatus
+      : true;
+
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <div>
       <div className="flex justify-between items-center mb-10">
@@ -174,6 +208,21 @@ const RetailerManageTable = () => {
           <span className="text-secondary">{retailers.length}</span>{" "}
         </h2>
         <div className="flex gap-5 items-center">
+          <div className="w-[300px]">
+            <Select
+              value={selectedStatus}
+              onChange={(value) => setSelectedStatus(value)}
+              placeholder="Filter by Status"
+              style={{ width: "100%", height: "43px" }}
+              allowClear
+            >
+              {statusOptions.map((status) => (
+                <Select.Option key={status} value={status}>
+                  {status}
+                </Select.Option>
+              ))}
+            </Select>
+          </div>
           <Input
             placeholder="Search Retailers Name..."
             value={searchTerm}
@@ -181,78 +230,339 @@ const RetailerManageTable = () => {
             style={{ width: 300 }}
             className="py-2.5"
           />
-          <GradientButton onClick={() => setIsModalOpen(true)}>
+          <GradientButton
+            onClick={() => {
+              setSelectedUser(null);
+              form.resetFields();
+              setIsModalOpen(true);
+            }}
+          >
             Add Retailer
           </GradientButton>
         </div>
       </div>
 
-      <Table
-        dataSource={retailers.filter(
-          (retailer) =>
-            retailer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            retailer.email.toLowerCase().includes(searchTerm.toLowerCase())
-        )}
-        columns={columns}
-        pagination={{ pageSize: 10 }}
-        bordered={false}
-        size="small"
-        rowClassName="custom-row"
-      />
+      <div className="bg-primary p-5 rounded-lg">
+        <Table
+          dataSource={filteredRetailers}
+          columns={columns}
+          pagination={{ pageSize: 10 }}
+          bordered={false}
+          size="small"
+          rowClassName="custom-row"
+          rowKey="id"
+        />
+      </div>
 
       {/* Modal for Add/Edit Retailer */}
       <Modal
-        title={selectedUser ? "Edit Retailer" : "Add Retailer"}
+        title={selectedUser ? "Edit Retailer Information" : "Add New Retailer"}
         visible={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
+        onCancel={() => {
+          setIsModalOpen(false);
+          form.resetFields();
+        }}
         footer={[
-          <Button key="cancel" onClick={() => setIsModalOpen(false)}>
+          <Button
+            key="cancel"
+            onClick={() => {
+              setIsModalOpen(false);
+              form.resetFields();
+            }}
+          >
             Cancel
           </Button>,
-          <Button key="submit" type="primary" onClick={() => form.submit()}>
-            Save Changes
+          <Button
+            key="submit"
+            type="primary"
+            onClick={() => form.submit()}
+            className="bg-teal-500 hover:bg-teal-600"
+          >
+            {selectedUser ? "Save Changes" : "Add Retailer"}
           </Button>,
         ]}
+        width={800}
       >
-        <Form
-          form={form}
-          onFinish={handleSave}
-          layout="vertical"
-          initialValues={{
-            name: "",
-            email: "",
-            phone: "",
-            totalOrder: "",
-            totalSales: "",
-            accountStatus: "Active",
-          }}
-        >
-          <Form.Item
-            label="Retailer Name"
-            name="name"
-            rules={[{ required: true }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item label="Email" name="email" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item label="Assigned Sales Rep" name="phone">
-            <Input />
-          </Form.Item>
-          <Form.Item label="Total Order" name="totalOrder">
-            <InputNumber style={{ width: "100%" }} />
-          </Form.Item>
-          <Form.Item label="Total Sales" name="totalSales">
-            <Input />
-          </Form.Item>
-          <Form.Item label="Account Status" name="accountStatus">
-            <Select>
-              <Select.Option value="Active">Active</Select.Option>
-              <Select.Option value="Inactive">Inactive</Select.Option>
-            </Select>
-          </Form.Item>
+        <Form form={form} onFinish={handleSave} layout="vertical">
+          <Row gutter={24}>
+            {/* Left Column */}
+            <Col xs={24} md={12}>
+              <Form.Item
+                label="Retailer Name"
+                name="name"
+                rules={[
+                  { required: true, message: "Please enter retailer name" },
+                ]}
+              >
+                <Input className="p-2 rounded" />
+              </Form.Item>
+
+              <Form.Item
+                label="Assign Sales Rep"
+                name="salesRep"
+                rules={[
+                  { required: true, message: "Please select a sales rep" },
+                ]}
+              >
+                <Select
+                  placeholder="Select Sales Rep Name"
+                  className="w-full"
+                  suffixIcon={<span className="text-teal-500">▼</span>}
+                >
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <Select.Option key={i} value={`Sales Rep ${i + 1}`}>
+                      Sales Rep {i + 1}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[
+                  { required: true, message: "Please enter email address" },
+                  {
+                    type: "email",
+                    message: "Please enter a valid email address",
+                  },
+                ]}
+              >
+                <Input className="p-2 rounded" />
+              </Form.Item>
+
+              <Form.Item
+                label="Shipping Address"
+                name="shippingAddress"
+                rules={[
+                  { required: true, message: "Please enter shipping address" },
+                ]}
+              >
+                <Input className="p-2 rounded" />
+              </Form.Item>
+
+              <Form.Item
+                label="Account Status"
+                name="accountStatus"
+                rules={[
+                  { required: true, message: "Please select account status" },
+                ]}
+              >
+                <Select placeholder="Select Account Status" className="w-full">
+                  {statusOptions.map((status) => (
+                    <Select.Option key={status} value={status}>
+                      {status}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+
+            {/* Right Column - Payment Information */}
+            <Col xs={24} md={12}>
+              <div className="mb-4">
+                <h2 className="text-lg font-medium mb-4">
+                  Payment Information
+                </h2>
+
+                <Form.Item
+                  name="nameOnCard"
+                  rules={[
+                    { required: true, message: "Please enter name on card" },
+                  ]}
+                >
+                  <Input
+                    placeholder="Name On Card"
+                    className="p-2 rounded mb-3"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="cardNumber"
+                  rules={[
+                    { required: true, message: "Please enter card number" },
+                    {
+                      pattern: /^[0-9]{13,19}$/,
+                      message: "Please enter a valid card number",
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="Card Number"
+                    className="p-2 rounded mb-3"
+                    suffix={
+                      <Space>
+                        <span className="text-red-500">●</span>
+                        <span className="text-gray-900 bg-yellow-500 px-1 rounded">
+                          ■
+                        </span>
+                        <span className="text-blue-500">■</span>
+                      </Space>
+                    }
+                  />
+                </Form.Item>
+
+                <Row gutter={16}>
+                  <Col span={12}>
+                    <Form.Item
+                      name="expiry"
+                      rules={[
+                        { required: true, message: "Required" },
+                        {
+                          pattern: /^(0[1-9]|1[0-2])\/([0-9]{2})$/,
+                          message: "Format: MM/YY",
+                        },
+                      ]}
+                    >
+                      <Input placeholder="mm/yy" className="p-2 rounded mb-3" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item
+                      name="cvc"
+                      rules={[
+                        { required: true, message: "Required" },
+                        { pattern: /^[0-9]{3,4}$/, message: "Invalid CVC" },
+                      ]}
+                    >
+                      <Input
+                        placeholder="CVC"
+                        className="p-2 rounded mb-3"
+                        suffix={<LockOutlined className="text-gray-400" />}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+
+                <Form.Item
+                  name="zipCode"
+                  rules={[
+                    { required: true, message: "Please enter zip code" },
+                    {
+                      pattern: /^[0-9]{5}(-[0-9]{4})?$/,
+                      message: "Please enter a valid zip code",
+                    },
+                  ]}
+                >
+                  <Input placeholder="Zip Code" className="p-2 rounded" />
+                </Form.Item>
+              </div>
+            </Col>
+          </Row>
         </Form>
+      </Modal>
+
+      {/* View Retailer Details Modal */}
+      <Modal
+        title={
+          <div className="flex justify-between items-center">
+            <span>View Retailer Information</span>
+            <Button
+              icon={<CloseOutlined />}
+              type="text"
+              onClick={() => setIsViewModalOpen(false)}
+            />
+          </div>
+        }
+        visible={isViewModalOpen}
+        onCancel={() => setIsViewModalOpen(false)}
+        footer={[
+          <Button
+            key="done"
+            type="primary"
+            onClick={() => setIsViewModalOpen(false)}
+            className="bg-teal-500 hover:bg-teal-600"
+          >
+            Done
+          </Button>,
+        ]}
+        width={500}
+      >
+        {selectedUser && (
+          <div className="bg-gray-50 p-6 rounded-md">
+            <div className="flex items-center mb-6">
+              <img
+                src={selectedUser.image}
+                alt={selectedUser.name}
+                className="w-16 h-16 rounded-full mr-4"
+              />
+              <div>
+                <h2 className="text-2xl font-bold">{selectedUser.name}</h2>
+                <span
+                  className={`px-2 py-1 rounded-full text-xs ${
+                    selectedUser.accountStatus === "Active"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {selectedUser.accountStatus}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <p className="text-gray-500 text-sm">Email</p>
+                <p className="font-medium">{selectedUser.email}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500 text-sm">Phone</p>
+                <p className="font-medium">{selectedUser.phone}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500 text-sm">Assigned Sales Rep</p>
+                <p className="font-medium">{selectedUser.salesRep}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500 text-sm">Total Orders</p>
+                <p className="font-medium">{selectedUser.totalOrder}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500 text-sm">Total Sales</p>
+                <p className="font-medium">{selectedUser.totalSales}</p>
+              </div>
+
+              <div>
+                <p className="text-gray-500 text-sm">Shipping Address</p>
+                <p className="font-medium">{selectedUser.shippingAddress}</p>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-gray-200">
+                <h3 className="font-bold text-lg mb-3">Payment Information</h3>
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-gray-500 text-sm">Name on Card</p>
+                    <p className="font-medium">{selectedUser.nameOnCard}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm">Card Number</p>
+                    <p className="font-medium">
+                      •••• •••• •••• {selectedUser.cardNumber.slice(-4)}
+                    </p>
+                  </div>
+                  <div className="flex gap-4">
+                    <div>
+                      <p className="text-gray-500 text-sm">Expiry</p>
+                      <p className="font-medium">{selectedUser.expiry}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-sm">CVC</p>
+                      <p className="font-medium">•••</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-gray-500 text-sm">Zip Code</p>
+                    <p className="font-medium">{selectedUser.zipCode}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   );

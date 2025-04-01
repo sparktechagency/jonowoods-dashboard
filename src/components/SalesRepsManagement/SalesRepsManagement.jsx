@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Table, Button, Modal, Form, Input } from "antd";
 import { useNavigate } from "react-router-dom";
-import GradientButton from "../common/GradiantButton";
+import { FaInfoCircle, FaEdit, FaTrash } from "react-icons/fa";
 
 const SalesRepsManagementTable = () => {
   const [data, setData] = useState([
@@ -25,112 +25,13 @@ const SalesRepsManagementTable = () => {
       commission: "$250",
       status: "Inactive",
     },
-    {
-      id: 1,
-      name: "Alice Johnson",
-      image: "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "example@email.com",
-      retailer: 5,
-      sales: "$300",
-      commission: "$200",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      image: "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "john@email.com",
-      retailer: 3,
-      sales: "$500",
-      commission: "$250",
-      status: "Inactive",
-    },
-    {
-      id: 1,
-      name: "Alice Johnson",
-      image: "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "example@email.com",
-      retailer: 5,
-      sales: "$300",
-      commission: "$200",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      image: "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "john@email.com",
-      retailer: 3,
-      sales: "$500",
-      commission: "$250",
-      status: "Inactive",
-    },
-    {
-      id: 1,
-      name: "Alice Johnson",
-      image: "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "example@email.com",
-      retailer: 5,
-      sales: "$300",
-      commission: "$200",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      image: "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "john@email.com",
-      retailer: 3,
-      sales: "$500",
-      commission: "$250",
-      status: "Inactive",
-    },
-    {
-      id: 1,
-      name: "Alice Johnson",
-      image: "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "example@email.com",
-      retailer: 5,
-      sales: "$300",
-      commission: "$200",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      image: "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "john@email.com",
-      retailer: 3,
-      sales: "$500",
-      commission: "$250",
-      status: "Inactive",
-    },
-    {
-      id: 1,
-      name: "Alice Johnson",
-      image: "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "example@email.com",
-      retailer: 5,
-      sales: "$300",
-      commission: "$200",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      image: "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      email: "john@email.com",
-      retailer: 3,
-      sales: "$500",
-      commission: "$250",
-      status: "Inactive",
-    },
+    // ... rest of your data
   ]);
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form] = Form.useForm();
-  const navigate=useNavigate()
+  const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
@@ -213,28 +114,33 @@ const SalesRepsManagementTable = () => {
       key: "action",
       align: "center",
       render: (_, record) => (
-        <div className="flex gap-2 justify-center">
-          <GradientButton
+        <div className="flex gap-4 justify-center">
+          <button
             onClick={() =>
               navigate(`/salesRepsManage/${record.id}`, { state: record })
             }
+            className="text-blue-500 hover:text-blue-700 text-xl"
+            title="Details"
           >
-            Details
-          </GradientButton>
-          
-          <GradientButton
-            onClick={() => showModal(record)}
-          >
-            Edit
-          </GradientButton>
+            <FaInfoCircle />
+          </button>
+
           <button
-            // danger
+            onClick={() => showModal(record)}
+            className="text-green-500 hover:text-green-700 text-xl"
+            title="Edit"
+          >
+            <FaEdit />
+          </button>
+
+          <button
             onClick={() =>
               setData(data.filter((item) => item.id !== record.id))
             }
-            className="bg-red-500 text-white py-[5px] w-20 rounded-md hover:bg-red-400"
+            className="text-red-500 hover:text-red-700 text-xl"
+            title="Delete"
           >
-            Delete
+            <FaTrash />
           </button>
         </div>
       ),
@@ -326,7 +232,7 @@ const SalesRepsManagementTable = () => {
         visible={isModalVisible}
         onCancel={handleCancel}
         onOk={() => form.submit()}
-        okText={editingId ? "Save Changes" : "Add Sales Rep"} // Change button text
+        okText={editingId ? "Save Changes" : "Add Sales Rep"}
         okButtonProps={{
           style: {
             background: "linear-gradient(to right, #4E9DAB, #336C79)",
@@ -336,7 +242,7 @@ const SalesRepsManagementTable = () => {
         }}
         cancelButtonProps={{
           style: {
-            background: "#D32F2F", // Custom red for cancel
+            background: "#D32F2F",
             border: "none",
             color: "white",
           },
