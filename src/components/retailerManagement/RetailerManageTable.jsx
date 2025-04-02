@@ -255,7 +255,7 @@ const RetailerManageTable = () => {
               form.resetFields();
               setIsModalOpen(true);
             }}
-            className="bg-teal-500 hover:bg-teal-600 text-white"
+            className="bg-teal-500 hover:bg-teal-600 py-5 text-white"
           >
             Add Retailer
           </Button>

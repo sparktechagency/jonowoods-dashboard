@@ -11,11 +11,11 @@ const Auth = () => {
       >
         <div
           style={{
-            background: "#3FC7EE",
+            background: "#FAF2DF",
             backgroundPosition: "center",
             backgroundRepeat: "no-repeat",
             backgroundSize: "cover",
-          
+
             position: "absolute",
             top: 0,
             left: 0,
