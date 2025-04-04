@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Table, Button, Modal, Form, Input } from "antd";
+import { Table, Button, Modal, Form, Input, Tooltip } from "antd";
 import { useNavigate } from "react-router-dom";
-import { FaInfoCircle, FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { IoEyeSharp } from "react-icons/io5";
 
 const SalesRepsManagementTable = () => {
   const [data, setData] = useState([
@@ -108,40 +109,44 @@ const SalesRepsManagementTable = () => {
       key: "commission",
       align: "center",
     },
-    { title: "Status", dataIndex: "status", key: "status", align: "center" },
+
     {
       title: "Action",
       key: "action",
       align: "center",
       render: (_, record) => (
         <div className="flex gap-4 justify-center">
-          <button
-            onClick={() =>
-              navigate(`/salesRepsManage/${record.id}`, { state: record })
-            }
-            className="text-blue-500 hover:text-blue-700 text-xl"
-            title="Details"
-          >
-            <FaInfoCircle />
-          </button>
+          <Tooltip title="View Details">
+            <button
+              onClick={() =>
+                navigate(`/salesRepsManage/${record.id}`, { state: record })
+              }
+              className="text-blue-500 hover:text-blue-700 text-xl"
+              title="Details"
+            >
+              <IoEyeSharp />
+            </button>
+          </Tooltip>
 
-          <button
+          {/* <button
             onClick={() => showModal(record)}
             className="text-green-500 hover:text-green-700 text-xl"
             title="Edit"
           >
             <FaEdit />
-          </button>
+          </button> */}
 
-          <button
-            onClick={() =>
-              setData(data.filter((item) => item.id !== record.id))
-            }
-            className="text-red-500 hover:text-red-700 text-xl"
-            title="Delete"
-          >
-            <FaTrash />
-          </button>
+          <Tooltip title="Delete">
+            <button
+              onClick={() =>
+                setData(data.filter((item) => item.id !== record.id))
+              }
+              className="text-red-500 hover:text-red-700 text-md"
+              title="Delete"
+            >
+              <FaTrash />
+            </button>
+          </Tooltip>
         </div>
       ),
     },
@@ -161,20 +166,20 @@ const SalesRepsManagementTable = () => {
               onClick={handleOpen}
               className="bg-gradient-to-r from-primary  to-secondary py-5 font-bold"
             >
-              Set Target Sales Reps
+              Accept Sales Rep. (01)
             </Button>
 
             <Modal
-              title="Assign Target to Sales Rep"
+              title="Accept Sales Rep"
               open={isModalOpen}
               onOk={handleSubmit}
               onCancel={handleClose}
-              okText="Submit"
+              okText="Accept"
               cancelText="Cancel"
             >
               <div className="mb-2">
                 <label className="block text-sm font-medium mb-1">
-                  Set Sales Reps
+                  Sales Rep Name
                 </label>
                 <select
                   name="salesRep"
@@ -190,16 +195,14 @@ const SalesRepsManagementTable = () => {
               </div>
 
               <div className="mb-2">
-                <label className="block text-sm font-medium mb-1">
-                  Target Amount
-                </label>
+                <label className="block text-sm font-medium mb-1">Email</label>
                 <input
-                  type="number"
+                  type="email"
                   name="targetAmount"
                   value={formData.targetAmount}
                   onChange={handleChange}
                   className="w-full p-2 border rounded"
-                  placeholder="Enter target amount"
+                  placeholder="Enter Your Name"
                 />
               </div>
             </Modal>
@@ -250,47 +253,38 @@ const SalesRepsManagementTable = () => {
       >
         <Form form={form} layout="vertical" onFinish={handleSave}>
           <Form.Item
+          className="font-medium"
             label="Sales Rep Name"
             name="name"
             rules={[{ required: true, message: "Please enter name" }]}
           >
-            <Input />
+            <Input placeholder="Your Name" />
           </Form.Item>
           <Form.Item
+          className="font-medium"
             label="Email"
             name="email"
             rules={[{ required: true, message: "Please enter email" }]}
           >
-            <Input />
+            <Input placeholder="Your email" />
           </Form.Item>
-          <Form.Item
-            label="Assigned Retailer"
-            name="retailer"
-            rules={[{ required: true, message: "Please enter retailer count" }]}
-          >
-            <Input type="number" />
-          </Form.Item>
-          <Form.Item
-            label="Total Sales"
-            name="sales"
-            rules={[{ required: true, message: "Please enter total sales" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Commission"
-            name="commission"
-            rules={[{ required: true, message: "Please enter commission" }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            label="Status"
-            name="status"
-            rules={[{ required: true, message: "Please enter status" }]}
-          >
-            <Input />
-          </Form.Item>
+
+          <div className="mb-2">
+            <label className="block text-sm font-medium mb-1">
+              Sales Rep Name
+            </label>
+            <select
+              name="salesRep"
+              value={formData.salesRep}
+              onChange={handleChange}
+              className="w-full p-2 border rounded"
+            >
+              <option value="">Select Sales Rep</option>
+              <option value="John Doe">John Doe</option>
+              <option value="Jane Smith">Jane Smith</option>
+              <option value="Mark Johnson">Mark Johnson</option>
+            </select>
+          </div>
         </Form>
       </Modal>
     </div>

@@ -101,6 +101,11 @@ const ProductInfo = () => {
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [modalMode, setModalMode] = useState("add"); // "add" or "edit"
 
+  // Stock update modal state
+  const [isStockUpdateModalVisible, setIsStockUpdateModalVisible] =
+    useState(false);
+  const [stockUpdateForm] = Form.useForm();
+
   // Filter products by search text
   const filteredData = data.filter(
     (item) =>
@@ -147,6 +152,46 @@ const ProductInfo = () => {
     setCurrentProduct(null);
   };
 
+  // Stock update modal handlers
+  const showStockUpdateModal = (product) => {
+    setCurrentProduct(product);
+    stockUpdateForm.setFieldsValue({
+      totalBoxes: product.totalBoxes,
+    });
+    setIsStockUpdateModalVisible(true);
+  };
+
+  const handleStockUpdateCancel = () => {
+    setIsStockUpdateModalVisible(false);
+    stockUpdateForm.resetFields();
+  };
+
+  const handleStockUpdate = (values) => {
+    if (currentProduct) {
+      // Calculate new total stock value based on updated stock
+      const newTotalStockValue = values.totalBoxes * currentProduct.price;
+      // Calculate new revenue (using same formula as in original code)
+      const newRevenue = newTotalStockValue * 1.2;
+
+      // Update the product data
+      setData((prevData) =>
+        prevData.map((item) =>
+          item.key === currentProduct.key
+            ? {
+                ...item,
+                totalBoxes: values.totalBoxes,
+                quantity: values.totalBoxes, // Update quantity as well
+                totalStockValue: newTotalStockValue,
+                revenue: newRevenue,
+              }
+            : item
+        )
+      );
+      message.success("Stock updated successfully!");
+    }
+    setIsStockUpdateModalVisible(false);
+  };
+
   // Delete confirmation
   const showDeleteConfirm = (record) => {
     confirm({
@@ -156,7 +201,7 @@ const ProductInfo = () => {
       okText: "Yes",
       okType: "danger",
       cancelText: "No",
-      centered:true,
+      centered: true,
       onOk() {
         handleDelete(record.key);
       },
@@ -280,26 +325,13 @@ const ProductInfo = () => {
               onClick={() => showDeleteConfirm(record)}
             />
           </Tooltip>
-          <Dropdown
-            menu={{
-              items: [
-                {
-                  key: "1",
-                  label: "Update Stock",
-                  onClick: () => {
-                    /* Stock update functionality */
-                  },
-                },
-              ],
-            }}
+          <Button
+            type="primary"
+            className="bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center"
+            onClick={() => showStockUpdateModal(record)}
           >
-            <Button
-              type="primary"
-              className="bg-gradient-to-r flex items-center"
-            >
-              Update Stock <DownOutlined className="ml-1" />
-            </Button>
-          </Dropdown>
+            Update Stock <DownOutlined className="ml-1" />
+          </Button>
         </Space>
       ),
     },
@@ -537,6 +569,53 @@ const ProductInfo = () => {
     );
   };
 
+  // Stock Update Modal
+  const renderStockUpdateModal = () => {
+    return (
+      <Modal
+        centered
+        title="Product Stock Update"
+        open={isStockUpdateModalVisible}
+        onCancel={handleStockUpdateCancel}
+        footer={null}
+        width={500}
+        closeIcon={<span className="text-xl">×</span>}
+      >
+        <Form
+          form={stockUpdateForm}
+          layout="vertical"
+          onFinish={handleStockUpdate}
+        >
+          <Form.Item
+            name="totalBoxes"
+            label="Total Boxes In Stock*"
+            rules={[
+              {
+                required: true,
+                message: "Please enter boxes in stock",
+              },
+            ]}
+          >
+            <Input type="number" placeholder="Enter Boxes" />
+          </Form.Item>
+
+          <div className="flex justify-end mt-6">
+            <Button onClick={handleStockUpdateCancel} className="mr-2 px-4">
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="bg-gradient-to-r from-cyan-500 to-blue-500 border-none px-6"
+            >
+              Save Changes
+            </Button>
+          </div>
+        </Form>
+      </Modal>
+    );
+  };
+
   return (
     <div className="container mx-auto py-6 px-4">
       <div className="flex justify-between mb-6">
@@ -564,11 +643,10 @@ const ProductInfo = () => {
         />
       </div>
 
-      {/* Render the Form modal */}
+      {/* Render all modals */}
       {renderProductFormModal()}
-
-      {/* Render the View modal */}
       {renderViewModal()}
+      {renderStockUpdateModal()}
 
       <style jsx>{`
         .custom-table .ant-table-thead > tr > th {

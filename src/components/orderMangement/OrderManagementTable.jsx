@@ -179,7 +179,7 @@ const OrderManagementTable = () => {
       dataIndex: "status",
       key: "status",
       align: "center",
-    //   render: (status) => <Tag color={statusVariants[status]}>{status}</Tag>,
+      //   render: (status) => <Tag color={statusVariants[status]}>{status}</Tag>,
     },
     {
       title: "Action",
@@ -187,7 +187,7 @@ const OrderManagementTable = () => {
       align: "center",
       render: (_, order) => (
         <div className="flex space-x-2 justify-center">
-          <GradientButton
+          {/* <GradientButton
             type="default"
             size="small"
             icon={<EyeOutlined />}
@@ -197,7 +197,16 @@ const OrderManagementTable = () => {
             }}
           >
             View Details
-          </GradientButton>
+          </GradientButton> */}
+          <button
+            className="border border-primary px-2 py-1.5 rounded-md "
+            onClick={() => {
+              setSelectedOrder(order);
+              setDetailModalVisible(true);
+            }}
+          >
+            View Details
+          </button>
           <GradientButton
             type="default"
             size="small"

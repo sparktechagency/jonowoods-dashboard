@@ -17,8 +17,8 @@ const LoyalityProgramTable = () => {
       rank: 1,
       retailer: "Retailer A",
       email: "retailerA@example.com",
-      totalSales: "$50,000",
-      tier: "Gold",
+      totalSales: "50,000",
+      tier: "100",
       eligibility: "Yes",
     },
     {
@@ -26,8 +26,8 @@ const LoyalityProgramTable = () => {
       rank: 2,
       retailer: "Retailer B",
       email: "retailerB@example.com",
-      totalSales: "$30,000",
-      tier: "Silver",
+      totalSales: "30,000",
+      tier: "50",
       eligibility: "No",
     },
     {
@@ -35,8 +35,8 @@ const LoyalityProgramTable = () => {
       rank: 3,
       retailer: "Retailer C",
       email: "retailerC@example.com",
-      totalSales: "$70,000",
-      tier: "Platinum",
+      totalSales: "70,000",
+      tier: "43",
       eligibility: "Yes",
     },
     {
@@ -44,136 +44,11 @@ const LoyalityProgramTable = () => {
       rank: 4,
       retailer: "Retailer D",
       email: "retailerD@example.com",
-      totalSales: "$20,000",
-      tier: "Bronze",
+      totalSales: "20,000",
+      tier: "500",
       eligibility: "No",
     },
-    {
-      key: "5",
-      rank: 5,
-      retailer: "Retailer E",
-      email: "retailerE@example.com",
-      totalSales: "$40,000",
-      tier: "Gold",
-      eligibility: "Yes",
-    },
-    {
-      key: "6",
-      rank: 6,
-      retailer: "Retailer F",
-      email: "retailerF@example.com",
-      totalSales: "$90,000",
-      tier: "Platinum",
-      eligibility: "Yes",
-    },
-    {
-      key: "7",
-      rank: 7,
-      retailer: "Retailer G",
-      email: "retailerG@example.com",
-      totalSales: "$35,000",
-      tier: "Silver",
-      eligibility: "No",
-    },
-    {
-      key: "8",
-      rank: 8,
-      retailer: "Retailer H",
-      email: "retailerH@example.com",
-      totalSales: "$55,000",
-      tier: "Gold",
-      eligibility: "Yes",
-    },
-    {
-      key: "9",
-      rank: 9,
-      retailer: "Retailer I",
-      email: "retailerI@example.com",
-      totalSales: "$65,000",
-      tier: "Gold",
-      eligibility: "Yes",
-    },
-    {
-      key: "10",
-      rank: 10,
-      retailer: "Retailer J",
-      email: "retailerJ@example.com",
-      totalSales: "$45,000",
-      tier: "Silver",
-      eligibility: "No",
-    },
-    {
-      key: "11",
-      rank: 11,
-      retailer: "Retailer K",
-      email: "retailerK@example.com",
-      totalSales: "$80,000",
-      tier: "Platinum",
-      eligibility: "Yes",
-    },
-    {
-      key: "12",
-      rank: 12,
-      retailer: "Retailer L",
-      email: "retailerL@example.com",
-      totalSales: "$28,000",
-      tier: "Bronze",
-      eligibility: "No",
-    },
-    {
-      key: "13",
-      rank: 13,
-      retailer: "Retailer M",
-      email: "retailerM@example.com",
-      totalSales: "$75,000",
-      tier: "Platinum",
-      eligibility: "Yes",
-    },
-    {
-      key: "14",
-      rank: 14,
-      retailer: "Retailer N",
-      email: "retailerN@example.com",
-      totalSales: "$38,000",
-      tier: "Silver",
-      eligibility: "No",
-    },
-    {
-      key: "15",
-      rank: 15,
-      retailer: "Retailer O",
-      email: "retailerO@example.com",
-      totalSales: "$42,000",
-      tier: "Gold",
-      eligibility: "Yes",
-    },
-    {
-      key: "16",
-      rank: 16,
-      retailer: "Retailer P",
-      email: "retailerP@example.com",
-      totalSales: "$95,000",
-      tier: "Platinum",
-      eligibility: "Yes",
-    },
-    {
-      key: "17",
-      rank: 17,
-      retailer: "Retailer Q",
-      email: "retailerQ@example.com",
-      totalSales: "$22,000",
-      tier: "Bronze",
-      eligibility: "No",
-    },
-    {
-      key: "18",
-      rank: 18,
-      retailer: "Retailer R",
-      email: "retailerR@example.com",
-      totalSales: "$60,000",
-      tier: "Gold",
-      eligibility: "Yes",
-    },
+   
   ];
 
   const columns = [
@@ -199,7 +74,7 @@ const LoyalityProgramTable = () => {
     <div>
       <div className="flex justify-between items-center mb-10">
         <h2 className="text-2xl font-bold">LeaderBoard</h2>
-        <div>
+        {/* <div>
           <GradientButton onClick={() => setIsAddTierModalOpen(true)}>
             Add Tier
           </GradientButton>
@@ -217,7 +92,7 @@ const LoyalityProgramTable = () => {
               Manage Tier & Eligibility
             </GradientButton>
           </ConfigProvider>
-        </div>
+        </div> */}
       </div>
       <div className="bg-gradient-to-r from-primary  to-secondary px-6 pt-6  rounded-xl">
         <Table
