@@ -154,7 +154,7 @@ const RetailerManageTable = () => {
       zipCode: user.zipCode,
       totalOrder: user.totalOrder,
       totalSales: user.totalSales,
-      accountStatus: user.accountStatus,
+      
     });
     setIsModalOpen(true);
   };
@@ -314,7 +314,7 @@ const RetailerManageTable = () => {
                   { required: true, message: "Please enter retailer name" },
                 ]}
               >
-                <Input className="p-2 rounded" />
+                <Input placeholder="Retailer Name" className="p-2 rounded" />
               </Form.Item>
 
               <Form.Item
@@ -348,7 +348,7 @@ const RetailerManageTable = () => {
                   },
                 ]}
               >
-                <Input className="p-2 rounded" />
+                <Input placeholder="Email" className="p-2 rounded" />
               </Form.Item>
 
               <Form.Item
@@ -358,23 +358,10 @@ const RetailerManageTable = () => {
                   { required: true, message: "Please enter shipping address" },
                 ]}
               >
-                <Input className="p-2 rounded" />
-              </Form.Item>
-
-              <Form.Item
-                label="Account Status"
-                name="accountStatus"
-                rules={[
-                  { required: true, message: "Please select account status" },
-                ]}
-              >
-                <Select placeholder="Select Account Status" className="w-full">
-                  {statusOptions.map((status) => (
-                    <Select.Option key={status} value={status}>
-                      {status}
-                    </Select.Option>
-                  ))}
-                </Select>
+                <Input
+                  placeholder="Shipping Address"
+                  className="p-2 rounded"
+                />
               </Form.Item>
             </Col>
 

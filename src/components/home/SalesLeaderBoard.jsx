@@ -130,13 +130,13 @@ const SalesLeaderBoard = () => {
     <div>
       <div className="flex justify-between mb-4 items-center">
         <h1 className="text-2xl font-bold text-gray-800">Sales Rep Leaderboard</h1>
-        <Input
+        {/* <Input
           placeholder="Search Order, Retailer, Sales"
           value={searchText}
           onChange={(e) => handleSearch(e.target.value)}
           prefix={<SearchOutlined />}
           className="w-1/3 py-2"
-        />
+        /> */}
       </div>
       {/* Table Container with Gradient Background */}
       <div className="px-6 pt-6 rounded-lg bg-gradient-to-r from-primary to-secondary">

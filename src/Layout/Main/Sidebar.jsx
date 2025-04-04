@@ -74,23 +74,23 @@ const Sidebar = () => {
       ),
       label: <Link to="/orderManagement">Orders Management</Link>,
     },
-    {
-      key: "/salesManagement",
-      icon: (
-        <img
-          src={Frame2}
-          alt="Retailer Icon"
-          style={{
-            width: "24px",
-            height: "24px",
-            filter: "invert(1) grayscale(1)",
-            transition: "filter 0.3s ease",
-          }}
-          className="icon-image"
-        />
-      ),
-      label: <Link to="/salesManagement">Sales Management</Link>,
-    },
+    // {
+    //   key: "/salesManagement",
+    //   icon: (
+    //     <img
+    //       src={Frame2}
+    //       alt="Retailer Icon"
+    //       style={{
+    //         width: "24px",
+    //         height: "24px",
+    //         filter: "invert(1) grayscale(1)",
+    //         transition: "filter 0.3s ease",
+    //       }}
+    //       className="icon-image"
+    //     />
+    //   ),
+    //   label: <Link to="/salesManagement">Sales Management</Link>,
+    // },
     {
       key: "/retailer",
       icon: (

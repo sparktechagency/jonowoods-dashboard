@@ -91,7 +91,6 @@ const initialOrders = [
 
 const statusVariants = {
   Pending: "warning",
-  Completed: "success",
   Processing: "processing",
   Shipped: "default",
   Delivered: "success",

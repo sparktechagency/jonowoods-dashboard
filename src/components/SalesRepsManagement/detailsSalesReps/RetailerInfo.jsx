@@ -12,10 +12,12 @@ import {
 } from "antd";
 import GradientButton from "../../common/GradiantButton";
 import { IoEyeSharp } from "react-icons/io5";
-import { MdDelete } from "react-icons/md";
+import { MdArrowBackIosNew, MdDelete } from "react-icons/md";
 import { LockOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 
 const RetailerInfo = ({ salesRep }) => {
+  const router = useNavigate()
   console.log(salesRep?.name); // Check the value of salesRep.name
   const [data, setData] = useState([
     {
@@ -374,7 +376,13 @@ const RetailerInfo = ({ salesRep }) => {
   return (
     <div>
       <div className="flex justify-between mb-10 mt-10">
-        <h1 className="text-2xl font-bold">Retailer List</h1>
+        <div className="flex items-center gap-2">
+          <MdArrowBackIosNew
+            onClick={() => router("/salesRepsManage")}
+            className="cursor-pointer"
+          />
+          <h1 className="text-2xl font-bold">Retailer List</h1>
+        </div>
         <div className="flex gap-4">
           {/* <GradientButton
             onClick={showTargetModal} 
