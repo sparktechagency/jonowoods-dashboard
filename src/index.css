@@ -90,15 +90,6 @@ input[type="number"]::-webkit-inner-spin-button {
   filter: invert(1) grayscale(0) brightness(100%) !important;
 }
 
-/* Table Head Gradient */
-/* Table Head Background */
-/* .ant-table-thead > tr > th {
-  background: #4E9DAB !important;
-  color: white !important;
-  font-weight: bold !important;
-  text-align: center;
-} */
-
 /* Add margin bottom to each row in the table body */
 .ant-table-tbody > tr {
   margin-bottom: 5px;
@@ -107,5 +98,12 @@ input[type="number"]::-webkit-inner-spin-button {
 .ant-table {
   border-spacing: 0 5px; /* Adds 5px space between rows */
 }
+
+
+.custom-tooltip .ant-tooltip-inner {
+  background: linear-gradient(to right, #4E9DAB, #336C79);
+  color: white; 
+}
+
 
 

@@ -126,7 +126,7 @@ const RetailerManageTable = () => {
             </button>
           </Tooltip>
 
-          <Tooltip title="Delete">
+          <Tooltip title="Delete" color="red">
             <button
               onClick={() => handleDelete(record.id)}
               className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"

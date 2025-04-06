@@ -301,7 +301,7 @@ const ProductInfo = () => {
       align: "center",
       render: (_, record) => (
         <Space size="small">
-          <Tooltip title="View Product" color="blue">
+          <Tooltip title="View Product" >
             <Button
               type="text"
               className="text-gray-600 hover:text-blue-500"
@@ -309,7 +309,8 @@ const ProductInfo = () => {
               onClick={() => showViewModal(record)}
             />
           </Tooltip>
-          <Tooltip title="Edit" color="Green">
+
+          <Tooltip title="Edit" >
             <Button
               type="text"
               className="text-gray-600 hover:text-blue-500"
@@ -317,6 +318,7 @@ const ProductInfo = () => {
               onClick={() => showEditModal(record)}
             />
           </Tooltip>
+
           <Tooltip title="Delete" color="red">
             <Button
               type="text"
@@ -325,13 +327,13 @@ const ProductInfo = () => {
               onClick={() => showDeleteConfirm(record)}
             />
           </Tooltip>
-          <Button
+          <GradientButton
             type="primary"
-            className="bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center"
+            className=" flex items-center"
             onClick={() => showStockUpdateModal(record)}
           >
             Update Stock <DownOutlined className="ml-1" />
-          </Button>
+          </GradientButton>
         </Space>
       ),
     },
