@@ -61,12 +61,12 @@ const LoyalityProgramTable = () => {
     },
     { title: "Email", dataIndex: "email", key: "email", align: "center" },
     {
-      title: "Total Sales",
+      title: "Total Purchased",
       dataIndex: "totalSales",
       key: "totalSales",
       align: "center",
     },
-    { title: "Point", dataIndex: "tier", key: "tier", align: "center" },
+    { title: "Total Points", dataIndex: "tier", key: "tier", align: "center" },
     
   ];
 

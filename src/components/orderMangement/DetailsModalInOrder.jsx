@@ -35,7 +35,7 @@ const DetailsModalInOrder = ({handleSubmit,detailModalVisible, setDetailModalVis
                   <strong>Source:</strong> {selectedOrder.source}
                 </p>
                 <p>
-                  <strong>Order Boxes:</strong> {selectedOrder.orderBox}
+                  <strong>Total Boxes Sold:</strong> {selectedOrder.orderBox}
                 </p>
                 <p>
                   <strong>Free Boxes:</strong> {selectedOrder.freeBox}

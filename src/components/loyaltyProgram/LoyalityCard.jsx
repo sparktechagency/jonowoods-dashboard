@@ -5,7 +5,7 @@ import { FaUsers } from "react-icons/fa6";
 const LoyalityCard = () => {
   // Data for cards
   const cardData = [
-    { icon: FaUsers, value: "357", label: "Total Member" },
+    { icon: FaUsers, value: "357", label: "Total Members" },
     { icon: FaUsers, value: "John Doe", label: "Top Retailer" },
   ];
 

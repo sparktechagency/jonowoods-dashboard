@@ -105,5 +105,41 @@ input[type="number"]::-webkit-inner-spin-button {
   color: white; 
 }
 
+/* Ensure SVG icons in selected menu items are white */
+.ant-menu-item-selected .menu-icon {
+  color: white !important;
+  fill: white !important;
+}
+
+/* Hover effect for SVG icons */
+.ant-menu-item:hover .menu-icon {
+  color: white !important;
+  fill: white !important;
+}
+
+/* Target SVG paths directly if needed */
+.ant-menu-item-selected .menu-icon path,
+.ant-menu-item-selected .menu-icon svg path {
+  fill: white !important;
+}
+
+.ant-menu-item:hover .menu-icon path,
+.ant-menu-item:hover .menu-icon svg path {
+  fill: white !important;
+}
+
+/* Add this class to handle special SVG components */
+.svg-active svg {
+  fill: white !important;
+}
+
+.svg-active svg path {
+  fill: white !important;
+}
+
+
+
+
+
 
 
