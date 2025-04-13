@@ -11,7 +11,7 @@ import {
   LoyaltyProgram,
   SubscriptionManagement,
   OrderManagement
-} from "../../components/common/Svg"; // Import the relevant SVGs
+} from "../../components/common/Svg"; 
 import image4 from "../../assets/image4.png"; // Logo image
 
 const Sidebar = () => {

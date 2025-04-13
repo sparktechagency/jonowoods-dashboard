@@ -28,13 +28,13 @@
 
 /* Hover effect - change text color to white and background gradient */
 .ant-menu-item:hover {
-  background: linear-gradient(90deg, #3FC7EE 0%, #0090B9 100%) !important;
+  background: linear-gradient(90deg, #CA3939 0%, #DE5555 100%) !important;
   color: white !important; /* Text color to white */
 }
 
 
 .ant-menu-item-selected {
-  background: linear-gradient(90deg,#3FC7EE 0% , #0090B9 100%) !important;
+  background: #DE5555 !important;
   color: white !important; 
   font-weight: bold; 
   border-radius: 8px; 
@@ -66,14 +66,12 @@
   padding: 12px 20px; 
 }
 
-/* Custom table styling */
-.custom-table .ant-table-tbody > tr > td {
-  border-bottom: 1px solid #ddd;  
+.custom-table .ant-table-thead > tr > th {
+  background-color: #DE5555 !important;
+  color: white !important;
+  border-bottom: 2px solid #ddd;
 }
 
-.custom-table .ant-table-thead > tr > th {
-  border-bottom: 2px solid #ddd; 
-}
 
 
 

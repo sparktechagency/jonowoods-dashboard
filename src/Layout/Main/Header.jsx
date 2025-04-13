@@ -25,7 +25,7 @@ const Header = () => {
   return (
     <div className="flex items-center justify-end gap-5 w-full px-4 lg:px-10">
       <div className="flex items-center gap-10">
-        <Select
+        {/* <Select
           value={selectedLanguage}
           onChange={handleLanguageChange}
           style={{ width: 150 }}
@@ -38,7 +38,7 @@ const Header = () => {
             ),
             value: code,
           }))}
-        />
+        /> */}
         <Link to="/notification" className="h-fit mt-[10px]">
           <Badge count={5} backgroundcolor="#3FC7EE">
             <FaRegBell color="#3FC7EE" size={24} />

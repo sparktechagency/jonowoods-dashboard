@@ -89,8 +89,8 @@ const Home = () => {
     <div className="">
       <div className="flex gap-10   rounded-lg">
         {/* Line Chart Section */}
-        <div className=" flex-1 w-2/3 bg-gradient-to-r from-primary  to-secondary p-6 rounded-lg ">
-          <h2 className="text-xl font-bold text-white mb-4">Total Revenue</h2>
+        <div className=" flex-1 w-2/3 border border-[#DE5555]  rounded-lg p-6 ">
+          <h2 className=" text-2xl font-bold text-black mb-4">Total Revenue</h2>
           <LineChart />
         </div>
         {/* Card Section */}
@@ -104,7 +104,7 @@ const Home = () => {
             <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div>
-                  <h2 className="text-center text-xl font-bold mb-3">
+                  <h2 className="text-center  font-bold mb-3">
                     Total Sales
                   </h2>
                   <h3 className="text-primary text-3xl font-bold">$12100</h3>
@@ -119,7 +119,7 @@ const Home = () => {
             <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div>
-                  <h2 className="text-center text-xl font-bold mb-3">
+                  <h2 className="text-center  font-bold mb-3">
                     Total Order
                   </h2>
                   <h3 className="text-primary text-3xl font-bold">$12100</h3>
@@ -134,7 +134,7 @@ const Home = () => {
             <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div>
-                  <h2 className="text-center text-xl font-bold mb-3">
+                  <h2 className="text-center  font-bold mb-3">
                     Commission
                   </h2>
                   <h3 className="text-primary text-3xl font-bold">$12100</h3>
@@ -149,8 +149,8 @@ const Home = () => {
             <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
               <div className="flex items-center  gap-3">
                 <div>
-                  <h2 className="text-center text-xl font-bold mb-3">
-                   Retailers
+                  <h2 className="text-center  font-bold mb-3">
+                    Retailers
                   </h2>
                   <h3 className="text-primary text-3xl font-bold">$12100</h3>
                 </div>
@@ -164,9 +164,9 @@ const Home = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-10 mt-16">
+      <div className=" mt-16">
         <OrderTable />
-        <SalesLeaderBoard />
+        {/* <SalesLeaderBoard /> */}
       </div>
     </div>
   );

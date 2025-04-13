@@ -2,299 +2,244 @@ import React, { useState } from "react";
 import {
   Table,
   Button,
-  Modal,
-  Select,
   Tag,
-  notification,
-  message,
+  Select,
   Input,
+  Space,
+  Typography,
+  Card,
 } from "antd";
-import { EyeOutlined, EditOutlined, FilterOutlined } from "@ant-design/icons";
-import GradientButton from "../common/GradiantButton";
-import DetailsModalInOrder from "./DetailsModalInOrder";
+import { SearchOutlined, DownOutlined } from "@ant-design/icons";
 
-// Mock data for orders
-const initialOrders = [
-  {
-    key: "1",
-    orderId: "PY12345",
-    userName: "Alice Johnson",
-    source: "Retailer",
-    orderBox: 12,
-    freeBox: 2,
-    amount: "$200",
-    status: "Pending",
-    image:
-      "https://i.ibb.co/5WRNH1d3/fresh-healthy-fruits-straw-basket-generative-ai-188544-11999.jpg",
-  },
-  {
-    key: "3",
-    orderId: "PY12346",
-    userName: "Alice Johnson",
-    source: "Retailer",
-    orderBox: 12,
-    freeBox: 2,
-    amount: "$300",
-    status: "Completed",
-    image:
-      "https://i.ibb.co/5WRNH1d3/fresh-healthy-fruits-straw-basket-generative-ai-188544-11999.jpg",
-  },
-  {
-    key: "4",
-    orderId: "PY12345",
-    userName: "Alice Johnson",
-    source: "Retailer",
-    orderBox: 12,
-    freeBox: 2,
-    amount: "$200",
-    status: "Pending",
-    image:
-      "https://i.ibb.co/5WRNH1d3/fresh-healthy-fruits-straw-basket-generative-ai-188544-11999.jpg",
-  },
-  {
-    key: "5",
-    orderId: "PY12346",
-    userName: "Alice Johnson",
-    source: "Retailer",
-    orderBox: 12,
-    freeBox: 2,
-    amount: "$300",
-    status: "Completed",
-    image:
-      "https://i.ibb.co/5WRNH1d3/fresh-healthy-fruits-straw-basket-generative-ai-188544-11999.jpg",
-  },
-  {
-    key: "6",
-    orderId: "PY12345",
-    userName: "Alice Johnson",
-    source: "Retailer",
-    orderBox: 12,
-    freeBox: 2,
-    amount: "$200",
-    status: "Pending",
-    image:
-      "https://i.ibb.co/5WRNH1d3/fresh-healthy-fruits-straw-basket-generative-ai-188544-11999.jpg",
-  },
-  {
-    key: "7",
-    orderId: "PY12346",
-    userName: "Alice Johnson",
-    source: "Retailer",
-    orderBox: 12,
-    freeBox: 2,
-    amount: "$300",
-    status: "Completed",
-    image:
-      "https://i.ibb.co/5WRNH1d3/fresh-healthy-fruits-straw-basket-generative-ai-188544-11999.jpg",
-  },
-];
+const { Option } = Select;
+const { Title } = Typography;
 
-const statusVariants = {
-  Pending: "warning",
-  Processing: "processing",
-  Shipped: "default",
-  Delivered: "success",
-};
+const UserManagementTable = () => {
+  const [filteredInfo, setFilteredInfo] = useState({});
+  const [sortedInfo, setSortedInfo] = useState({});
 
-const OrderManagementTable = () => {
-  const [orders, setOrders] = useState(initialOrders);
-  const [filteredOrders, setFilteredOrders] = useState(initialOrders); // State for filtered orders
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [statusModalVisible, setStatusModalVisible] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [selectedStatus, setSelectedStatus] = useState(null);
-  const [freeBoxes, setFreeBoxes] = useState("");
-
-  // Handle the submit action
-  const handleSubmit = () => {
-    if (freeBoxes.trim() === "") {
-      message.error("Please enter the number of free boxes.");
-      return;
-    }
-
-    message.success(`Successfully added ${freeBoxes} free boxes!`);
-    setFreeBoxes("");
-    setDetailModalVisible(false);
+  const handleChange = (pagination, filters, sorter) => {
+    setFilteredInfo(filters);
+    setSortedInfo(sorter);
   };
 
-  // Status update handler
-  const handleStatusUpdate = () => {
-    if (selectedOrder && selectedStatus) {
-      const updatedOrders = orders.map((order) =>
-        order.key === selectedOrder.key
-          ? { ...order, status: selectedStatus }
-          : order
-      );
-      setOrders(updatedOrders);
-      setStatusModalVisible(false);
-      setSelectedStatus(null);
-    }
-  };
-
-  // Filter handler based on status
-  const handleFilterChange = (value) => {
-    setSelectedStatus(value);
-    if (value) {
-      const filteredData = orders.filter((order) => order.status === value);
-      setFilteredOrders(filteredData); // Set filtered orders based on the selected status
-    } else {
-      setFilteredOrders(orders); // Reset the filter when no status is selected
-    }
-  };
+  const data = [
+    {
+      key: "1",
+      sl: 1,
+      userName: "John",
+      email: "example@email.com",
+      phoneNumber: "9334-878901",
+      joiningDate: "01-02-2025",
+      subscription: "No",
+      planRunning: "7day Free Trial",
+      status: "Active",
+    },
+    {
+      key: "2",
+      sl: 2,
+      userName: "John",
+      email: "example@email.com",
+      phoneNumber: "9334-878901",
+      joiningDate: "01-02-2025",
+      subscription: "No",
+      planRunning: "1 Month",
+      status: "Active",
+    },
+    {
+      key: "3",
+      sl: 3,
+      userName: "John",
+      email: "example@email.com",
+      phoneNumber: "9334-878901",
+      joiningDate: "01-02-2025",
+      subscription: "No",
+      planRunning: "7day Free Trial",
+      status: "Active",
+    },
+    {
+      key: "4",
+      sl: 4,
+      userName: "John",
+      email: "example@email.com",
+      phoneNumber: "9334-878901",
+      joiningDate: "01-02-2025",
+      subscription: "No",
+      planRunning: "6 Month",
+      status: "Active",
+    },
+    {
+      key: "5",
+      sl: 5,
+      userName: "John",
+      email: "example@email.com",
+      phoneNumber: "9334-878901",
+      joiningDate: "01-02-2025",
+      subscription: "No",
+      planRunning: "7day Free Trial",
+      status: "Active",
+    },
+    {
+      key: "6",
+      sl: 6,
+      userName: "John",
+      email: "example@email.com",
+      phoneNumber: "9334-878901",
+      joiningDate: "01-02-2025",
+      subscription: "No",
+      planRunning: "1 Year",
+      status: "Active",
+    },
+    {
+      key: "7",
+      sl: 7,
+      userName: "John",
+      email: "example@email.com",
+      phoneNumber: "9334-878901",
+      joiningDate: "01-02-2025",
+      subscription: "No",
+      planRunning: "7day Free Trial",
+      status: "Active",
+    },
+    {
+      key: "8",
+      sl: 8,
+      userName: "John",
+      email: "example@email.com",
+      phoneNumber: "9334-878901",
+      joiningDate: "01-02-2025",
+      subscription: "No",
+      planRunning: "1 Month",
+      status: "Active",
+    },
+    {
+      key: "9",
+      sl: 9,
+      userName: "John",
+      email: "example@email.com",
+      phoneNumber: "9334-878901",
+      joiningDate: "01-02-2025",
+      subscription: "No",
+      planRunning: "7day Free Trial",
+      status: "Active",
+    },
+  ];
 
   const columns = [
     {
-      title: "Order ID",
-      dataIndex: "orderId",
-      key: "orderId",
-      align: "center",
+      title: "SL",
+      dataIndex: "sl",
+      key: "sl",
+      width: 60,
     },
     {
       title: "User Name",
       dataIndex: "userName",
       key: "userName",
-      align: "center",
+      sorter: (a, b) => a.userName.localeCompare(b.userName),
+      sortOrder: sortedInfo.columnKey === "userName" && sortedInfo.order,
     },
     {
-      title: "Source",
-      dataIndex: "source",
-      key: "source",
-      align: "center",
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
     },
     {
-      title: "Order Box",
-      dataIndex: "orderBox",
-      key: "orderBox",
-      align: "center",
+      title: "Phone Number",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
     },
     {
-      title: "Amount",
-      dataIndex: "amount",
-      key: "amount",
-      align: "center",
+      title: "Joining Date",
+      dataIndex: "joiningDate",
+      key: "joiningDate",
+    },
+    {
+      title: "Subscription",
+      dataIndex: "subscription",
+      key: "subscription",
+    },
+    {
+      title: "Plan Running",
+      dataIndex: "planRunning",
+      key: "planRunning",
+      filters: [
+        { text: "7day Free Trial", value: "7day Free Trial" },
+        { text: "1 Month", value: "1 Month" },
+        { text: "6 Month", value: "6 Month" },
+        { text: "1 Year", value: "1 Year" },
+      ],
+      filteredValue: filteredInfo.planRunning || null,
+      onFilter: (value, record) => record.planRunning.includes(value),
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      align: "center",
-      //   render: (status) => <Tag color={statusVariants[status]}>{status}</Tag>,
+      render: (status) => <Tag color="success">{status}</Tag>,
     },
     {
       title: "Action",
       key: "action",
-      align: "center",
-      render: (_, order) => (
-        <div className="flex space-x-2 justify-center">
-          {/* <GradientButton
-            type="default"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => {
-              setSelectedOrder(order);
-              setDetailModalVisible(true);
-            }}
-          >
+      render: (_, record) => (
+        <Space size="small">
+          <Button type="primary" danger>
             View Details
-          </GradientButton> */}
-          <button
-            className="border border-primary px-2 py-1.5 rounded-md "
-            onClick={() => {
-              setSelectedOrder(order);
-              setDetailModalVisible(true);
-            }}
-          >
-            View Details
-          </button>
-          <GradientButton
-            type="default"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => {
-              setSelectedOrder(order);
-              setStatusModalVisible(true);
-            }}
-          >
-            Update Status
-          </GradientButton>
-        </div>
+          </Button>
+          <Button type="primary">Active</Button>
+        </Space>
       ),
     },
   ];
 
   return (
-    <div className=" space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Order List</h2>
-        <div className="flex items-center">
+    <Card style={{ width: "100%" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 16,
+        }}
+      >
+        <Space size="small">
           <Select
-            value={selectedStatus}
-            onChange={handleFilterChange}
-            style={{ width: 200 }}
-            placeholder="Select Status"
-            allowClear
-            className="h-10"
+            defaultValue="active"
+            style={{ width: 120 }}
+            suffixIcon={<DownOutlined />}
           >
-            {Object.keys(statusVariants).map((status) => (
-              <Select.Option key={status} value={status}>
-                {status}
-              </Select.Option>
-            ))}
+            <Option value="active">Active</Option>
+            <Option value="inactive">Inactive</Option>
           </Select>
 
-        </div>
-      </div>
+          <Select
+            defaultValue="6month"
+            style={{ width: 120 }}
+            suffixIcon={<DownOutlined />}
+          >
+            <Option value="7day">7day Free Trial</Option>
+            <Option value="1month">1 Month</Option>
+            <Option value="6month">6 Month</Option>
+            <Option value="1year">1 Year</Option>
+          </Select>
+        </Space>
 
-      <div className="px-6 pt-6 rounded-lg bg-gradient-to-r from-primary to-secondary">
-        <Table
-          dataSource={filteredOrders}
-          columns={columns}
-          pagination={{ pageSize: 5 }}
-          bordered={false}
-          size="small"
-          rowClassName="custom-table"
+        <Input
+          placeholder="Search"
+          prefix={<SearchOutlined />}
+          style={{ width: 200 }}
         />
       </div>
 
-      {/* Order Details Modal */}
-      <DetailsModalInOrder
-        handleSubmit={handleSubmit}
-        detailModalVisible={detailModalVisible}
-        setDetailModalVisible={setDetailModalVisible}
-        selectedOrder={selectedOrder}
-        freeBoxes={freeBoxes}
-        setFreeBoxes={setFreeBoxes}
+      <Table
+        columns={columns}
+        dataSource={data}
+        onChange={handleChange}
+        pagination={{ defaultPageSize: 10 }}
+        size="middle"
+        bordered
       />
-
-      {/* Status Update Modal */}
-      <Modal
-        title="Update Order Status"
-        visible={statusModalVisible}
-        onCancel={() => setStatusModalVisible(false)}
-        footer={[
-          <Button key="back" onClick={() => setStatusModalVisible(false)}>
-            Cancel
-          </Button>,
-          <Button key="submit" type="primary" onClick={handleStatusUpdate}>
-            Update Status
-          </Button>,
-        ]}
-      >
-        <Select
-          value={selectedStatus}
-          onChange={(value) => setSelectedStatus(value)}
-          placeholder="Select Order Status"
-          style={{ width: "100%" , marginBottom:'20px'}}
-        >
-          {Object.keys(statusVariants).map((status) => (
-            <Select.Option key={status} value={status}>
-              {status}
-            </Select.Option>
-          ))}
-        </Select>
-      </Modal>
-    </div>
+    </Card>
   );
 };
 
-export default OrderManagementTable;
+export default UserManagementTable;

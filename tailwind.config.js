@@ -4,11 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#4E9DAB",
-        secondary: "#336C79",
+        primary: "#CA3939",
+        secondary: "#DE5555",
         baseBg: "#FAF2DF",
       },
     },
   },
   plugins: [],
 };
+
+// CA3939 + DE5555

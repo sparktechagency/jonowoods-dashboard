@@ -19,7 +19,7 @@ ChartJS.register(
   PointElement,
   LineElement,
   Title,
-  Tooltip,
+  Tooltip
 );
 
 const LineChart = () => {
@@ -43,77 +43,76 @@ const LineChart = () => {
       {
         label: "Total Revenue",
         data: [150, 120, 145, 160, 180, 387, 225, 210, 230, 126, 250, 300],
-        fill: false, 
-        borderColor: "#ffffff",
-        backgroundColor: "transparent", 
-        tension: 0.4, 
-        borderWidth: 2, 
-        pointBorderColor: "#ffffff", 
-        pointBackgroundColor: "#ffffff", 
-        pointRadius: 4, 
+        fill: false,
+        borderColor: "#DE5555", // Line color changed to #DE5555
+        backgroundColor: "transparent",
+        tension: 0.4,
+        borderWidth: 2,
+        pointBorderColor: "#DE5555", // Point border color changed to #DE5555
+        pointBackgroundColor: "#DE5555", // Point background color changed to #DE5555
+        pointRadius: 4,
       },
     ],
   };
 
   // Options for the chart
-const options = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
-      labels: {
-        color: "#ffffff",
-      },
-    },
-    tooltip: {
-      titleColor: "#ffffff",
-      bodyColor: "#ffffff",
-      borderColor: "#ffffff",
-      borderWidth: 2,
-      backgroundColor: "rgba(0, 0, 0, 0.8)",
-      padding: 15, 
-      cornerRadius: 8,
-      displayColors: false,
-      bodyFont: {
-        size: 16, 
-      },
-      boxPadding: 10, 
-      callbacks: {
-        label: (context) => `$${context.raw.toLocaleString()}`.padEnd(15, " "), // ✅ Add spaces to expand width
-      },
-    },
-  },
-  scales: {
-    x: {
-      grid: {
-        display: true,
-        color: "rgba(255, 255, 255, 0.2)", 
-      },
-      ticks: {
-        color: "#ffffff", 
-      },
-    },
-    y: {
-      grid: {
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
         display: false,
+        labels: {
+          color: "#fff", // Text color in legend (if enabled)
+        },
       },
-      beginAtZero: false,
-      ticks: {
-        color: "#ffffff", 
-        padding: 32, 
-        callback: function (value) {
-          return `$${value.toLocaleString()}`;
+      tooltip: {
+        titleColor: "#ffffff", // Tooltip title color
+        bodyColor: "#fff", // Tooltip body color
+        borderColor: "#191820", // Tooltip border color
+        borderWidth: 2, // Tooltip border width
+        backgroundColor: "rgba(0, 0, 0, 0.8)", // Tooltip background color
+        padding: 15, // Tooltip padding
+        cornerRadius: 8, // Tooltip corner radius
+        displayColors: false, // Disable color box in tooltip
+        bodyFont: {
+          size: 16, // Font size for tooltip body
+        },
+        boxPadding: 10, // Padding inside tooltip box
+        callbacks: {
+          label: (context) =>
+            `$${context.raw.toLocaleString()}`.padEnd(15, " "), // Format tooltip label
         },
       },
     },
-  },
-};
-
-
+    scales: {
+      x: {
+        grid: {
+          display: true,
+          color: "#191820", // Grid line color
+        },
+        ticks: {
+          color: "#191820", // Tick label color
+        },
+      },
+      y: {
+        grid: {
+          display: false, // Disable grid lines for Y axis
+        },
+        beginAtZero: false,
+        ticks: {
+          color: "#191820", // Tick label color
+          padding: 32, // Padding between tick labels
+          callback: function (value) {
+            return `$${value.toLocaleString()}`; // Format Y axis ticks
+          },
+        },
+      },
+    },
+  };
 
   return (
-    <div style={{ width: "100%", height: "250px" }} className="text-white">
+    <div style={{ width: "100%", height: "250px" }} className="text-black">
       <Line data={data} options={options} />
     </div>
   );

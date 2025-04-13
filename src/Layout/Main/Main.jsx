@@ -13,9 +13,9 @@ const Main = () => {
 
         {/* main container with header */}
         <div className="col-span-10">
-          {/* <div className='h-[68px] flex items-center  pr-5 '>
+          <div className='h-[68px] flex items-center  pr-5 '>
                     <Header/>
-                </div> */}
+                </div>
 
           <div className="bg-baseBg h-screen overflow-y-auto ">
             <div className=" overflow-y-auto rounded-md py-6 px-4 lg:px-10">
