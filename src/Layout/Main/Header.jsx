@@ -11,8 +11,7 @@ const Header = () => {
   const { user } = useUser();
   const [selectedLanguage, setSelectedLanguage] = useState("eng-us");
 
-  console.log(selectedLanguage)
-  console.log(user)
+  
 
   const src = user?.image?.startsWith("https")
     ? user?.image
@@ -23,7 +22,7 @@ const Header = () => {
   };
 
   return (
-    <div className="flex items-center justify-end gap-5 w-full px-4 lg:px-10">
+    <div className="flex items-center justify-end gap-5 w-full px-4 lg:px-10 shadow-lg m-[1px] p-2 rounded-lg">
       <div className="flex items-center gap-10">
         {/* <Select
           value={selectedLanguage}
@@ -40,8 +39,8 @@ const Header = () => {
           }))}
         /> */}
         <Link to="/notification" className="h-fit mt-[10px]">
-          <Badge count={5} backgroundcolor="#3FC7EE">
-            <FaRegBell color="#3FC7EE" size={24} />
+          <Badge count={5} backgroundcolor="#CA3939">
+            <FaRegBell color="black" size={32} />
           </Badge>
         </Link>
         <Link to="/profile" className="flex items-center gap-3">
@@ -55,11 +54,13 @@ const Header = () => {
             alt="profile-pic"
             className="clip"
           />
-          <div className="flex flex-col">
-            <p>
-              {user?.firstName} {user?.lastName}
+          <div className="flex flex-col text-black">
+            <p className="font-bold">
+              {/* {user?.firstName} {user?.lastName} */}
+              Jonowoods
             </p>
-            <p>{user?.role || "user"}</p>
+            {/* <p>{user?.role || "user"}</p> */}
+            admin
           </div>
         </Link>
       </div>

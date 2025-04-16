@@ -47,21 +47,25 @@ const Sidebar = () => {
     );
   };
 
-  // Render icon with conditional color based on active route
   const renderIcon = (IconComponent, itemKey) => {
     const isActive = isItemActive(itemKey);
     return (
       <div
-        style={{ width: 20, height: 20 }}
+        style={{ width: 28, height: 28 }}
         className={isActive ? "svg-active" : ""}
       >
         <IconComponent
           className="menu-icon"
-          fill={isActive ? "#ffffff" : "#1E1E1E"} // Active icon color set to white
+          fill={isActive ? "#ffffff" : "#1E1E1E"}
+          style={{
+            fontWeight: "bold",
+            strokeWidth: isActive ? 2 : 1, 
+          }}
         />
       </div>
     );
   };
+
 
   const menuItems = [
     {
@@ -72,17 +76,17 @@ const Sidebar = () => {
     {
       key: "/orderManagement",
       icon: renderIcon(OrderManagement, "/orderManagement"),
-      label: <Link to="/orderManagement">Orders Management</Link>,
+      label: <Link to="/orderManagement">Users Management</Link>,
     },
     {
       key: "/retailer",
       icon: renderIcon(RetailersManagement, "/retailer"),
-      label: <Link to="/retailer">Retailer Management</Link>,
+      label: <Link to="/retailer">Video Management</Link>,
     },
     {
       key: "/salesRepsManage",
       icon: renderIcon(SalesRepsManagement, "/salesRepsManage"),
-      label: <Link to="/salesRepsManage">Sales Reps Management</Link>,
+      label: <Link to="/salesRepsManage">Category Management</Link>,
     },
     {
       key: "/inventory",
@@ -157,7 +161,7 @@ const Sidebar = () => {
         to={"/"}
         className="flex items-center justify-center py-4 border-b-2 border-primary"
       >
-        <img src={image4} alt="logo" className="w-28 h-28" />
+        <img src={image4} alt="logo" className="w-40 h-32" />
       </Link>
       <Menu
         mode="inline"

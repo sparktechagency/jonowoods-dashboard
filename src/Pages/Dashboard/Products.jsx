@@ -5,7 +5,7 @@ import InventorCard from '../../components/Products/InventorCard'
 const Products = () => {
   return (
     <div>
-        <InventorCard />
+        {/* <InventorCard /> */}
       <ProductInfo />
     </div>
   )

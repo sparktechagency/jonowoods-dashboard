@@ -1,12 +1,12 @@
 import React from 'react'
 import SalesRepsManagementTable from '../../components/SalesRepsManagement/SalesRepsManagement'
-import SalesCardInfo from '../../components/SalesRepsManagement/SalesCardInfo'
+import SalesCardInfo from '../../components/SalesRepsManagement/DataInfo'
 
 const SaleRepsManagement = () => {
   return (
     <div>
         {/* <SalesRepsCard /> */}
-        <SalesCardInfo />
+        {/* <SalesCardInfo /> */}
       <SalesRepsManagementTable />
     </div>
   )

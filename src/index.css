@@ -107,32 +107,42 @@ input[type="number"]::-webkit-inner-spin-button {
 .ant-menu-item-selected .menu-icon {
   color: white !important;
   fill: white !important;
+  stroke-width: 2px; /* Add stroke width to make it bold */
 }
 
 /* Hover effect for SVG icons */
 .ant-menu-item:hover .menu-icon {
   color: white !important;
   fill: white !important;
+  stroke-width: 2px; /* Add stroke width to make it bold */
 }
 
 /* Target SVG paths directly if needed */
 .ant-menu-item-selected .menu-icon path,
 .ant-menu-item-selected .menu-icon svg path {
   fill: white !important;
+  stroke-width: 2px; /* Add stroke width for bold effect */
 }
 
 .ant-menu-item:hover .menu-icon path,
 .ant-menu-item:hover .menu-icon svg path {
   fill: white !important;
+  stroke-width: 2px; /* Add stroke width for bold effect */
 }
 
 /* Add this class to handle special SVG components */
 .svg-active svg {
   fill: white !important;
+  stroke-width: 2px; /* Add stroke width for bold effect */
 }
 
 .svg-active svg path {
   fill: white !important;
+  stroke-width: 2px; /* Add stroke width for bold effect */
+}
+
+.no-hover-bg:hover {
+  background-color: transparent !important; /* Disable hover effect */
 }
 
 

@@ -2,669 +2,314 @@ import React, { useState } from "react";
 import {
   Table,
   Button,
-  Input,
-  Select,
-  Space,
-  message,
   Dropdown,
-  Tooltip,
-  Form,
-  Checkbox,
-  Card,
-  Row,
-  Col,
-  Breadcrumb,
+  Space,
   Modal,
+  Form,
+  Input,
+  DatePicker,
 } from "antd";
 import {
-  EyeOutlined,
   EditOutlined,
   DeleteOutlined,
   DownOutlined,
+  UserOutlined,
   PlusOutlined,
-  HomeOutlined,
-  ArrowLeftOutlined,
-  UploadOutlined,
-  ExclamationCircleOutlined,
 } from "@ant-design/icons";
+import dayjs from "dayjs";
 import GradientButton from "../common/GradiantButton";
 
-const { Option } = Select;
-const { confirm } = Modal;
 
-const ProductInfo = () => {
+const FilteringIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    style={{ marginRight: "8px" }} // Add some spacing between the icon and text
+  >
+    <path
+      d="M0.75 4.2308H12.169C12.5131 5.79731 13.9121 6.97336 15.5805 6.97336C17.2488 6.97336 18.6478 5.79736 18.9919 4.2308H23.25C23.6642 4.2308 24 3.89498 24 3.4808C24 3.06661 23.6642 2.7308 23.25 2.7308H18.9915C18.6467 1.16508 17.2459 -0.0117188 15.5805 -0.0117188C13.9141 -0.0117188 12.5139 1.16489 12.1693 2.7308H0.75C0.335812 2.7308 0 3.06661 0 3.4808C0 3.89498 0.335812 4.2308 0.75 4.2308ZM13.588 3.48277L13.588 3.4747C13.5913 2.37937 14.4851 1.48833 15.5805 1.48833C16.6743 1.48833 17.5681 2.37816 17.5728 3.47297L17.573 3.48398C17.5712 4.58119 16.6781 5.47341 15.5805 5.47341C14.4833 5.47341 13.5904 4.58208 13.5879 3.48553L13.588 3.48277ZM23.25 19.769H18.9915C18.6467 18.2033 17.2459 17.0265 15.5805 17.0265C13.9141 17.0265 12.5139 18.2031 12.1693 19.769H23.25C23.6642 19.769 24 20.1047 24 20.519C24 20.9332 23.6642 21.269 23.25 21.269ZM15.5805 22.5115C14.4833 22.5115 13.5904 21.6202 13.5879 20.5237L13.588 20.5209L13.588 20.5129C13.5913 19.4175 14.4851 18.5265 15.5805 18.5265C16.6743 18.5265 17.5681 19.4163 17.5728 20.511L17.573 20.5221C17.5714 21.6194 16.6782 22.5115 15.5805 22.5115ZM23.25 11.2499H11.831C11.4869 9.68339 10.0879 8.50739 8.41955 8.50739C6.75117 8.50739 5.35223 9.68339 5.00808 11.2499H0.75C0.335812 11.2499 0 11.5857 0 11.9999C0 12.4141 0.335812 12.7499 0.75 12.7499H5.00845C5.35331 14.3156 6.75413 15.4924 8.41955 15.4924C10.0859 15.4924 11.4861 14.3158 11.8307 12.7499H23.25C23.6642 12.7499 24 12.4141 24 11.9999C24 11.5857 23.6642 11.2499 23.25 11.2499ZM10.412 11.9979L10.412 12.006C10.4087 13.1013 9.51492 13.9924 8.41955 13.9924C7.32572 13.9924 6.43191 13.1025 6.42717 12.0078L6.42703 11.9968C6.42867 10.8995 7.32188 10.0074 8.41955 10.0074C9.5167 10.0074 10.4096 10.8987 10.4121 11.9953L10.412 11.9979Z"
+      fill="#000" // Set the color of the icon to black or any other color
+    />
+  </svg>
+);
+
+const QuotationManagement = () => {
+  const [form] = Form.useForm();
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [data, setData] = useState([
     {
       key: "1",
-      productName: "Product A",
-      category: "Cigars",
-      totalBoxes: 100,
-      freeBoxes: 10,
-      lowStockAlert: true,
-      price: 20,
-      quantity: 50,
-      commission: 10,
-      totalStockValue: 250,
-      revenue: 2500,
-      images: [
-        "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-        "https://i.ibb.co.com/5WRNH1d3/fresh-healthy-fruits-straw-basket-generative-ai-188544-11999.jpg",
-        "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      ],
+      quotation:
+        "Yoga is the journey of the self, through the self, to the self",
+      date: "01-02-2025",
+      status: "Active",
     },
     {
       key: "2",
-      productName: "Product B",
-      category: "Fashion",
-      totalBoxes: 50,
-      freeBoxes: 5,
-      lowStockAlert: false,
-      price: 15,
-      quantity: 30,
-      commission: 5,
-      totalStockValue: 200,
-      revenue: 1800,
-      images: [
-        "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-        "https://i.ibb.co.com/5WRNH1d3/fresh-healthy-fruits-straw-basket-generative-ai-188544-11999.jpg",
-        "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      ],
+      quotation:
+        "Yoga is the journey of the self, through the self, to the self",
+      date: "01-02-2025",
+      status: "Active",
     },
     {
       key: "3",
-      productName: "Product C",
-      category: "Electronics",
-      totalBoxes: 50,
-      freeBoxes: 5,
-      lowStockAlert: false,
-      price: 35,
-      quantity: 30,
-      commission: 5,
-      totalStockValue: 300,
-      revenue: 3200,
-      images: [
-        "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-        "https://i.ibb.co.com/5WRNH1d3/fresh-healthy-fruits-straw-basket-generative-ai-188544-11999.jpg",
-        "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      ],
+      quotation:
+        "Yoga is the journey of the self, through the self, to the self",
+      date: "01-02-2025",
+      status: "Active",
+    },
+    {
+      key: "4",
+      quotation:
+        "Yoga is the journey of the self, through the self, to the self",
+      date: "01-02-2025",
+      status: "Active",
+    },
+    {
+      key: "5",
+      quotation:
+        "Yoga is the journey of the self, through the self, to the self",
+      date: "01-02-2025",
+      status: "Active",
+    },
+    {
+      key: "6",
+      quotation:
+        "Yoga is the journey of the self, through the self, to the self",
+      date: "01-02-2025",
+      status: "Active",
+    },
+    {
+      key: "7",
+      quotation:
+        "Yoga is the journey of the self, through the self, to the self",
+      date: "01-02-2025",
+      status: "Inactive",
+    },
+    {
+      key: "8",
+      quotation:
+        "Yoga is the journey of the self, through the self, to the self",
+      date: "01-02-2025",
+      status: "Active",
     },
   ]);
+  const [filteredData, setFilteredData] = useState(data);
+  const [editRecord, setEditRecord] = useState(null); // Track the record being edited
+  const [selectedStatus, setSelectedStatus] = useState("All"); // Track selected status in dropdown
 
-  // State variables
-  const [searchText, setSearchText] = useState("");
-  const [currentProduct, setCurrentProduct] = useState(null);
-  const [images, setImages] = useState([]);
-  const [form] = Form.useForm();
-
-  // Modal states
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isViewModalVisible, setIsViewModalVisible] = useState(false);
-  const [modalMode, setModalMode] = useState("add"); // "add" or "edit"
-
-  // Stock update modal state
-  const [isStockUpdateModalVisible, setIsStockUpdateModalVisible] =
-    useState(false);
-  const [stockUpdateForm] = Form.useForm();
-
-  // Filter products by search text
-  const filteredData = data.filter(
-    (item) =>
-      item.productName.toLowerCase().includes(searchText.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchText.toLowerCase())
-  );
-
-  // Modal handlers
-  const showAddModal = () => {
-    form.resetFields();
-    setImages([]);
-    setCurrentProduct(null);
-    setModalMode("add");
+  const showModal = () => {
     setIsModalVisible(true);
   };
 
-  const showEditModal = (product) => {
-    setCurrentProduct(product);
-    form.setFieldsValue({
-      productName: product.productName,
-      category: product.category,
-      totalBoxes: product.totalBoxes,
-      price: product.price,
-      lowStockAlert: product.lowStockAlert,
-    });
-    setImages(product.images || []);
-    setModalMode("edit");
-    setIsModalVisible(true);
+  const updateSlNumbers = (newData) => {
+    return newData.map((item, index) => ({
+      ...item,
+      sl: index + 1, // Set sl as index + 1 (starting from 1)
+    }));
   };
 
-  const handleModalCancel = () => {
-    setIsModalVisible(false);
-    form.resetFields();
-  };
+  const handleOk = () => {
+    form.validateFields().then((values) => {
+      const newData = [...data];
+      const newKey = (parseInt(data[data.length - 1].key) + 1).toString();
 
-  // View modal handlers
-  const showViewModal = (product) => {
-    setCurrentProduct(product);
-    setIsViewModalVisible(true);
-  };
+      if (editRecord) {
+        // Update the edited record
+        const index = newData.findIndex((item) => item.key === editRecord.key);
+        newData[index] = {
+          ...newData[index],
+          quotation: values.quotation,
+          date: values.date.format("DD-MM-YYYY"),
+        };
+      } else {
+        // Add a new record
+        newData.push({
+          key: newKey,
+          quotation: values.quotation,
+          date: values.date.format("DD-MM-YYYY"),
+          status: "Active",
+        });
+      }
 
-  const handleViewModalCancel = () => {
-    setIsViewModalVisible(false);
-    setCurrentProduct(null);
-  };
-
-  // Stock update modal handlers
-  const showStockUpdateModal = (product) => {
-    setCurrentProduct(product);
-    stockUpdateForm.setFieldsValue({
-      totalBoxes: product.totalBoxes,
-    });
-    setIsStockUpdateModalVisible(true);
-  };
-
-  const handleStockUpdateCancel = () => {
-    setIsStockUpdateModalVisible(false);
-    stockUpdateForm.resetFields();
-  };
-
-  const handleStockUpdate = (values) => {
-    if (currentProduct) {
-      // Calculate new total stock value based on updated stock
-      const newTotalStockValue = values.totalBoxes * currentProduct.price;
-      // Calculate new revenue (using same formula as in original code)
-      const newRevenue = newTotalStockValue * 1.2;
-
-      // Update the product data
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.key === currentProduct.key
-            ? {
-                ...item,
-                totalBoxes: values.totalBoxes,
-                quantity: values.totalBoxes, // Update quantity as well
-                totalStockValue: newTotalStockValue,
-                revenue: newRevenue,
-              }
-            : item
+      // Update serial numbers after add/edit
+      const updatedData = updateSlNumbers(newData);
+      setData(updatedData);
+      setFilteredData(
+        updatedData.filter(
+          (item) => selectedStatus === "All" || item.status === selectedStatus
         )
-      );
-      message.success("Stock updated successfully!");
-    }
-    setIsStockUpdateModalVisible(false);
-  };
-
-  // Delete confirmation
-  const showDeleteConfirm = (record) => {
-    confirm({
-      title: "Are you sure you want to delete this product?",
-      icon: <ExclamationCircleOutlined />,
-      content: `Product: ${record.productName}`,
-      okText: "Yes",
-      okType: "danger",
-      cancelText: "No",
-      centered: true,
-      onOk() {
-        handleDelete(record.key);
-      },
+      ); // Update filtered data
+      setIsModalVisible(false);
+      setEditRecord(null); // Reset the edit record
+      form.resetFields();
     });
-  };
-
-  // Data handling
-  const handleSaveProduct = (values) => {
-    // Calculate additional fields
-    const totalStockValue = values.price * (values.totalBoxes || 0);
-    const revenue = totalStockValue * 1.2; // Just an example calculation
-
-    const productData = {
-      ...values,
-      quantity: values.totalBoxes,
-      totalStockValue,
-      revenue,
-      images: images.length > 0 ? images : [],
-    };
-
-    if (modalMode === "edit" && currentProduct) {
-      // Update existing product
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.key === currentProduct.key
-            ? { ...item, ...productData, key: item.key }
-            : item
-        )
-      );
-      message.success("Product updated successfully!");
-    } else {
-      // Add new product
-      setData([...data, { key: String(data.length + 1), ...productData }]);
-      message.success("Product added successfully!");
-    }
-    setIsModalVisible(false);
   };
 
   const handleDelete = (key) => {
-    setData(data.filter((item) => item.key !== key));
-    message.success("Product deleted successfully!");
+    const newData = data.filter((item) => item.key !== key);
+    const updatedData = updateSlNumbers(newData); // Recalculate serial numbers after delete
+    setData(updatedData);
+    setFilteredData(
+      updatedData.filter(
+        (item) => selectedStatus === "All" || item.status === selectedStatus
+      )
+    ); // Update filtered data
   };
 
-  // Image handling (simplified for demo)
-  const handleUploadPicture = () => {
-    // This is a placeholder for actual image upload functionality
-    const demoImages = [
-      "https://i.ibb.co.com/8gh3mqPR/Ellipse-48-1.jpg",
-      "https://i.ibb.co.com/5WRNH1d3/fresh-healthy-fruits-straw-basket-generative-ai-188544-11999.jpg",
-    ];
-
-    // Add a random demo image
-    const newImageUrl =
-      demoImages[Math.floor(Math.random() * demoImages.length)];
-    setImages([...images, newImageUrl]);
+  const handleEdit = (record) => {
+    setEditRecord(record);
+    showModal();
+    form.setFieldsValue({
+      quotation: record.quotation,
+      date: dayjs(record.date, "DD-MM-YYYY"),
+    });
   };
 
-  // Table columns configuration
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    form.resetFields();
+    setEditRecord(null); // Reset the edit record
+  };
+
+  const handleStatusChange = (status) => {
+    setSelectedStatus(status);
+    setFilteredData(
+      data.filter((item) => status === "All" || item.status === status)
+    );
+  };
+
+  const items = [
+    {
+      key: "All",
+      label: "All",
+    },
+    {
+      key: "Active",
+      label: "Active",
+    },
+    {
+      key: "Inactive",
+      label: "Inactive",
+    },
+  ]
+
   const columns = [
     {
-      title: "Product Name",
-      dataIndex: "productName",
-      align: "center",
-      render: (text) => <span className="font-medium">{text}</span>,
+      title: "SL",
+      dataIndex: "key",
+      key: "key",
+      width: "5%",
     },
     {
-      title: "Category",
-      dataIndex: "category",
-      align: "center",
+      title: "Quotation",
+      dataIndex: "quotation",
+      key: "quotation",
+      width: "40%",
     },
     {
-      title: "Quantity in Stock",
-      dataIndex: "quantity",
-      align: "center",
+      title: "Date",
+      dataIndex: "date",
+      key: "date",
+      width: "15%",
     },
     {
-      title: "Cost per Unit",
-      dataIndex: "price",
-      align: "center",
-      render: (price) => `$${price}`,
-    },
-    {
-      title: "Total Inventory Value",
-      dataIndex: "totalStockValue",
-      align: "center",
-      render: (value) => `$${value}`,
-    },
-    {
-      title: "Low Stock Alert",
-      dataIndex: "lowStockAlert",
-      align: "center",
-      render: (text) => (text ? "Yes" : "No"),
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      width: "15%",
     },
     {
       title: "Action",
       key: "action",
-      align: "center",
+      width: "15%",
       render: (_, record) => (
-        <Space size="small">
-          <Tooltip title="View Product" >
-            <Button
-              type="text"
-              className="text-gray-600 hover:text-blue-500"
-              icon={<EyeOutlined />}
-              onClick={() => showViewModal(record)}
-            />
-          </Tooltip>
-
-          <Tooltip title="Edit" >
-            <Button
-              type="text"
-              className="text-gray-600 hover:text-blue-500"
-              icon={<EditOutlined />}
-              onClick={() => showEditModal(record)}
-            />
-          </Tooltip>
-
-          <Tooltip title="Delete" color="red">
-            <Button
-              type="text"
-              className="text-gray-600 hover:text-red-500"
-              icon={<DeleteOutlined />}
-              onClick={() => showDeleteConfirm(record)}
-            />
-          </Tooltip>
-          <GradientButton
-            type="primary"
-            className=" flex items-center"
-            onClick={() => showStockUpdateModal(record)}
-          >
-            Update Stock <DownOutlined className="ml-1" />
-          </GradientButton>
+        <Space size="middle">
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+            className="text-blue-500"
+          />
+          <Button
+            type="text"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.key)}
+            className="text-red-500"
+          />
         </Space>
       ),
     },
   ];
 
-  // Product Form Modal
-  const renderProductFormModal = () => {
-    return (
-      <Modal
-        centered
-        title={modalMode === "add" ? "Add Product" : "Edit Product"}
-        open={isModalVisible}
-        onCancel={handleModalCancel}
-        footer={null}
-        width={800}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSaveProduct}
-          initialValues={{
-            lowStockAlert: false,
-            ...(currentProduct || {}),
+  return (
+    <div className="p-4">
+      <div className="flex justify-between mb-4">
+        <Dropdown
+          menu={{
+            items: items.map((item) => ({
+              ...item,
+              onClick: () => handleStatusChange(item.key),
+            })),
           }}
+          placement="bottomLeft"
         >
-          <Row gutter={24}>
-            {/* Left Column - Image Upload */}
-            <Col span={24} md={12}>
-              <div className="border rounded-lg h-60 mb-4 flex items-center justify-center relative">
-                {images.length > 0 ? (
-                  <img
-                    src={images[0]}
-                    alt="Product"
-                    className="w-full h-full object-contain rounded-lg"
-                  />
-                ) : (
-                  <div className="text-center text-gray-400">
-                    <PlusOutlined style={{ fontSize: 24 }} />
-                    <div className="mt-2">Upload Main Image</div>
-                  </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                {[0, 1, 2, 3, 4].map((index) => (
-                  <div
-                    key={index}
-                    className="border rounded-lg h-20 flex items-center justify-center relative"
-                  >
-                    {images.length > index + 1 ? (
-                      <img
-                        src={images[index + 1]}
-                        alt={`Thumbnail ${index}`}
-                        className="w-full h-full object-cover rounded-lg"
-                      />
-                    ) : (
-                      <div className="text-center text-gray-400">
-                        <PlusOutlined />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <Button
-                type="primary"
-                className="mb-6"
-                onClick={handleUploadPicture}
-                icon={<UploadOutlined />}
-              >
-                Upload Picture
-              </Button>
-            </Col>
-
-            {/* Right Column - Form Fields */}
-            <Col span={24} md={12}>
-              <Form.Item
-                name="productName"
-                label="Product Name*"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter product name",
-                  },
-                ]}
-              >
-                <Input placeholder="Enter Product Name" />
-              </Form.Item>
-
-              <Form.Item
-                name="category"
-                label="Category*"
-                rules={[
-                  { required: true, message: "Please select a category" },
-                ]}
-              >
-                <Select placeholder="Select Category">
-                  <Option value="Cigar/Accessories">Cigar/Accessories</Option>
-                  <Option value="Electronics">Electronics</Option>
-                  <Option value="Fashion">Fashion</Option>
-                  <Option value="Groceries">Groceries</Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item
-                name="totalBoxes"
-                label="Total Boxes In Stock*"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter boxes in stock",
-                  },
-                ]}
-              >
-                <Input type="number" placeholder="Enter Boxes" />
-              </Form.Item>
-
-              <Form.Item
-                name="price"
-                label="Price*"
-                rules={[{ required: true, message: "Please enter price" }]}
-              >
-                <Input type="number" placeholder="Enter Product Price" />
-              </Form.Item>
-
-              <Form.Item name="lowStockAlert" valuePropName="checked">
-                <Checkbox>Low Stock Alert</Checkbox>
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <div className="flex justify-end mt-6">
-            <Button onClick={handleModalCancel} className="mr-2">
-              Cancel
-            </Button>
-            <GradientButton type="primary" htmlType="submit">
-              {modalMode === "edit" ? "Save Product" : "Add Product"}
-            </GradientButton>
-          </div>
-        </Form>
-      </Modal>
-    );
-  };
-
-  // Product View Modal
-  const renderViewModal = () => {
-    return (
-      <Modal
-        centered
-        title="Product Details"
-        open={isViewModalVisible}
-        onCancel={handleViewModalCancel}
-        footer={[
-          <Button key="back" onClick={handleViewModalCancel}>
-            Close
-          </Button>,
-          <GradientButton
-            key="edit"
-            onClick={() => {
-              handleViewModalCancel();
-              showEditModal(currentProduct);
-            }}
-          >
-            Edit Product
-          </GradientButton>,
-        ]}
-        width={800}
-      >
-        {currentProduct && (
-          <Row gutter={24}>
-            <Col span={24} md={12}>
-              {currentProduct.images && currentProduct.images.length > 0 && (
-                <>
-                  <div className="rounded-lg overflow-hidden h-60 mb-4">
-                    <img
-                      src={currentProduct.images[0]}
-                      alt="Product"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2 mb-6">
-                    {currentProduct.images.slice(1).map((img, index) => (
-                      <div
-                        key={index}
-                        className="w-24 h-24 rounded-lg overflow-hidden"
-                      >
-                        <img
-                          src={img}
-                          alt={`Product ${index + 2}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-            </Col>
-            <Col span={24} md={12}>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-gray-500 mb-1">Product Name</h3>
-                  <p className="text-lg font-semibold">
-                    {currentProduct.productName}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-gray-500 mb-1">Category</h3>
-                  <p>{currentProduct.category}</p>
-                </div>
-                <div>
-                  <h3 className="text-gray-500 mb-1">Total Boxes</h3>
-                  <p>{currentProduct.totalBoxes}</p>
-                </div>
-                <div>
-                  <h3 className="text-gray-500 mb-1">Price</h3>
-                  <p>${currentProduct.price}</p>
-                </div>
-                <div>
-                  <h3 className="text-gray-500 mb-1">Total Stock Value</h3>
-                  <p>${currentProduct.totalStockValue}</p>
-                </div>
-                <div>
-                  <h3 className="text-gray-500 mb-1">Revenue</h3>
-                  <p>${currentProduct.revenue}</p>
-                </div>
-                <div>
-                  <h3 className="text-gray-500 mb-1">Low Stock Alert</h3>
-                  <p>{currentProduct.lowStockAlert ? "Yes" : "No"}</p>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        )}
-      </Modal>
-    );
-  };
-
-  // Stock Update Modal
-  const renderStockUpdateModal = () => {
-    return (
-      <Modal
-        centered
-        title="Product Stock Update"
-        open={isStockUpdateModalVisible}
-        onCancel={handleStockUpdateCancel}
-        footer={null}
-        width={500}
-        closeIcon={<span className="text-xl">×</span>}
-      >
-        <Form
-          form={stockUpdateForm}
-          layout="vertical"
-          onFinish={handleStockUpdate}
+          <Button className="bg-red-500 text-white hover:bg-red-600 py-5">
+            <Space>
+              <FilteringIcon className="filtering-icon" />
+              {selectedStatus} <DownOutlined />
+            </Space>
+          </Button>
+        </Dropdown>
+       
+        <GradientButton
+          type="primary"
+          onClick={showModal}
+          className="bg-red-500 text-white hover:bg-red-600 py-5"
         >
+          <PlusOutlined /> Add New Quotation
+        </GradientButton>
+      </div>
+
+      <Table
+        columns={columns}
+        dataSource={filteredData}
+        pagination={true} // Enable pagination
+        className="border rounded"
+        rowClassName="hover:bg-gray-50"
+      />
+
+      <Modal
+        title={editRecord ? "Edit Quotation" : "Add New Quotation"}
+        open={isModalVisible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+        okButtonProps={{ className: "bg-red-500 hover:bg-red-600" }}
+      >
+        <Form form={form} layout="vertical" name="quotation_form">
           <Form.Item
-            name="totalBoxes"
-            label="Total Boxes In Stock*"
+            name="quotation"
+            label="Quotation"
             rules={[
-              {
-                required: true,
-                message: "Please enter boxes in stock",
-              },
+              { required: true, message: "Please input your quotation!" },
             ]}
           >
-            <Input type="number" placeholder="Enter Boxes" />
+            <Input.TextArea rows={4} />
           </Form.Item>
-
-          <div className="flex justify-end mt-6">
-            <Button onClick={handleStockUpdateCancel} className="mr-2 px-4">
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              className="bg-gradient-to-r from-cyan-500 to-blue-500 border-none px-6"
-            >
-              Save Changes
-            </Button>
-          </div>
+          <Form.Item
+            name="date"
+            label="Date"
+            rules={[{ required: true, message: "Please select a date!" }]}
+          >
+            <DatePicker style={{ width: "100%" }} />
+          </Form.Item>
         </Form>
       </Modal>
-    );
-  };
-
-  return (
-    <div className="container mx-auto py-6 px-4">
-      <div className="flex justify-between mb-6">
-        <h1 className="text-2xl font-bold">Inventory Management</h1>
-
-        <div className="flex items-center gap-5">
-          <Input
-            placeholder="Search by Name or Category"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            className="w-60 py-2"
-          />
-          <GradientButton onClick={showAddModal}>Add Product</GradientButton>
-        </div>
-      </div>
-
-      <div className="rounded-xl shadow-sm bg-primary p-5">
-        <Table
-          dataSource={filteredData}
-          columns={columns}
-          pagination={{ pageSize: 10 }}
-          bordered={false}
-          rowClassName="bg-white hover:bg-gray-50 border-b border-gray-100"
-          className="custom-table"
-        />
-      </div>
-
-      {/* Render all modals */}
-      {renderProductFormModal()}
-      {renderViewModal()}
-      {renderStockUpdateModal()}
-
-      <style jsx>{`
-        .custom-table .ant-table-thead > tr > th {
-          background-color: transparent;
-          color: #666;
-          font-weight: 500;
-          border-bottom: 1px solid #f0f0f0;
-          padding: 16px 12px;
-        }
-
-        .custom-table .ant-table-tbody > tr > td {
-          padding: 16px 12px;
-        }
-      `}</style>
     </div>
   );
 };
 
-export default ProductInfo;
+export default QuotationManagement;

@@ -19,16 +19,14 @@ import NotFound from "../NotFound";
 import Notifications from "../Pages/Dashboard/Notifications";
 import SubCategory from "../Pages/Dashboard/SubCategory";
 import AdminProfile from "../Pages/Dashboard/AdminProfile/AdminProfile";
-import RetailerTable from "../Pages/Dashboard/Retailer";
-import WholesealerTable from "../Pages/Dashboard/Wholesealer";
-import SalesManagement from "../Pages/Dashboard/SalesManagement";
 import Retailer from "../Pages/Dashboard/Retailer";
-import SaleRepsManagement from "../Pages/Dashboard/SaleRepsManagement";
-import ViewSalesReps from "../components/SalesRepsManagement/detailsSalesReps/ViewSalesReps";
+import ViewSalesReps from "../components/SalesRepsManagement/detailsSalesReps/SubCategoryTable";
 import Products from "../Pages/Dashboard/Products";
 import LoyaltyProgram from "../Pages/Dashboard/LoyaltyProgram";
 import SubscriptionTable from "../components/subscriber/SubscriberTable";
 import OrderManagementContainer from "../components/orderMangement/OrderManagementContainer";
+import VideoManagementSystem from "../components/retailerManagement/RetailerManageTable";
+import CategoryManagement from "../components/SalesRepsManagement/SalesRepsManagement";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
@@ -47,7 +45,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/salesManagement",
-        element: <SalesManagement />,
+        element: <VideoManagementSystem />,
       },
       {
         path: "/retailer",
@@ -55,7 +53,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/salesRepsManage",
-        element: <SaleRepsManagement />,
+        element: <CategoryManagement />,
       },
       {
         path: "/inventory",
