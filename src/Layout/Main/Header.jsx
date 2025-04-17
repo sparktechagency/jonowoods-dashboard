@@ -22,7 +22,7 @@ const Header = () => {
   };
 
   return (
-    <div className="flex items-center justify-end gap-5 w-full px-4 lg:px-10 shadow-lg m-[1px] p-2 rounded-lg">
+    <div className="flex items-center justify-end gap-5 w-full px-4 lg:px-10 shadow-md   m-[1px] p-2 rounded-lg">
       <div className="flex items-center gap-10">
         {/* <Select
           value={selectedLanguage}

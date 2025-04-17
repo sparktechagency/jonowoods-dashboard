@@ -92,7 +92,7 @@ const OrderTable = () => {
       </div>
 
       {/* Table Container with Gradient Background */}
-      <div className="pt-6 rounded-lg">
+      <div className=" rounded-lg border-2">
         <Table
           dataSource={filteredData}
           columns={columns}

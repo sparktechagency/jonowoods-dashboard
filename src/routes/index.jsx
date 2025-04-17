@@ -27,6 +27,7 @@ import SubscriptionTable from "../components/subscriber/SubscriberTable";
 import OrderManagementContainer from "../components/orderMangement/OrderManagementContainer";
 import VideoManagementSystem from "../components/retailerManagement/RetailerManageTable";
 import CategoryManagement from "../components/SalesRepsManagement/SalesRepsManagement";
+import SubscriptionManagement from "../components/loyaltyProgram/LoyalityProgramTable";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
@@ -65,7 +66,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/loyaltyProgram",
-        element: <LoyaltyProgram />,
+        element: <SubscriptionManagement />,
       },
       {
         path: "/subsciption",

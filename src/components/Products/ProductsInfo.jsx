@@ -203,29 +203,34 @@ const QuotationManagement = () => {
       dataIndex: "key",
       key: "key",
       width: "5%",
+      align: 'center',
     },
     {
       title: "Quotation",
       dataIndex: "quotation",
       key: "quotation",
-      width: "40%",
+      width: "35%",
+      align: 'center',
     },
     {
       title: "Date",
       dataIndex: "date",
       key: "date",
       width: "15%",
+      align: 'center',
     },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
       width: "15%",
+      align: 'center',
     },
     {
       title: "Action",
       key: "action",
       width: "15%",
+       align:'center',
       render: (_, record) => (
         <Space size="middle">
           <Button

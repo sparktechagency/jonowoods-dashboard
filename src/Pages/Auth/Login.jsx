@@ -16,7 +16,7 @@ const Login = () => {
   return (
     <div>
       <div className="text-center mb-8">
-        <img src={image4} alt="logo" className="h-40 w-40 mx-auto"/>
+        <img src={image4} alt="logo" className="h-40 w-60 mx-auto"/>
         <h1 className="text-[25px] font-semibold mb-6">Login</h1>
         <p>Please enter your email and password to continue</p>
       </div>
