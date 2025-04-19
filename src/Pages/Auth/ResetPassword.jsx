@@ -1,6 +1,7 @@
 import { Button, ConfigProvider, Form, Input } from "antd";
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import image4 from "../../assets/image4.png";
 
 const ResetPassword = () => {
 
@@ -13,7 +14,9 @@ const ResetPassword = () => {
 
   return (
     <div>
-      <div className="text-center mb-12">
+      <div className="text-center mb-8">
+        <img src={image4} alt="logo" className="h-40 w-60 mx-auto" />
+
         <h1 className="text-[25px] font-semibold mb-6">Reset Password</h1>
       </div>
 
@@ -121,9 +124,9 @@ const ResetPassword = () => {
                 fontSize: "18px",
                 marginTop: 20,
               }}
-              className="bg-gradient-to-r from-primary  to-secondary  hover:bg-gradient-to-r hover:from-primary hover:to-secondary"
+              className="bg-gradient-to-r from-primary  to-secondary  hover:bg-gradient-to-r hover:from-primary border border-[#A92C2C] hover:to-secondary"
             >
-              Update
+              Update Password
             </Button>
           </ConfigProvider>
         </Form.Item>

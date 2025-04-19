@@ -1,12 +1,10 @@
 import React from 'react'
-import SubscriptionTable from '../../components/subscriber/SubscriberTable'
-import SubscriptionCard from "../../components/subscriber/SubscriptionCard"
+import PushNotification from '../../components/subscriber/SubscriberTable';
 
 const Subsciber = () => {
   return (
     <div>
-      <SubscriptionCard />
-      <SubscriptionTable />
+      <PushNotification />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { Button, Checkbox, Form, Input } from "antd";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import FormItem from "../../components/common/FormItem";
-import image4 from "../../assets/image4.png"
+import image4 from "../../assets/image4.png";
 // import Cookies from "js-cookie";
 
 const Login = () => {
@@ -16,7 +16,7 @@ const Login = () => {
   return (
     <div>
       <div className="text-center mb-8">
-        <img src={image4} alt="logo" className="h-40 w-60 mx-auto"/>
+        <img src={image4} alt="logo" className="h-40 w-60 mx-auto" />
         <h1 className="text-[25px] font-semibold mb-6">Login</h1>
         <p>Please enter your email and password to continue</p>
       </div>
@@ -37,7 +37,7 @@ const Login = () => {
             type="password"
             placeholder="Enter your password"
             style={{
-              height: 40,
+              height: 45,
               border: "1px solid #d9d9d9",
               outline: "none",
               boxShadow: "none",
@@ -45,17 +45,9 @@ const Login = () => {
           />
         </Form.Item>
 
-        <div className="flex items-center justify-between">
-          <Form.Item
-            style={{ marginBottom: 0 }}
-            name="remember"
-            valuePropName="checked"
-          >
-            <Checkbox>Remember me</Checkbox>
-          </Form.Item>
-
+        <div className="flex items-center justify-end">
           <a
-            className="login-form-forgot bg-gradient-to-r from-primary  to-secondary px-4 py-1 text-white rounded-md font-semibold"
+            className="login-form-forgot text-white hover:text-white"
             href="/auth/forgot-password"
           >
             Forgot password
@@ -72,12 +64,11 @@ const Login = () => {
               color: "white",
               fontWeight: "400px",
               fontSize: "18px",
-
-              marginTop: 20,
+              marginTop: 30,
             }}
-            className="flex items-center justify-center bg-gradient-to-r from-primary  to-secondary rounded-lg"
+            className="flex items-center justify-center bg-gradient-to-r from-primary to-secondary border border-[#A92C2C] rounded-lg"
           >
-            Sign in
+          Login
           </button>
         </Form.Item>
       </Form>

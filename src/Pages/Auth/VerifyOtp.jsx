@@ -1,30 +1,26 @@
 import { Button, Form, Typography } from "antd";
-import React, { useState } from "react"
+import React, { useState } from "react";
 import OTPInput from "react-otp-input";
 import { useNavigate, useParams } from "react-router-dom";
+import image4 from "../../assets/image4.png";
 const { Text } = Typography;
 
 const VerifyOtp = () => {
   const navigate = useNavigate();
   const [otp, setOtp] = useState();
-  const email = new URLSearchParams(location.search).get("email")
+  const email = new URLSearchParams(location.search).get("email");
 
-
-
-  const onFinish = async(values) => {
-        navigate(`/auth/reset-password?email=${email}`);
+  const onFinish = async (values) => {
+    navigate(`/auth/reset-password?email=${email}`);
   };
 
-
-  const handleResendEmail = async() => {
-
-  };
-
-
+  const handleResendEmail = async () => {};
 
   return (
     <div>
-      <div className="text-center mb-6">
+      <div className="text-center mb-8">
+        <img src={image4} alt="logo" className="h-40 w-60 mx-auto" />
+
         <h1 className="text-[25px] font-semibold mb-6">Verify OTP</h1>
         <p className="w-[80%] mx-auto">
           We'll send a verification code to your email. Check your inbox and
@@ -78,9 +74,9 @@ const VerifyOtp = () => {
 
               marginTop: 20,
             }}
-            className="flex items-center justify-center bg-gradient-to-r from-primary  to-secondary rounded-lg"
+            className="flex items-center justify-center border border-[#A92C2C] bg-gradient-to-r from-primary  to-secondary rounded-lg"
           >
-            Verify
+            Verify OTP
           </Button>
         </Form.Item>
       </Form>

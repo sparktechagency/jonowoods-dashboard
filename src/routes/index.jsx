@@ -22,12 +22,12 @@ import AdminProfile from "../Pages/Dashboard/AdminProfile/AdminProfile";
 import Retailer from "../Pages/Dashboard/Retailer";
 import ViewSalesReps from "../components/SalesRepsManagement/detailsSalesReps/SubCategoryTable";
 import Products from "../Pages/Dashboard/Products";
-import LoyaltyProgram from "../Pages/Dashboard/LoyaltyProgram";
-import SubscriptionTable from "../components/subscriber/SubscriberTable";
+import LoyaltyProgram from "../Pages/Dashboard/LoyaltyProgram"
 import OrderManagementContainer from "../components/orderMangement/OrderManagementContainer";
 import VideoManagementSystem from "../components/retailerManagement/RetailerManageTable";
 import CategoryManagement from "../components/SalesRepsManagement/SalesRepsManagement";
 import SubscriptionManagement from "../components/loyaltyProgram/LoyalityProgramTable";
+import Subsciber from "../Pages/Dashboard/Subsciber";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
@@ -70,7 +70,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/subsciption",
-        element: <SubscriptionTable />,
+        element: <Subsciber />,
       },
       {
         path: "/category",
