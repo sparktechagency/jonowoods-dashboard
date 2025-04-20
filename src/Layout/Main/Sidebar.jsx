@@ -6,11 +6,11 @@ import {
   Dashboard,
   SalesRepsManagement,
   Settings,
-  RetailersManagement,
+  VideoManagement,
   InventoryManagement,
   LoyaltyProgram,
   SubscriptionManagement,
-  OrderManagement
+  UserManagement,
 } from "../../components/common/Svg"; 
 import image4 from "../../assets/image4.png"; // Logo image
 
@@ -75,12 +75,12 @@ const Sidebar = () => {
     },
     {
       key: "/orderManagement",
-      icon: renderIcon(OrderManagement, "/orderManagement"),
+      icon: renderIcon(UserManagement, "/orderManagement"),
       label: <Link to="/orderManagement">Users Management</Link>,
     },
     {
       key: "/retailer",
-      icon: renderIcon(RetailersManagement, "/retailer"),
+      icon: renderIcon(VideoManagement, "/retailer"),
       label: <Link to="/retailer">Video Management</Link>,
     },
     {
@@ -91,17 +91,17 @@ const Sidebar = () => {
     {
       key: "/inventory",
       icon: renderIcon(InventoryManagement, "/inventory"),
-      label: <Link to="/inventory">Inventory Management</Link>,
+      label: <Link to="/inventory">Quotation Management</Link>,
     },
     {
       key: "/loyaltyProgram",
-      icon: renderIcon(LoyaltyProgram, "/loyaltyProgram"),
-      label: <Link to="/loyaltyProgram">Loyalty Program</Link>,
+      icon: renderIcon(SubscriptionManagement, "/loyaltyProgram"),
+      label: <Link to="/loyaltyProgram">Subscription Management</Link>,
     },
     {
       key: "/subsciption",
-      icon: renderIcon(SubscriptionManagement, "/subsciption"),
-      label: <Link to="/subsciption">Subscription Management</Link>,
+      icon: renderIcon(LoyaltyProgram, "/subsciption"),
+      label: <Link to="/subsciption">Push Notification</Link>,
     },
     {
       key: "subMenuSetting",

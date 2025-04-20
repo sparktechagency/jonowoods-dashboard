@@ -43,7 +43,7 @@ const PrivacyPolicy = () => {
           onClick={showModal}
           className="w-60 bg-secondary text-white h-10"
         >
-          Update Privacy Policy
+          Edit Privacy Policy
         </GradientButton>
       </div>
 

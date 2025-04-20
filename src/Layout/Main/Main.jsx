@@ -5,22 +5,22 @@ import { Outlet } from "react-router-dom";
 
 const Main = () => {
   return (
-    <div className="h-screen grid grid-cols-12">
-      {/* Sidebar */}
-      <div className="col-span-2 h-full border-r-2 overflow-y-auto border-primary bg-baseBg">
+    <div className="grid grid-cols-12">
+      {/* side bar */}
+      <div className="h-screen col-span-2 border-r-2 border-primary bg-baseBg">
         <Sidebar />
       </div>
 
-      {/* Main content area */}
-      <div className="col-span-10 flex flex-col h-full">
-        {/* Header */}
-        <div className="h-[68px] bg-baseBg">
+      {/* main container with header */}
+      <div className="col-span-10">
+        <div className="h-[68px] flex items-center  pr-5 ">
           <Header />
         </div>
 
-        {/* Main content area (Outlet) */}
-        <div className="flex-1 overflow-y-auto py-6 px-4 lg:px-10 bg-baseBg">
-          <Outlet />
+        <div className="h-[calc(100vh-68px)] overflow-y-auto bg-baseBg ">
+          <div className="px-4 py-6 overflow-y-auto rounded-md lg:px-10">
+            <Outlet />
+          </div>
         </div>
       </div>
     </div>

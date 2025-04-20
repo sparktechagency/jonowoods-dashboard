@@ -135,7 +135,7 @@ const UserProfile = () => {
   };
 
   return (
-    <div className="flex justify-center items-center shadow-xl rounded-lg">
+    <div className="flex items-center justify-center rounded-lg shadow-xl">
       <Form
         form={form}
         layout="vertical"
@@ -143,9 +143,9 @@ const UserProfile = () => {
         onFinish={onFinish}
         encType="multipart/form-data"
       >
-        <div className="grid lg:grid-cols-2 grid-cols-1 lg:gap-x-16 w-full gap-y-7">
+        <div className="grid w-full grid-cols-1 lg:grid-cols-2 lg:gap-x-16 gap-y-7">
           {/* Profile Image */}
-          <div className="col-span-2 flex justify-center">
+          <div className="flex justify-center col-span-2">
             <Form.Item label="Profile Image" style={{ marginBottom: 0 }}>
               <Upload
                 name="avatar"
@@ -248,7 +248,7 @@ const UserProfile = () => {
           </Form.Item>
 
           {/* Update Profile Button */}
-          <div className="col-span-2 text-end mt-6">
+          <div className="col-span-2 mt-6 text-end">
             <Form.Item>
               {/* Option 1: Use standard Ant Design Button */}
               <Button
@@ -256,6 +256,7 @@ const UserProfile = () => {
                 htmlType="submit"
                 block
                 style={{ height: 40 }}
+                className="text-white rounded-md bg-primary hover:bg-primary "
               >
                 Update Profile
               </Button>

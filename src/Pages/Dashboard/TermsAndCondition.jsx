@@ -42,7 +42,7 @@ const TermsAndCondition = () => {
           onClick={showModal}
           className="w-60 bg-secondary text-white h-10"
         >
-          Update Terms & Conditions
+          Edit Terms & Conditions
         </GradientButton>
       </div>
 

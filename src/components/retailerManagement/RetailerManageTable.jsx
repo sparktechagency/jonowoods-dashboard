@@ -230,7 +230,7 @@ const VideoManagementSystem = () => {
           <img
             src={record.thumbnail}
             alt="thumbnail"
-            style={{ width: 100, height: 60 }}
+            style={{ width: 100, height: 50 }}
             className="rounded-lg"
           />
         </div>
@@ -298,12 +298,12 @@ const VideoManagementSystem = () => {
 
   return (
     <div >
-      <div className="flex mb-6 gap-6 justify-end">
+      <div className="flex justify-end gap-6 mb-6">
         <div className="">
           <Space size="small" className="flex gap-4">
             <Dropdown overlay={filterMenu}>
               <Button
-                className="mr-2 bg-red-600 py-5 text-white hover:text-black hover:icon-black"
+                className="py-5 mr-2 text-white bg-red-600 hover:text-black hover:icon-black"
                 style={{ border: "none" }}
               >
                 <Space>
@@ -321,7 +321,7 @@ const VideoManagementSystem = () => {
 
             <Dropdown overlay={statusMenu}>
               <Button
-                className="mr-2 bg-red-600 py-5 text-white hover:text-black hover:icon-black"
+                className="py-5 mr-2 text-white bg-red-600 hover:text-black hover:icon-black"
                 style={{ border: "none" }}
               >
                 <Space>
@@ -349,7 +349,7 @@ const VideoManagementSystem = () => {
       <Table
         columns={columns}
         dataSource={filteredVideos}
-        pagination={false}
+        pagination={true}
         rowKey="id"
         bordered
         size="small"
