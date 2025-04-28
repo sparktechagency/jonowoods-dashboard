@@ -79,7 +79,7 @@ export default function SubscriptionManagement() {
     type: "Web App",
   });
   const [editingPackageIndex, setEditingPackageIndex] = useState(null);
-  const [selectedType, setSelectedType] = useState("Application");
+  const [selectedType, setSelectedType] = useState("Web App");
 
   // Rule functions
   const addSubscriptionRule = () => {
@@ -214,11 +214,11 @@ export default function SubscriptionManagement() {
   return (
     <div className="">
       {/* Type Filter */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Dropdown overlay={typeFilterMenu} trigger={["click"]}>
             <Button
-              className="mr-2 bg-red-600 py-5 text-white hover:text-black"
+              className="py-5 mr-2 text-white bg-red-600 hover:text-black"
               style={{ border: "none" }}
             >
               <div className="flex items-center">
@@ -234,7 +234,7 @@ export default function SubscriptionManagement() {
 
         {/* Add Package Button */}
         <button
-          className="bg-red-500 text-white px-4 py-2 rounded-md flex items-center gap-2"
+          className="flex items-center gap-2 px-4 py-2 text-white bg-red-500 rounded-md"
           onClick={() => openPackageModal()}
         >
           <Plus size={18} />
@@ -250,11 +250,11 @@ export default function SubscriptionManagement() {
           return (
             <div
               key={originalIndex}
-              className="flex-1 border rounded-lg p-10 min-w-64 relative"
+              className="relative flex-1 p-10 border rounded-lg min-w-64"
             >
               {/* Type Label - Rotated and positioned at top left */}
               <div
-                className="absolute -left-8 top-0 bg-[#9fa6f2]  text-white rounded-md px-3 py-1 text-xs font-medium"
+                className="absolute top-0 px-3 py-1 text-xs text-black bg-gray-100 rounded-md -left-8"
                 style={{
                   transform: "rotate(-50deg)",
                   transformOrigin: "top right",
@@ -269,15 +269,15 @@ export default function SubscriptionManagement() {
               >
                 <Pencil size={18} />
               </button>
-              <div className="text-sm text-center mb-2">For {plan.period}</div>
-              <div className="text-6xl font-bold text-center mb-2">
+              <div className="mb-3 text-sm text-center">For {plan.period}</div>
+              <div className="mb-3 text-6xl font-bold text-center">
                 {plan.price}
               </div>
-              <div className="text-xs text-center mb-2">
+              <div className="mb-2 text-xs text-center">
                 {plan.trialDays}-Days Free Trial
               </div>
-              <p className="text-xs text-center mb-6">{plan.description}</p>
-              <button className="w-full bg-red-500 text-white py-2 rounded-md">
+              <p className="mb-8 text-xs text-center">{plan.description}</p>
+              <button className="w-full py-2 text-white bg-red-500 rounded-md">
                 Subscribe
               </button>
             </div>
@@ -288,7 +288,7 @@ export default function SubscriptionManagement() {
       {/* Add Subscription Rules Button */}
       <div className="flex justify-end mb-4">
         <button
-          className="bg-red-500 text-white px-4 py-2 rounded-md flex items-center"
+          className="flex items-center px-4 py-2 text-white bg-red-500 rounded-md"
           onClick={() => {
             setShowRuleModal(true);
             setIsEditing(false);
@@ -300,8 +300,8 @@ export default function SubscriptionManagement() {
       </div>
 
       {/* Subscription Rules List */}
-      <div className="border-t-8 border-red-500 mb-8 rounded-lg">
-        <h2 className="text-lg p-2 bg-red-500 text-white">
+      <div className="mb-8 border-t-8 border-red-500 rounded-lg">
+        <h2 className="p-2 text-lg text-white bg-red-500">
           Subscription Rules
         </h2>
         <div className="bg-white">
@@ -311,7 +311,7 @@ export default function SubscriptionManagement() {
               className="flex items-center justify-between p-3 border-b"
             >
               <div className="flex items-center">
-                <span className="inline-flex items-center justify-center rounded-full bg-gray-100 w-6 h-6 mr-3 text-xs">
+                <span className="inline-flex items-center justify-center w-6 h-6 mr-3 text-xs bg-gray-100 rounded-full">
                   {index + 1}
                 </span>
                 <span dangerouslySetInnerHTML={{ __html: rule }}></span>
@@ -331,10 +331,10 @@ export default function SubscriptionManagement() {
 
       {/* Add/Edit Subscription Rule Modal */}
       {showRuleModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white w-full max-w-2xl rounded-lg shadow-lg overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-full max-w-2xl overflow-hidden bg-white rounded-lg shadow-lg">
             {/* Modal Header */}
-            <div className="flex justify-between items-center p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-2xl font-bold text-red-500">
                 {isEditing
                   ? "Edit Subscription Rule"
@@ -358,7 +358,7 @@ export default function SubscriptionManagement() {
             {/* Modal Footer */}
             <div className="p-4">
               <button
-                className="w-full bg-red-500 text-white py-3 rounded-md font-medium"
+                className="w-full py-3 font-medium text-white bg-red-500 rounded-md"
                 onClick={addSubscriptionRule}
               >
                 Save
@@ -370,10 +370,10 @@ export default function SubscriptionManagement() {
 
       {/* Add/Edit Subscription Package Modal */}
       {showPackageModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white w-full max-w-2xl rounded-lg shadow-lg overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="w-full max-w-2xl overflow-hidden bg-white rounded-lg shadow-lg">
             {/* Modal Header */}
-            <div className="flex justify-between items-center p-4 border-b">
+            <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-2xl font-bold text-red-500">
                 {editingPackageIndex !== null
                   ? "Edit Subscription Package"
@@ -389,7 +389,7 @@ export default function SubscriptionManagement() {
               <form className="space-y-4">
                 {/* Period */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
                     Period
                   </label>
                   <input
@@ -397,14 +397,14 @@ export default function SubscriptionManagement() {
                     name="period"
                     value={currentPackage.period}
                     onChange={handlePackageChange}
-                    className="w-full border border-gray-300 rounded-md p-2"
+                    className="w-full p-2 border border-gray-300 rounded-md"
                     placeholder="e.g. 1 Month, 6 Month, 1 Year"
                   />
                 </div>
 
                 {/* Price */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
                     Price
                   </label>
                   <input
@@ -412,14 +412,14 @@ export default function SubscriptionManagement() {
                     name="price"
                     value={currentPackage.price}
                     onChange={handlePackageChange}
-                    className="w-full border border-gray-300 rounded-md p-2"
+                    className="w-full p-2 border border-gray-300 rounded-md"
                     placeholder="e.g. $60.99"
                   />
                 </div>
 
                 {/* Trial Days */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
                     Free Trial Days
                   </label>
                   <input
@@ -427,21 +427,21 @@ export default function SubscriptionManagement() {
                     name="trialDays"
                     value={currentPackage.trialDays}
                     onChange={handlePackageChange}
-                    className="w-full border border-gray-300 rounded-md p-2"
+                    className="w-full p-2 border border-gray-300 rounded-md"
                     placeholder="e.g. 7"
                   />
                 </div>
 
                 {/* Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
                     Type
                   </label>
                   <select
                     name="type"
                     value={currentPackage.type}
                     onChange={handlePackageChange}
-                    className="w-full border border-gray-300 rounded-md p-2"
+                    className="w-full p-2 border border-gray-300 rounded-md"
                   >
                     <option value="Web App">Web App</option>
                     <option value="Application">Application</option>
@@ -450,14 +450,14 @@ export default function SubscriptionManagement() {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
                     Description
                   </label>
                   <textarea
                     name="description"
                     value={currentPackage.description}
                     onChange={handlePackageChange}
-                    className="w-full border border-gray-300 rounded-md p-2"
+                    className="w-full p-2 border border-gray-300 rounded-md"
                     rows="4"
                     placeholder="Enter package description"
                   ></textarea>
@@ -468,7 +468,7 @@ export default function SubscriptionManagement() {
             {/* Modal Footer */}
             <div className="p-4">
               <button
-                className="w-full bg-red-500 text-white py-3 rounded-md font-medium"
+                className="w-full py-3 font-medium text-white bg-red-500 rounded-md"
                 onClick={savePackage}
               >
                 Save

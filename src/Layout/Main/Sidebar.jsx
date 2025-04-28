@@ -11,7 +11,7 @@ import {
   LoyaltyProgram,
   SubscriptionManagement,
   UserManagement,
-} from "../../components/common/Svg"; 
+} from "../../components/common/Svg";
 import image4 from "../../assets/image4.png"; // Logo image
 
 const Sidebar = () => {
@@ -59,13 +59,12 @@ const Sidebar = () => {
           fill={isActive ? "#ffffff" : "#1E1E1E"}
           style={{
             fontWeight: "bold",
-            strokeWidth: isActive ? 2 : 1, 
+            strokeWidth: isActive ? 2 : 1,
           }}
         />
       </div>
     );
   };
-
 
   const menuItems = [
     {
@@ -193,6 +192,12 @@ const Sidebar = () => {
         onCancel={handleCancel}
         okText="Logout"
         cancelText="Cancel"
+        okButtonProps={{
+          style: {
+            backgroundColor: "red",
+            borderColor: "red",
+          },
+        }}
       >
         <p>Are you sure you want to logout?</p>
       </Modal>

@@ -289,6 +289,7 @@ const VideoManagementSystem = () => {
             size="small"
             checked={record.status === "Active"}
             onChange={(checked) => handleStatusChange(checked, record)}
+            style={{ backgroundColor: "red" }}
           />
         </Space>
       ),
@@ -297,17 +298,17 @@ const VideoManagementSystem = () => {
 
 
   return (
-    <div >
+    <div>
       <div className="flex justify-end gap-6 mb-6">
         <div className="">
           <Space size="small" className="flex gap-4">
             <Dropdown overlay={filterMenu}>
               <Button
-                className="py-5 mr-2 text-white bg-red-600 hover:text-black hover:icon-black"
+                className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
                 style={{ border: "none" }}
               >
                 <Space>
-                  <FilteringIcon className="filtering-icon" />{" "}
+                  <FilteringIcon className="filtering-icon" />
                   {/* Use the custom class */}
                   <span className="filter-text">
                     {categoryFilter === "All"
@@ -321,11 +322,11 @@ const VideoManagementSystem = () => {
 
             <Dropdown overlay={statusMenu}>
               <Button
-                className="py-5 mr-2 text-white bg-red-600 hover:text-black hover:icon-black"
+                className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
                 style={{ border: "none" }}
               >
                 <Space>
-                  <FilteringIcon className="filtering-icon" />{" "}
+                  <FilteringIcon className="filtering-icon" />
                   {/* Use the custom class */}
                   <span className="filter-text">
                     {statusFilter === "All" ? "All Status" : statusFilter}

@@ -1,17 +1,40 @@
 import { Button, Checkbox, Form, Input } from "antd";
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FormItem from "../../components/common/FormItem";
 import image4 from "../../assets/image4.png";
-// import Cookies from "js-cookie";
+import { useLoginMutation } from "../../redux/apiSlices/authSlice";
+import Cookies from "js-cookie";
 
 const Login = () => {
   const navigate = useNavigate();
+  const [login, { isLoading, isSuccess, error, data }] = useLoginMutation();
 
   const onFinish = async (values) => {
-    navigate("/");
-    // Cookies.set('token', token, { expires: 7 })
+    console.log(values);
+    try {
+      // Call the login mutation with email and password
+      const response = await login({
+        email: values.email,
+        password: values.password,
+      }).unwrap();
+      // console.log(response.data.accessToken);
+      if (response.success) {
+        localStorage.setItem("token", response.data.accessToken);
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("Login failed:", err);
+      // Error handling could be improved with user feedback
+    }
   };
+
+  // Optional: Handle success case with useEffect
+  useEffect(() => {
+    if (isSuccess && data?.token) {
+      navigate("/");
+    }
+  }, [isSuccess, data, navigate]);
 
   return (
     <div>
@@ -58,6 +81,7 @@ const Login = () => {
           <button
             htmlType="submit"
             type="submit"
+            disabled={isLoading}
             style={{
               width: "100%",
               height: 45,
@@ -68,9 +92,15 @@ const Login = () => {
             }}
             className="flex items-center justify-center bg-gradient-to-r from-primary to-secondary border border-[#A92C2C] rounded-lg"
           >
-          Login
+            {isLoading ? "Logging in..." : "Login"}
           </button>
         </Form.Item>
+
+        {error && (
+          <div className="mt-4 text-red-500 text-center">
+            {error.data?.message || "Login failed. Please try again."}
+          </div>
+        )}
       </Form>
     </div>
   );

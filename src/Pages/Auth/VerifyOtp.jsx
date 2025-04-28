@@ -1,20 +1,54 @@
 import { Button, Form, Typography } from "antd";
 import React, { useState } from "react";
 import OTPInput from "react-otp-input";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import image4 from "../../assets/image4.png";
+import { useOtpVerifyMutation } from "../../redux/apiSlices/authSlice";
+
 const { Text } = Typography;
 
 const VerifyOtp = () => {
   const navigate = useNavigate();
-  const [otp, setOtp] = useState();
-  const email = new URLSearchParams(location.search).get("email");
+  const [otp, setOtp] = useState("");
+  const email = new URLSearchParams(window.location.search).get("email");
+  const [otpVerify] = useOtpVerifyMutation();
+  const [verificationStatus, setVerificationStatus] = useState("");
 
-  const onFinish = async (values) => {
-    navigate(`/auth/reset-password?email=${email}`);
+  const onFinish = async () => {
+    try {
+      // Create the OTP request payload
+      const payload = { email, oneTimeCode: Number(otp) }; // Convert OTP to number
+
+      // Call the API to verify OTP
+      const response = await otpVerify(payload).unwrap(); // Unwrap to get the data from response
+
+      if (response.success) {
+        // Redirect to reset password page if OTP is verified successfully
+        localStorage.setItem("verifyToken", response.data.verifyToken);
+        navigate(`/auth/reset-password?email=${encodeURIComponent(email)}`);
+      } else {
+        setVerificationStatus("Invalid OTP. Please try again.");
+      }
+    } catch (error) {
+      console.error("OTP verification failed:", error);
+      setVerificationStatus("OTP verification failed. Please try again.");
+    }
   };
 
-  const handleResendEmail = async () => {};
+  const handleResendEmail = async () => {
+    try {
+      // Call API to resend OTP here
+      // For example: await resendOTP({ email });
+
+      setVerificationStatus(
+        "A new verification code has been sent to your email."
+      );
+    } catch (error) {
+      setVerificationStatus(
+        "Failed to resend verification code. Please try again."
+      );
+    }
+  };
 
   return (
     <div>
@@ -49,8 +83,14 @@ const VerifyOtp = () => {
           />
         </div>
 
+        {verificationStatus && (
+          <div className="text-center mb-4 text-red-500">
+            {verificationStatus}
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-6">
-          <Text>Don't received code?</Text>
+          <Text>Don't receive the code?</Text>
 
           <p
             onClick={handleResendEmail}
@@ -71,10 +111,9 @@ const VerifyOtp = () => {
               color: "white",
               fontWeight: "400px",
               fontSize: "18px",
-
               marginTop: 20,
             }}
-            className="flex items-center justify-center border border-[#A92C2C] bg-gradient-to-r from-primary  to-secondary rounded-lg"
+            className="flex items-center justify-center border border-[#A92C2C] bg-gradient-to-r from-primary to-secondary rounded-lg"
           >
             Verify OTP
           </Button>

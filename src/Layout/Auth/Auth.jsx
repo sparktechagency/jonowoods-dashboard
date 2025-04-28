@@ -19,20 +19,15 @@ const Auth = () => {
         return forgotImage;
       } else if (currentPath.includes("/auth/verify-otp")) {
         return otpImage;
-      }
-     
-     else if (currentPath.includes("/auth/reset-password")) {
+      } else if (currentPath.includes("/auth/reset-password")) {
         return resetImage;
-      }
-      else {
+      } else {
         return loginImage;
       }
     };
 
     const selectedImage = getLeftSideImage();
-    setImageToShow(selectedImage); // ✅ Update the image state
-    console.log("Current path:", currentPath);
-    console.log("Image updated to:", selectedImage);
+    setImageToShow(selectedImage);
   }, [currentPath]);
 
   return (
@@ -61,7 +56,7 @@ const Auth = () => {
         className="w-1/2 h-full hidden md:flex items-center justify-center"
         style={{
           position: "relative",
-          left:100,
+          left: 100,
           zIndex: 1,
         }}
       >

@@ -1,16 +1,39 @@
 import { Form, Input } from "antd";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import FormItem from "../../components/common/FormItem";
 import image4 from "../../assets/image4.png";
 import { MdKeyboardBackspace } from "react-icons/md";
+import { useForgotPasswordMutation } from "../../redux/apiSlices/authSlice";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+  const [forgotPassword, { isLoading, isError, error }] =
+    useForgotPasswordMutation();
+  const [verificationStatus, setVerificationStatus] = useState("");
 
   const onFinish = async (values) => {
-    // Handle forgot password logic
-    navigate("/auth/verify-otp");
+    try {
+      // Call forgot password API with email
+      const response = await forgotPassword({ email: values.email }).unwrap();
+      console.log(response);
+
+      // Check if the response is successful
+      if (response.success) {
+        // If successful, navigate to OTP verification page
+        navigate(
+          "/auth/verify-otp?email=" +
+            encodeURIComponent(values.email) +
+            "&type=forgot-password"
+        );
+      } else {
+        // Show error if the API response is not successful
+        setVerificationStatus("Failed to send OTP. Please try again.");
+      }
+    } catch (err) {
+      console.error("Forgot password error:", err);
+      setVerificationStatus("Failed to send OTP. Please try again.");
+    }
   };
 
   return (
@@ -22,6 +45,12 @@ const ForgotPassword = () => {
       </div>
       <Form onFinish={onFinish} layout="vertical">
         <FormItem name={"email"} label={"Email"} />
+
+        {verificationStatus && (
+          <div className="text-center text-red-500 mb-4">
+            {verificationStatus}
+          </div>
+        )}
 
         <Form.Item style={{ marginBottom: 0 }}>
           <button
@@ -36,12 +65,13 @@ const ForgotPassword = () => {
               marginTop: 20,
             }}
             className="flex items-center justify-center bg-gradient-to-r border border-[#A92C2C] from-primary to-secondary rounded-lg"
+            disabled={isLoading}
           >
-            Send foR OTP
+            {isLoading ? "Sending OTP..." : "Send OTP"}
           </button>
           <div className="flex items-center justify-center mt-4">
             <a
-              className="login-form-back   flex items-center justify-center gap-3 text-white"
+              className="login-form-back flex items-center justify-center gap-3 text-white"
               href="/auth/login"
             >
               <MdKeyboardBackspace className="W-10" size={28} />
