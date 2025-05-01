@@ -11,7 +11,6 @@ const Login = () => {
   const [login, { isLoading, isSuccess, error, data }] = useLoginMutation();
 
   const onFinish = async (values) => {
-    console.log(values);
     try {
       // Call the login mutation with email and password
       const response = await login({

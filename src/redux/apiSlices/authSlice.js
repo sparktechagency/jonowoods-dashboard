@@ -44,11 +44,6 @@ const authSlice = api.injectEndpoints({
           method: "POST",
           url: "/auth/change-password",
           body: data,
-          headers: {
-            Authorization: `Bearer ${JSON.parse(
-              localStorage.getItem("token")
-            )}`,
-          },
         };
       },
     }),
@@ -56,14 +51,9 @@ const authSlice = api.injectEndpoints({
     updateProfile: builder.mutation({
       query: (data) => {
         return {
-          method: "POST",
-          url: "/auth/update-profile",
+          method: "PATCH",
+          url: "/users/profile",
           body: data,
-          headers: {
-            Authorization: `Bearer ${JSON.parse(
-              localStorage.getItem("token")
-            )}`,
-          },
         };
       },
     }),
@@ -72,16 +62,8 @@ const authSlice = api.injectEndpoints({
       query: () => {
         return {
           method: "GET",
-          url: "/auth/get-profile",
-          headers: {
-            Authorization: `Bearer ${JSON.parse(
-              localStorage.getItem("token")
-            )}`,
-          },
+          url: "/users/profile",
         };
-      },
-      transformResponse: ({ user }) => {
-        return user;
       },
     }),
   }),

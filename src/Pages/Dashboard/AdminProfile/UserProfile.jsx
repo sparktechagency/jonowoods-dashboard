@@ -1,51 +1,45 @@
 import React, { useState, useEffect } from "react";
-import {
-  Form,
-  Input,
-  Button,
-  Switch,
-  Select,
-  notification,
-  Upload,
-  Avatar,
-  message,
-} from "antd";
-import GradientButton from "../../../components/common/GradiantButton";
+import { Form, Input, Button, Upload, Avatar, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
-
-const { Option } = Select;
+import {
+  useProfileQuery,
+  useUpdateProfileMutation,
+} from "../../../redux/apiSlices/authSlice";
+import { getImageUrl } from "../../../components/common/imageUrl";
 
 const UserProfile = () => {
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState(null);
-  const [fileList, setFileList] = useState([]); // State to handle file list
+  const [fileList, setFileList] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
+  const { data } = useProfileQuery();
+  const [updateProfile] = useUpdateProfileMutation();
 
-  // Dummy data (to be used as the default data)
-  const dummyData = {
-    username: "Md Jowel Ahmed",
-    email: "mdjowelahmed924@gmail.com",
-    address: "1234 Main St, Springfield, USA",
-    language: "english",
-    profileImage: "https://i.ibb.co.com/Qjf2hxsf/images-2.jpg",
-  };
+  const user = data?.data;
 
   useEffect(() => {
-    // Set initial values and the profile image if it exists
-    form.setFieldsValue(dummyData);
+    if (user) {
+      form.setFieldsValue({
+        name: user.name,
+        email: user.email,
+        address: user.address,
+        phone: user.phone || "",
+      });
 
-    // Set the image URL and file list if a profile image exists
-    if (dummyData.profileImage) {
-      setImageUrl(dummyData.profileImage);
-      setFileList([
-        {
-          uid: "-1",
-          name: "profile.jpg",
-          status: "done",
-          url: dummyData.profileImage,
-        },
-      ]);
+      // Set the image URL if it exists
+      if (user.image) {
+        setImageUrl(user.image);
+        setFileList([
+          {
+            uid: "-1",
+            name: "profile.jpg",
+            status: "done",
+            url: user.image,
+          },
+        ]);
+      }
     }
-  }, [form]);
+  }, [form, user]);
 
   // Clean up blob URLs when component unmounts to prevent memory leaks
   useEffect(() => {
@@ -56,45 +50,15 @@ const UserProfile = () => {
     };
   }, [imageUrl]);
 
-  const onFinish = (values) => {
-    // Get the file object itself, not just the URL
-    const imageFile = fileList.length > 0 ? fileList[0].originFileObj : null;
-
-    console.log("Form Values on Submit:", values);
-    console.log("Image File:", imageFile); // Log the actual file object
-
-    // Create a FormData object for server submission with file
-    const formData = new FormData();
-    Object.keys(values).forEach((key) => {
-      formData.append(key, values[key]);
-    });
-
-    if (imageFile) {
-      formData.append("profileImage", imageFile);
-    } else if (imageUrl) {
-      // If using existing image (not a new upload)
-      formData.append("profileImageUrl", imageUrl);
-    }
-
-    console.log("FormData created successfully");
-
-    // For displaying in console what would be sent to server
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ": " + pair[1]);
-    }
-
-    // Here you would normally send the formData to your API
-    // axios.post('/api/updateProfile', formData)
-
-    message.success("Profile Updated Successfully!");
-  };
-
-  const handleImageChange = ({ fileList: newFileList }) => {
+  const handleImageChange = (info) => {
     // Only keep the most recent file in the list
-    const limitedFileList = newFileList.slice(-1);
+    const limitedFileList = info.fileList.slice(-1);
     setFileList(limitedFileList);
 
     if (limitedFileList.length > 0 && limitedFileList[0].originFileObj) {
+      // Store the file for form submission
+      setImageFile(limitedFileList[0].originFileObj);
+
       // Create blob URL for preview
       const newImageUrl = URL.createObjectURL(limitedFileList[0].originFileObj);
 
@@ -105,6 +69,7 @@ const UserProfile = () => {
 
       setImageUrl(newImageUrl);
     } else {
+      setImageFile(null);
       setImageUrl(null);
     }
   };
@@ -112,26 +77,58 @@ const UserProfile = () => {
   const beforeUpload = (file) => {
     const isImage = file.type.startsWith("image/");
     if (!isImage) {
-      notification.error({
-        message: "Invalid File Type",
-        description: "Please upload an image file.",
-      });
+      message.error("Please upload an image file.");
     }
 
     // Check file size (optional)
     const isLessThan2MB = file.size / 1024 / 1024 < 2;
     if (!isLessThan2MB) {
-      notification.error({
-        message: "File too large",
-        description: "Image must be smaller than 2MB.",
-      });
+      message.error("Image must be smaller than 2MB.");
     }
 
-    return isImage && isLessThan2MB;
+    return false; // Return false to prevent auto upload
   };
 
-  const handleFormSubmit = () => {
-    form.submit(); // This will trigger the onFinish function
+  const onFinish = async (values) => {
+    try {
+      // Create user data object
+      const userData = {
+        name: values.name,
+        email: values.email,
+        address: values.address,
+        phone: values.phone || "",
+      };
+
+      // Create a new FormData object to send to backend
+      const formDataToSend = new FormData();
+
+      // Append user data as a JSON string
+      formDataToSend.append("data", JSON.stringify(userData));
+
+      // Check if image exists and append it to FormData
+      if (imageFile) {
+        formDataToSend.append("image", imageFile);
+      }
+
+      // Send the FormData to the backend using your existing mutation
+      const response = await updateProfile(formDataToSend).unwrap();
+
+      if (response.success) {
+        message.success("Profile updated successfully!");
+
+        // Update token if returned in the response
+        if (response.token) {
+          localStorage.setItem("accessToken", response.token);
+        }
+      } else {
+        message.error(response.message || "Failed to update profile!");
+      }
+    } catch (error) {
+      console.error("Profile update error:", error);
+      message.error(
+        error.data?.message || "An error occurred while updating the profile"
+      );
+    }
   };
 
   return (
@@ -141,7 +138,6 @@ const UserProfile = () => {
         layout="vertical"
         style={{ width: "80%" }}
         onFinish={onFinish}
-        encType="multipart/form-data"
       >
         <div className="grid w-full grid-cols-1 lg:grid-cols-2 lg:gap-x-16 gap-y-7">
           {/* Profile Image */}
@@ -150,15 +146,28 @@ const UserProfile = () => {
               <Upload
                 name="avatar"
                 showUploadList={false}
-                action="/upload" // This will be overridden by the manual form submission
-                onChange={handleImageChange}
                 beforeUpload={beforeUpload}
+                onChange={handleImageChange}
                 fileList={fileList}
-                listType="picture-card"
-                maxCount={1}
+                accept="image/*"
               >
                 {imageUrl ? (
-                  <Avatar size={100} src={imageUrl} />
+                  <div>
+                    <img
+                      src={
+                        imageUrl.startsWith("blob:")
+                          ? imageUrl
+                          : getImageUrl(imageUrl)
+                      }
+                      alt="Profile"
+                      style={{
+                        width: 100,
+                        height: 100,
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                      }}
+                    />
+                  </div>
                 ) : (
                   <Avatar size={100} icon={<UploadOutlined />} />
                 )}
@@ -166,15 +175,15 @@ const UserProfile = () => {
             </Form.Item>
           </div>
 
-          {/* Username */}
+          {/* Name */}
           <Form.Item
-            name="username"
-            label="Username"
+            name="name"
+            label="Name"
             style={{ marginBottom: 0 }}
-            rules={[{ required: true, message: "Please enter your username" }]}
+            rules={[{ required: true, message: "Please enter your name" }]}
           >
             <Input
-              placeholder="Enter your Username"
+              placeholder="Enter your Name"
               style={{
                 height: "45px",
                 backgroundColor: "#f7f7f7",
@@ -225,48 +234,31 @@ const UserProfile = () => {
             />
           </Form.Item>
 
-          {/* Language */}
-          <Form.Item
-            name="language"
-            label="Language"
-            style={{ marginBottom: 0 }}
-            rules={[{ required: true, message: "Please select your language" }]}
-          >
-            <Select
-              placeholder="Select your Language"
+          {/* Phone */}
+          <Form.Item name="phone" label="Phone" style={{ marginBottom: 0 }}>
+            <Input
+              placeholder="Enter your Phone Number"
               style={{
                 height: "45px",
                 backgroundColor: "#f7f7f7",
                 borderRadius: "8px",
-                border: "1px solid #E0E4EC", // Custom border for language
+                outline: "none",
               }}
-            >
-              <Option value="english">English</Option>
-              <Option value="french">French</Option>
-              <Option value="spanish">Spanish</Option>
-            </Select>
+            />
           </Form.Item>
 
           {/* Update Profile Button */}
           <div className="col-span-2 mt-6 text-end">
             <Form.Item>
-              {/* Option 1: Use standard Ant Design Button */}
               <Button
                 type="primary"
                 htmlType="submit"
                 block
-                style={{ height: 40 }}
-                className="text-white rounded-md bg-primary hover:bg-primary "
+                style={{ height: 48 }}
+                className="text-white rounded-md bg-primary hover:bg-primary"
               >
                 Update Profile
               </Button>
-
-              {/* Option 2: Use GradientButton with onClick handler */}
-              {/* 
-              <GradientButton onClick={handleFormSubmit} block>
-                Update Profile
-              </GradientButton>
-              */}
             </Form.Item>
           </div>
         </div>

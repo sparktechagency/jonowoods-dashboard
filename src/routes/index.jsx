@@ -22,12 +22,13 @@ import AdminProfile from "../Pages/Dashboard/AdminProfile/AdminProfile";
 import Retailer from "../Pages/Dashboard/Retailer";
 import ViewSalesReps from "../components/SalesRepsManagement/detailsSalesReps/SubCategoryTable";
 import Products from "../Pages/Dashboard/Products";
-import LoyaltyProgram from "../Pages/Dashboard/LoyaltyProgram"
+import LoyaltyProgram from "../Pages/Dashboard/LoyaltyProgram";
 import OrderManagementContainer from "../components/orderMangement/OrderManagementContainer";
 import VideoManagementSystem from "../components/retailerManagement/RetailerManageTable";
 import CategoryManagement from "../components/SalesRepsManagement/SalesRepsManagement";
-import SubscriptionManagement from "../components/loyaltyProgram/LoyalityProgramTable";
 import Subsciber from "../Pages/Dashboard/Subsciber";
+import SubscriptionManagements from "../components/subscriptionmanagement/SubscriptionManagements";
+import QuotationManagement from "../components/quatation/QuatationManagement";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
@@ -58,7 +59,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/inventory",
-        element: <Products />,
+        element: <QuotationManagement />,
       },
       {
         path: "/salesRepsManage/:id",
@@ -66,7 +67,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/loyaltyProgram",
-        element: <SubscriptionManagement />,
+        element: <SubscriptionManagements />,
       },
       {
         path: "/subsciption",

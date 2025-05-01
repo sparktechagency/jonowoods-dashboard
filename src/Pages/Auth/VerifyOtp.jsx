@@ -17,7 +17,7 @@ const VerifyOtp = () => {
   const onFinish = async () => {
     try {
       // Create the OTP request payload
-      const payload = { email, oneTimeCode: Number(otp) }; // Convert OTP to number
+      const payload = { email, oneTimeCode: Number(otp) };
 
       // Call the API to verify OTP
       const response = await otpVerify(payload).unwrap(); // Unwrap to get the data from response
