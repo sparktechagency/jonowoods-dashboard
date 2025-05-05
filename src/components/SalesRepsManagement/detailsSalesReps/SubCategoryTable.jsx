@@ -1,6 +1,7 @@
 import React from "react";
 import { Table, Button, Space, Switch, Tag } from "antd";
 import { EditOutlined } from "@ant-design/icons";
+import { getImageUrl } from "../../common/imageUrl";
 
 const SubCategoryTable = ({
   subCategories,
@@ -8,15 +9,13 @@ const SubCategoryTable = ({
   onStatusChange,
   onDelete,
 }) => {
-
-
   const columns = [
     {
       title: "SL",
-      dataIndex: "id",
       key: "id",
       width: 60,
       align: "center",
+      render: (_, __, index) => index + 1,
     },
     {
       title: "Name",
@@ -31,9 +30,9 @@ const SubCategoryTable = ({
       render: (thumbnail) => (
         <div style={{ display: "flex", justifyContent: "center" }}>
           <img
-            src={thumbnail}
+            src={getImageUrl(thumbnail)}
             alt="thumbnail"
-            style={{ width: 100, height: 40 }}
+            style={{ width: 100, height: 40, objectFit: "contain" }}
           />
         </div>
       ),
@@ -44,6 +43,7 @@ const SubCategoryTable = ({
       dataIndex: "videoCount",
       key: "videoCount",
       align: "center",
+      render: (videoCount) => videoCount || 0,
     },
     {
       title: "Created Date",
@@ -56,7 +56,7 @@ const SubCategoryTable = ({
       dataIndex: "categoryType",
       key: "categoryType",
       render: (type) => (
-        <Tag color={type === "Free" ? "green" : "blue"}>{type}</Tag>
+        <Tag color={type === "Free" ? "green" : "blue"}>{type || "Free"}</Tag>
       ),
       align: "center",
     },
@@ -65,6 +65,11 @@ const SubCategoryTable = ({
       dataIndex: "status",
       key: "status",
       align: "center",
+      render: (status) => (
+        <Tag color={status.toLowerCase() === "active" ? "green" : "red"}>
+          {status}
+        </Tag>
+      ),
     },
     {
       title: "Action",
@@ -78,7 +83,7 @@ const SubCategoryTable = ({
             className="text-blue-500"
           />
           <Switch
-            checked={record.status === "Active"}
+            checked={record.status.toLowerCase() === "active"}
             size="small"
             onChange={(checked) => onStatusChange(checked, record)}
           />
@@ -88,12 +93,11 @@ const SubCategoryTable = ({
     },
   ];
 
-
   return (
     <Table
       columns={columns}
       dataSource={subCategories}
-      rowKey="id"
+      rowKey="_id"
       pagination={{ pageSize: 10 }}
       bordered
       size="small"

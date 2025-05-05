@@ -1,6 +1,8 @@
 import React from "react";
 import { Table, Button, Space, Switch, Tag } from "antd";
 import { EditOutlined, EyeOutlined } from "@ant-design/icons";
+import moment from "moment/moment";
+import { getImageUrl } from "../common/imageUrl";
 
 const CategoryTable = ({
   categories,
@@ -12,9 +14,9 @@ const CategoryTable = ({
   const columns = [
     {
       title: "SL",
-      dataIndex: "id",
       key: "id",
       width: 60,
+      render: (_, __, index) => index + 1,
     },
     {
       title: "Category Name",
@@ -28,27 +30,33 @@ const CategoryTable = ({
       render: (thumbnail) => (
         <div style={{ display: "flex", justifyContent: "center" }}>
           <img
-            src={thumbnail}
+            src={getImageUrl(thumbnail)}
             alt="thumbnail"
-            style={{ width: 100, height: 40 }}
+            className="object-cover rounded-xl"
+            style={{ width: 100, height: 60 }}
           />
         </div>
       ),
     },
     {
       title: "Sub Category",
-      dataIndex: "subCategoryCount",
-      key: "subCategoryCount",
+      dataIndex: "subCategory",
+      key: "subCategory",
+      render: (subCategory) => {
+        return Array.isArray(subCategory) ? subCategory.length : 0;
+      },
     },
     {
       title: "Videos",
       dataIndex: "videoCount",
       key: "videoCount",
+      render: (videoCount) => videoCount || 0,
     },
     {
       title: "Created Date",
-      dataIndex: "createdDate",
-      key: "createdDate",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (createdAt) => moment(createdAt).format("L"),
     },
     {
       title: "Category Type",
@@ -62,13 +70,11 @@ const CategoryTable = ({
       title: "Status",
       dataIndex: "status",
       key: "status",
-      // render: (status, record) => (
-      //   <Switch
-      //     checked={status === "Active"}
-      //     onChange={(checked) => onStatusChange(checked, record)}
-      //     size="small"
-      //   />
-      // ),
+      render: (status) => (
+        <Tag color={status.toLowerCase() === "active" ? "green" : "red"}>
+          {status}
+        </Tag>
+      ),
     },
     {
       title: "Action",
@@ -88,7 +94,7 @@ const CategoryTable = ({
             className="text-green-500"
           />
           <Switch
-            checked={record.status === "Active"}
+            checked={record.status.toLowerCase() === "active"}
             size="small"
             onChange={(checked) => onStatusChange(checked, record)}
           />
@@ -101,9 +107,10 @@ const CategoryTable = ({
     <Table
       columns={columns}
       dataSource={categories}
-      rowKey="id"
+      rowKey="_id"
       pagination={{ pageSize: 10 }}
       bordered
+      size="small"
     />
   );
 };

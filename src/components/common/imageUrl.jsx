@@ -6,3 +6,6 @@ export const getImageUrl = (path) => {
     return `${baseUrl}/${path}`;
   }
 };
+export const getVideoAndThumbnail = (Url) => {
+  return `https://${Url}`;
+};

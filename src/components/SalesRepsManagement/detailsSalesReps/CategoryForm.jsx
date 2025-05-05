@@ -1,20 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Select, Button, Upload } from "antd";
 import { UploadOutlined, ReloadOutlined } from "@ant-design/icons";
+import { getImageUrl } from "../../common/imageUrl";
 
 const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
   const [thumbnailFile, setThumbnailFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState("/api/placeholder/400/200");
 
   useEffect(() => {
     if (visible) {
       if (initialValues) {
         form.setFieldsValue({
           name: initialValues.name,
-          categoryType: initialValues.categoryType === "Free" ? "Free" : "Paid",
+          categoryType: initialValues.categoryType,
         });
-        setPreviewUrl(initialValues.thumbnail);
+        // Set preview URL from existing thumbnail
+        if (initialValues.thumbnail) {
+          setPreviewUrl(getImageUrl(initialValues.thumbnail));
+        } else {
+          setPreviewUrl("/api/placeholder/400/200");
+        }
       } else {
         form.resetFields();
         setPreviewUrl("/api/placeholder/400/200");
@@ -38,19 +44,15 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
   };
 
   const handleFormSubmit = () => {
-    form.validateFields().then((values) => {
-      onSubmit(values, thumbnailFile);
-      form.resetFields();
-      setThumbnailFile(null);
-    });
+    form
+      .validateFields()
+      .then((values) => {
+        onSubmit(values, thumbnailFile);
+      })
+      .catch((info) => {
+        console.log("Validate Failed:", info);
+      });
   };
-
-  const uploadButton = (
-    <div>
-      <UploadOutlined />
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </div>
-  );
 
   return (
     <Modal

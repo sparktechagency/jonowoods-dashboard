@@ -1,8 +1,10 @@
 import React from "react";
 import { Modal, Form, Tag } from "antd";
 import { CloseCircleOutlined } from "@ant-design/icons";
+import { getImageUrl, getVideoAndThumbnail } from "../common/imageUrl";
 
 const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
+  console.log(currentVideo)
   const [form] = Form.useForm();
 
   return (
@@ -61,9 +63,9 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
                   overflow: "hidden",
                 }}
               >
-                {currentVideo.thumbnail ? (
+                {currentVideo.thumbnailUrl ? (
                   <img
-                    src={currentVideo.thumbnail}
+                    src={getVideoAndThumbnail(currentVideo.thumbnailUrl)}
                     alt="thumbnail"
                     style={{
                       width: "100%",

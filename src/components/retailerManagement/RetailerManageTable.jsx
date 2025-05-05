@@ -5,16 +5,33 @@ import {
   Modal,
   Space,
   Switch,
-  Select,
   Dropdown,
   Menu,
+  message,
+  Spin,
+  Tag,
 } from "antd";
-import { EditOutlined, EyeOutlined, DownOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  EyeOutlined,
+  DownOutlined,
+  PlusOutlined,
+  LoadingOutlined,
+  DeleteOutlined,
+} from "@ant-design/icons";
 import VideoFormModal from "./VideoFormModal";
 import VideoDetailsModal from "./VideoDetailsModal";
 import GradientButton from "../common/GradiantButton";
-
-const { Option } = Select;
+import {
+  useGetAllVideosQuery,
+  useDeleteVideoMutation,
+  useUpdateVideoMutation,
+  useUpdateVideoStatusMutation,
+} from "../../redux/apiSlices/videoApi";
+import { getVideoAndThumbnail } from "../common/imageUrl";
+import { useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
+import { render } from "react-dom";
+import moment from "moment/moment";
 
 const FilteringIcon = () => (
   <svg
@@ -23,7 +40,7 @@ const FilteringIcon = () => (
     height="16"
     viewBox="0 0 24 24"
     fill="none"
-    style={{ marginRight: "8px" }} // Add some spacing between the icon and text
+    style={{ marginRight: "8px" }}
   >
     <path
       d="M0.75 4.2308H12.169C12.5131 5.79731 13.9121 6.97336 15.5805 6.97336C17.2488 6.97336 18.6478 5.79736 18.9919 4.2308H23.25C23.6642 4.2308 24 3.89498 24 3.4808C24 3.06661 23.6642 2.7308 23.25 2.7308H18.9915C18.6467 1.16508 17.2459 -0.0117188 15.5805 -0.0117188C13.9141 -0.0117188 12.5139 1.16489 12.1693 2.7308H0.75C0.335812 2.7308 0 3.06661 0 3.4808C0 3.89498 0.335812 4.2308 0.75 4.2308ZM13.588 3.48277L13.588 3.4747C13.5913 2.37937 14.4851 1.48833 15.5805 1.48833C16.6743 1.48833 17.5681 2.37816 17.5728 3.47297L17.573 3.48398C17.5712 4.58119 16.6781 5.47341 15.5805 5.47341C14.4833 5.47341 13.5904 4.58208 13.5879 3.48553L13.588 3.48277ZM23.25 19.769H18.9915C18.6467 18.2033 17.2459 17.0265 15.5805 17.0265C13.9141 17.0265 12.5139 18.2031 12.1693 19.769H23.25C23.6642 19.769 24 20.1047 24 20.519C24 20.9332 23.6642 21.269 23.25 21.269ZM15.5805 22.5115C14.4833 22.5115 13.5904 21.6202 13.5879 20.5237L13.588 20.5209L13.588 20.5129C13.5913 19.4175 14.4851 18.5265 15.5805 18.5265C16.6743 18.5265 17.5681 19.4163 17.5728 20.511L17.573 20.5221C17.5714 21.6194 16.6782 22.5115 15.5805 22.5115ZM23.25 11.2499H11.831C11.4869 9.68339 10.0879 8.50739 8.41955 8.50739C6.75117 8.50739 5.35223 9.68339 5.00808 11.2499H0.75C0.335812 11.2499 0 11.5857 0 11.9999C0 12.4141 0.335812 12.7499 0.75 12.7499H5.00845C5.35331 14.3156 6.75413 15.4924 8.41955 15.4924C10.0859 15.4924 11.4861 14.3158 11.8307 12.7499H23.25C23.6642 12.7499 24 12.4141 24 11.9999C24 11.5857 23.6642 11.2499 23.25 11.2499ZM10.412 11.9979L10.412 12.006C10.4087 13.1013 9.51492 13.9924 8.41955 13.9924C7.32572 13.9924 6.43191 13.1025 6.42717 12.0078L6.42703 11.9968C6.42867 10.8995 7.32188 10.0074 8.41955 10.0074C9.5167 10.0074 10.4096 10.8987 10.4121 11.9953L10.412 11.9979Z"
@@ -33,54 +50,42 @@ const FilteringIcon = () => (
 );
 
 const VideoManagementSystem = () => {
-  const [videos, setVideos] = useState([]);
-  const [filteredVideos, setFilteredVideos] = useState([]);
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
-  const [categories] = useState([
-    "Basic",
-    "Advanced",
-    "Premium",
-    "Class",
-    "Workshop",
-    "Tutorial",
-  ]);
-  const [subCategories] = useState(["Class", "Workshop", "Tutorial"]);
+  const [equipmentTags, setEquipmentTags] = useState([]);
   const [statusFilter, setStatusFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
+  const [filteredVideos, setFilteredVideos] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
-  // Load initial data
+  // API hooks
+  const { data: categoryData } = useGetCategoryQuery();
+  const categories = categoryData?.data || [];
+
+  // Get all videos
+  const {
+    data: videos,
+    isLoading: isLoadingVideos,
+    refetch,
+  } = useGetAllVideosQuery();
+  console.log(videos);
+  const [deleteVideo] = useDeleteVideoMutation();
+  const [updateVideo] = useUpdateVideoMutation();
+  const [updateVideoStatus]=useUpdateVideoStatusMutation()
+
+  // Filter videos when data changes
   useEffect(() => {
-    const initialData = Array(9)
-      .fill()
-      .map((_, index) => ({
-        id: index + 1,
-        title: "Meditate & Breathe",
-        thumbnail:
-          "https://img.freepik.com/free-vector/geometric-simple-sport-youtube-thumbnail_23-2148922037.jpg?t=st=1744698420~exp=1744702020~hmac=87d2997ba082f1193d31f5141e6f9a8fe5b21fda5937356fde504b64e6838d80&w=1380",
-        category: "Basic",
-        video:
-          "https://collection.cloudinary.com/dztlololv/a69f4ed90180e25967c533f816a435af?",
-        subCategory: "Class",
-        uploadDate: "March 02, 2025",
-        duration: "25:30 Min",
-        status: "Active",
-        description:
-          "A calming meditation session to help you relax and breathe.",
-        equipment: ["Business"],
-      }));
-
-    setVideos(initialData);
-    setFilteredVideos(initialData);
-  }, []);
-
-  useEffect(() => {
-    handleFilterChange();
+    if (videos) {
+      handleFilterChange();
+    }
   }, [statusFilter, categoryFilter, videos]);
 
+  // Filter logic
   const handleFilterChange = () => {
+    if (!videos) return;
+
     const filtered = videos.filter(
       (video) =>
         (statusFilter === "All" || video.status === statusFilter) &&
@@ -89,66 +94,43 @@ const VideoManagementSystem = () => {
     setFilteredVideos(filtered);
   };
 
+  // Show form modal for creating/editing
   const showFormModal = (record = null) => {
     if (record) {
       setEditingId(record.id);
       setCurrentVideo(record);
+      setEquipmentTags(record.equipment || []);
+
+      // Find category ID based on category name
+      const categoryObj = categories.find(
+        (cat) => cat.name === record.category
+      );
+      if (categoryObj) {
+        setSelectedCategoryId(categoryObj._id);
+      }
     } else {
       setEditingId(null);
       setCurrentVideo(null);
+      setEquipmentTags([]);
+      setSelectedCategoryId(null);
     }
     setIsFormModalVisible(true);
   };
 
+  // Show details modal
   const showDetailsModal = (record) => {
     setCurrentVideo(record);
     setIsDetailsModalVisible(true);
   };
 
-  const handleFormSubmit = (values, thumbnailFile, videoFile) => {
-    const now = new Date();
-    const formattedDate = `${now.toLocaleString("default", {
-      month: "long",
-    })} ${String(now.getDate()).padStart(2, "0")}, ${now.getFullYear()}`;
-
-    const thumbnailUrl = thumbnailFile
-      ? URL.createObjectURL(thumbnailFile)
-      : editingId
-      ? currentVideo.thumbnail
-      : "";
-    const videoUrl = videoFile
-      ? URL.createObjectURL(videoFile)
-      : editingId
-      ? currentVideo.video
-      : "";
-
-    if (editingId !== null) {
-      const updatedVideos = videos.map((video) =>
-        video.id === editingId
-          ? {
-              ...video,
-              ...values,
-              thumbnail: thumbnailUrl || video.thumbnail,
-              video: videoUrl || video.video,
-              uploadDate: formattedDate,
-            }
-          : video
-      );
-      setVideos(updatedVideos);
-    } else {
-      const newVideo = {
-        id: videos.length + 1,
-        ...values,
-        thumbnail: thumbnailUrl,
-        video: videoUrl,
-        uploadDate: formattedDate,
-        status: "Active",
-      };
-      setVideos([...videos, newVideo]);
-    }
+  // Handle form submission
+  const handleFormSubmit = async () => {
+    // Form submission is handled by VideoFormModal
     setIsFormModalVisible(false);
+    refetch();
   };
 
+  // Handle video deletion
   const handleDeleteVideo = (id) => {
     Modal.confirm({
       title: "Are you sure you want to delete this video?",
@@ -156,39 +138,52 @@ const VideoManagementSystem = () => {
       okText: "Yes",
       okType: "danger",
       cancelText: "No",
-      onOk: () => {
-        const filteredVideos = videos.filter((video) => video.id !== id);
-        setVideos(filteredVideos);
+      onOk: async () => {
+        try {
+          await deleteVideo(id).unwrap();
+          message.success("Video deleted successfully");
+          refetch();
+        } catch (error) {
+          message.error("Failed to delete video");
+          console.error("Error deleting video:", error);
+        }
       },
     });
   };
 
-  const handleStatusChange = (checked, record) => {
-    const updatedVideos = videos.map((video) =>
-      video.id === record.id
-        ? { ...video, status: checked ? "Active" : "Inactive" }
-        : video
-    );
-    setVideos(updatedVideos);
+  // Handle status change
+  const handleStatusChange = async (checked, record) => {
+    try {
+      const newStatus = checked ? "active" : "inactive";
+      await updateVideoStatus({
+        id: record._id,
+        ...record,
+        status: newStatus,
+      }).unwrap();
+      message.success(`Video status updated to ${newStatus}`);
+      refetch();
+    } catch (error) {
+      message.error("Failed to update video status");
+      console.error("Error updating video status:", error);
+    }
   };
 
+  // Handle category selection change
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategoryId(categoryId);
+  };
+
+  // Filter menus
   const filterMenu = (
     <Menu>
       <Menu.Item key="all" onClick={() => setCategoryFilter("All")}>
         All Categories
       </Menu.Item>
-      <Menu.Item key="basic" onClick={() => setCategoryFilter("Basic")}>
-        Basic
-      </Menu.Item>
-      <Menu.Item key="advanced" onClick={() => setCategoryFilter("Advanced")}>
-        Advanced
-      </Menu.Item>
-      <Menu.Item key="premium" onClick={() => setCategoryFilter("Premium")}>
-        Premium
-      </Menu.Item>
-      <Menu.Item key="tutorial" onClick={() => setCategoryFilter("Tutorial")}>
-        Tutorial
-      </Menu.Item>
+      {categories?.map((cat) => (
+        <Menu.Item key={cat._id} onClick={() => setCategoryFilter(cat.name)}>
+          {cat.name}
+        </Menu.Item>
+      ))}
     </Menu>
   );
 
@@ -206,14 +201,18 @@ const VideoManagementSystem = () => {
     </Menu>
   );
 
+  // Table columns
   const columns = [
     {
-      title: "SL",
-      dataIndex: "id",
+      title: "SL", // Serial Number
       key: "id",
       width: 70,
       align: "center",
+      render: (text, record, index) => {
+        return `# ${index + 1}`; 
+      },
     },
+
     {
       title: "Video Title",
       dataIndex: "title",
@@ -222,15 +221,15 @@ const VideoManagementSystem = () => {
     },
     {
       title: "Thumbnail",
-      dataIndex: "thumbnail",
-      key: "thumbnail",
+      dataIndex: "thumbnailUrl",
+      key: "thumbnailUrl",
       align: "center",
       render: (_, record) => (
         <div style={{ display: "flex", justifyContent: "center" }}>
           <img
-            src={record.thumbnail}
+            src={getVideoAndThumbnail(record.thumbnailUrl)}
             alt="thumbnail"
-            style={{ width: 100, height: 50 }}
+            style={{ width: 100, height: 50, objectFit: "cover" }}
             className="rounded-lg"
           />
         </div>
@@ -250,10 +249,14 @@ const VideoManagementSystem = () => {
     },
     {
       title: "Upload Date",
-      dataIndex: "uploadDate",
-      key: "uploadDate",
+      dataIndex: "createdAt",
+      key: "createdAt",
       align: "center",
+      render: (text) => {
+        return moment(text).format("L");
+      },
     },
+
     {
       title: "Duration",
       dataIndex: "duration",
@@ -265,6 +268,9 @@ const VideoManagementSystem = () => {
       dataIndex: "status",
       key: "status",
       align: "center",
+      render: (status) => (
+        <Tag color={status === "Active" ? "success" : "error"}>{status}</Tag>
+      ),
     },
     {
       title: "Action",
@@ -275,27 +281,56 @@ const VideoManagementSystem = () => {
           size="small"
           style={{ display: "flex", justifyContent: "center" }}
         >
+          {/* Edit Button */}
           <Button
             type="text"
             icon={<EditOutlined style={{ color: "#f55" }} />}
             onClick={() => showFormModal(record)}
           />
+          {/* View Button */}
           <Button
             type="text"
             icon={<EyeOutlined style={{ color: "#55f" }} />}
             onClick={() => showDetailsModal(record)}
           />
+          {/* Status Switch */}
           <Switch
             size="small"
-            checked={record.status === "Active"}
+            checked={record.status === "active"}
             onChange={(checked) => handleStatusChange(checked, record)}
-            style={{ backgroundColor: "red" }}
+            style={{
+              backgroundColor: record.status === "active" ? "red" : "gray",
+            }}
+          />
+          {/* Delete Button */}
+          <Button
+            type="text"
+            icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
+            onClick={() => handleDeleteVideo(record._id)} // Trigger delete on click
           />
         </Space>
       ),
     },
   ];
 
+  // If loading, show spinner
+  if (isLoadingVideos) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "400px",
+        }}
+      >
+        <Spin
+          indicator={<LoadingOutlined style={{ fontSize: 36 }} spin />}
+          tip="Loading videos..."
+        />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -309,7 +344,6 @@ const VideoManagementSystem = () => {
               >
                 <Space>
                   <FilteringIcon className="filtering-icon" />
-                  {/* Use the custom class */}
                   <span className="filter-text">
                     {categoryFilter === "All"
                       ? "All Categories"
@@ -327,7 +361,6 @@ const VideoManagementSystem = () => {
               >
                 <Space>
                   <FilteringIcon className="filtering-icon" />
-                  {/* Use the custom class */}
                   <span className="filter-text">
                     {statusFilter === "All" ? "All Status" : statusFilter}
                   </span>
@@ -360,11 +393,14 @@ const VideoManagementSystem = () => {
       <VideoFormModal
         visible={isFormModalVisible}
         onCancel={() => setIsFormModalVisible(false)}
-        onSubmit={handleFormSubmit}
+        onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
         editingId={editingId}
         categories={categories}
-        subCategories={subCategories}
+        selectedCategoryId={selectedCategoryId}
+        onCategoryChange={handleCategoryChange}
+        equipmentTags={equipmentTags}
+        setEquipmentTags={setEquipmentTags}
       />
 
       {/* Video Details Modal */}

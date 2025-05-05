@@ -58,6 +58,10 @@ const router = createBrowserRouter([
         element: <CategoryManagement />,
       },
       {
+        path: "/salesRepsManage/:categoryId",
+        element: <CategoryManagement />,
+      },
+      {
         path: "/inventory",
         element: <QuotationManagement />,
       },

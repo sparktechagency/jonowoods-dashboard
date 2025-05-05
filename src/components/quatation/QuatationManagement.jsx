@@ -275,7 +275,10 @@ const QuotationManagement = () => {
           }}
           placement="bottomLeft"
         >
-          <Button className="bg-red-500 text-white hover:bg-red-600 py-5">
+          <Button
+            className="mr-2 bg-red-600 py-5 text-white hover:text-black hover:icon-black"
+            style={{ border: "none" }}
+          >
             <Space>
               <FilteringIcon className="filtering-icon" />
               {selectedStatus} <DownOutlined />

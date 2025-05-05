@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "antd";
 import SubCategoryTable from "./SubCategoryTable";
+import { getImageUrl } from "../../common/imageUrl";
 
 const CategoryDetails = ({
   category,
@@ -22,21 +23,14 @@ const CategoryDetails = ({
             <h2>Category Details</h2>
           </div>
         </div>
-        <Button
-          type="primary"
-          onClick={onAddSubCategory}
-          className="bg-red-500"
-        >
-          Add New Sub Category
-        </Button>
       </div>
 
       <div className="flex mb-6">
-        <div className="w-1/4">
+        <div className="w-1/5">
           <img
-            src={category.thumbnail || "/api/placeholder/400/200"}
+            src={getImageUrl(category.thumbnail)}
             alt="Category"
-            className="w-full rounded"
+            className="w-full h-40 rounded"
           />
         </div>
         <div className="ml-6">
@@ -46,10 +40,17 @@ const CategoryDetails = ({
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 flex justify-between">
         <h3 className="text-lg mb-2">
-          Sub Category List ({category.subCategoryCount})
+          Sub Category List ({category.subCategory.length})
         </h3>
+        <Button
+          type="primary"
+          onClick={onAddSubCategory}
+          className="bg-red-500 py-5"
+        >
+          Add New Sub Category
+        </Button>
       </div>
 
       <SubCategoryTable
