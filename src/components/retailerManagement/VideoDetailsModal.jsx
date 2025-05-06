@@ -4,7 +4,7 @@ import { CloseCircleOutlined } from "@ant-design/icons";
 import { getImageUrl, getVideoAndThumbnail } from "../common/imageUrl";
 
 const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
-  console.log(currentVideo)
+  console.log(currentVideo);
   const [form] = Form.useForm();
 
   return (

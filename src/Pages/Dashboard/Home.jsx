@@ -15,7 +15,7 @@ import {
   Legend,
 } from "chart.js";
 import OrderTable from "../../components/home/OrderTable";
-import SalesLeaderBoard from "../../components/home/SalesLeaderBoard";
+import { useGetStatisticsQuery } from "../../redux/apiSlices/homeSlice";
 
 ChartJS.register(
   CategoryScale,
@@ -27,63 +27,9 @@ ChartJS.register(
 );
 
 const Home = () => {
-  const data = {
-    labels: [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ],
-    datasets: [
-      {
-        label: "Subscriptions",
-        data: [64, 27, 83, 90, 87, 85, 70, 40, 32, 74, 65, 70],
-        backgroundColor: "#3FC7EE",
-        borderColor: "#A1A1A1",
-        borderWidth: 1,
-        barThickness: 24,
-        maxBarThickness: 24,
-      },
-    ],
-  };
 
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-    scales: {
-      x: {
-        grid: {
-          display: false,
-          color: "#A1A1A1",
-        },
-      },
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 20,
-          suggestedMin: 0,
-          suggestedMax: 100,
-        },
-        grid: {
-          display: true,
-          lineWidth: 2,
-        },
-      },
-    },
-  };
+  const { data } = useGetStatisticsQuery()
+  console.log(data)
 
   return (
     <div className="">
@@ -101,63 +47,54 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-3 h-[240px]">
-            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
+            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-center gap-4">
               <div className="flex items-center gap-3">
                 <div>
-                  <h2 className="text-center  font-bold mb-3">
-                    Total Sales
-                  </h2>
-                  <h3 className="text-primary text-3xl font-bold">$12100</h3>
+                  <h2 className="text-center  font-bold mb-3">Total Earn</h2>
+                  <h3 className="text-primary text-3xl text-center font-bold">
+                    $ {data?.totalEarn}
+                  </h3>
                 </div>
-                <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
-                  <MdArrowUpward color="" size={24} />
-                  <p>12%</p>
-                </div>
+                
               </div>
             </div>
 
-            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
+            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-center gap-4">
               <div className="flex items-center gap-3">
                 <div>
-                  <h2 className="text-center  font-bold mb-3">
-                    Total Order
-                  </h2>
-                  <h3 className="text-primary text-3xl font-bold">$12100</h3>
+                  <h2 className="text-center  font-bold mb-3">Total Users</h2>
+                  <h3 className="text-primary text-3xl text-center font-bold">
+                    {data?.totalUsers}{" "}
+                  </h3>
                 </div>
-                <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
-                  <MdArrowUpward color="" size={24} />
-                  <p>12%</p>
-                </div>
+                
               </div>
             </div>
 
-            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
+            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-center gap-4">
               <div className="flex items-center gap-3">
                 <div>
-                  <h2 className="text-center  font-bold mb-3">
-                    Commission
-                  </h2>
-                  <h3 className="text-primary text-3xl font-bold">$12100</h3>
+                  <h2 className="text-center  font-bold mb-3">Total Videos </h2>
+                  <h3 className="text-primary text-3xl text-center font-bold">
+                    {" "}
+                    {data?.totalVideos}{" "}
+                  </h3>
                 </div>
-                <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
-                  <MdArrowUpward color="" size={24} />
-                  <p>12%</p>
-                </div>
+                
               </div>
             </div>
 
-            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-between gap-4">
+            <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-center gap-4">
               <div className="flex items-center  gap-3">
                 <div>
                   <h2 className="text-center  font-bold mb-3">
-                    Retailers
+                    Subscribers
                   </h2>
-                  <h3 className="text-primary text-3xl font-bold">$12100</h3>
+                  <h3 className="text-primary text-3xl text-center  font-bold">
+                    {data?.totalSubscriptionsSell}{" "}
+                  </h3>
                 </div>
-                <div className="w-16 h-16 rounded-full text-[#37C779] flex items-center justify-center">
-                  <MdArrowUpward color="" size={24} />
-                  <p>12%</p>
-                </div>
+                
               </div>
             </div>
           </div>

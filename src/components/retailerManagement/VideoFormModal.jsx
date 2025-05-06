@@ -16,8 +16,9 @@ import {
   useAddVideoMutation,
   useUpdateVideoMutation,
 } from "../../redux/apiSlices/videoApi";
-import { useGetSingleSubCategoryQuery,  } from "../../redux/apiSlices/subCategoryApi";
+import { useGetSingleSubCategoryQuery } from "../../redux/apiSlices/subCategoryApi";
 import Spinner from "../common/Spinner";
+import { getVideoAndThumbnail } from "../common/imageUrl";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -42,40 +43,56 @@ const VideoFormModal = ({
   const [submitting, setSubmitting] = useState(false);
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
+  const [localCategoryId, setLocalCategoryId] = useState(selectedCategoryId);
 
   // API hooks
   const [addVideo, { isLoading: isAdding }] = useAddVideoMutation();
   const [updateVideo, { isLoading: isUpdating }] = useUpdateVideoMutation();
-  
+
   // Fetch subcategories based on selected category ID
-  const {
-    data: subCategoryData,
-    isLoading: isLoadingSubCategories,
-  } = useGetSingleSubCategoryQuery(selectedCategoryId, {
-    skip: !selectedCategoryId, // Skip the query if no category is selected
-  });
-  
+  const { data: subCategoryData, isLoading: isLoadingSubCategories } =
+    useGetSingleSubCategoryQuery(localCategoryId, {
+      skip: !localCategoryId, // Skip the query if no category is selected
+    });
+
   const subCategories = subCategoryData?.data || [];
 
   const isProcessing = isAdding || isUpdating || submitting;
-  const isEditMode = !!currentVideo?.id;
+  const isEditMode = !!currentVideo?._id; // Using _id instead of id
 
   // Initialize form when modal opens or currentVideo changes
   useEffect(() => {
     if (visible) {
       if (currentVideo) {
+        console.log("Current video for editing:", currentVideo);
+
         // Find the category ID based on the category name
-       const categoryObj = categories.find(
-         (cat) => cat.name === currentVideo.category
-       );
+        const categoryObj = categories.find(
+          (cat) => cat.name === currentVideo.category
+        );
 
         const categoryId = categoryObj?._id;
-        
+        console.log(categoryId);
+
+        // Set local category ID for fetching subcategories
+        setLocalCategoryId(categoryId);
+
+        // Properly notify parent component of category change
+        if (categoryId) {
+          onCategoryChange(categoryId);
+        }
+
+        // Find the subCategoryId based on the subCategory name
+        const subCategoryObj = subCategories.find(
+          (subCat) => subCat.name === currentVideo.subCategory
+        );
+        const subCategoryId = subCategoryObj?._id || ""; // Default to empty if not found
+
         // Set form values for edit mode
         form.setFieldsValue({
           title: currentVideo.title,
           category: categoryId, // Use category ID for the select
-          subCategory: currentVideo.subCategoryId || "", // Use subCategory ID
+          subCategory: subCategoryId, // Set the subCategoryId here
           duration: currentVideo.duration || "",
           description: currentVideo.description || "",
         });
@@ -85,11 +102,7 @@ const VideoFormModal = ({
         setVideoPreview(currentVideo.videoUrl || "");
         setVideoDuration(currentVideo.duration || "");
         setThumbnailPath(currentVideo.thumbnailUrl || "");
-        setVideoPath(currentVideo.videoUrl || "");
-
-        // Reset file states
-        setThumbnailFile(null);
-        setVideoFile(null);
+        setVideoPath(""); // Don't show video filename in edit mode
       } else {
         // Reset form for new video
         form.resetFields();
@@ -100,9 +113,27 @@ const VideoFormModal = ({
         setVideoPath("");
         setThumbnailFile(null);
         setVideoFile(null);
+        setLocalCategoryId(null);
       }
     }
-  }, [visible, currentVideo, form, categories]);
+  }, [
+    visible,
+    currentVideo,
+    form,
+    categories,
+    subCategories,
+    onCategoryChange,
+  ]);
+
+  // Update subCategory field when subCategories data is loaded
+  useEffect(() => {
+    if (isEditMode && currentVideo && subCategories.length > 0) {
+      // If we're in edit mode and subcategories are loaded, set the subcategory value
+      form.setFieldsValue({
+        subCategory: currentVideo.subCategoryId,
+      });
+    }
+  }, [subCategories, isEditMode, currentVideo, form]);
 
   // Clean up blob URLs when component unmounts to prevent memory leaks
   useEffect(() => {
@@ -178,96 +209,110 @@ const VideoFormModal = ({
   const handleCategorySelectChange = (value) => {
     // Reset subCategory field when category changes
     form.setFieldsValue({ subCategory: undefined });
-    
-    // Update selected category ID
+
+    // Update local category ID for fetching subcategories
+    setLocalCategoryId(value);
+
+    // Update selected category ID in parent component
     onCategoryChange(value);
   };
 
   // Handle form submission
-  const handleFormSubmit = async (values) => {
-    try {
-      setSubmitting(true);
+const handleFormSubmit = async (values) => {
+  try {
+    setSubmitting(true);
 
-      // Validate required files for new video
-      if (!thumbnailFile && !isEditMode && !thumbnailPath) {
-        message.error("Please select a thumbnail");
-        setSubmitting(false);
-        return;
-      }
-
-      if (!videoFile && !isEditMode && !videoPath) {
-        message.error("Please select a video");
-        setSubmitting(false);
-        return;
-      }
-
-      // Format duration properly (ensure it has " Min" suffix if needed)
-      const formattedDuration = values.duration.includes(" Min")
-        ? values.duration
-        : `${values.duration} Min`;
-
-      // Find the category and subcategory names based on their IDs
-      const selectedCategory = categories.find(cat => cat._id === values.category);
-      const selectedSubCategory = subCategories.find(subCat => subCat._id === values.subCategory);
-
-      // Create video data object
-      const videoData = {
-        title: values.title,
-        categoryId: values.category,
-        category: selectedCategory?.name, // Send both ID and name for convenience
-        subCategoryId: values.subCategory,
-        subCategory: selectedSubCategory?.name, // Send both ID and name
-        duration: formattedDuration,
-        description: values.description || "",
-        equipment: equipmentTags,
-        uploadDate: currentVideo?.uploadDate || new Date().toLocaleDateString(),
-      };
-
-      // In edit mode, add ID to data object
-      if (isEditMode && currentVideo?.id) {
-        videoData.id = currentVideo.id;
-      }
-
-      // Create a new FormData object
-      const formDataToSend = new FormData();
-
-      // Append video data as JSON string
-      formDataToSend.append("data", JSON.stringify(videoData));
-
-      // Append files if they exist
-      if (thumbnailFile) {
-        formDataToSend.append("thumbnail", thumbnailFile);
-      }
-
-      if (videoFile) {
-        formDataToSend.append("video", videoFile);
-      }
-
-      // For debugging - log what's being sent
-      console.log("Video data being sent:", videoData);
-
-      // Send request to API
-      const response = isEditMode
-        ? await updateVideo(formDataToSend).unwrap()
-        : await addVideo(formDataToSend).unwrap();
-
-      console.log("Server response:", response);
-      message.success(`Video ${isEditMode ? "updated" : "added"} successfully`);
-
-      // Close modal and refresh video list
-      onSuccess();
-      onCancel();
-    } catch (error) {
-      console.error("Error submitting video:", error);
-      message.error(
-        `Failed to ${isEditMode ? "update" : "add"} video: ${
-          error.data?.message || error.message || "Unknown error"
-        }`
-      );
-    } finally {
+    // Validate required files for new video
+    if (!thumbnailFile && !isEditMode && !thumbnailPath) {
+      message.error("Please select a thumbnail");
       setSubmitting(false);
+      return;
     }
-  };
+
+    if (!videoFile && !isEditMode && !videoPath) {
+      message.error("Please select a video");
+      setSubmitting(false);
+      return;
+    }
+
+    // Format duration properly (ensure it has " Min" suffix if needed)
+    const formattedDuration = values.duration.includes(" Min")
+      ? values.duration
+      : `${values.duration} Min`;
+
+    // Find the category and subcategory names based on their IDs
+    const selectedCategory = categories.find(
+      (cat) => cat._id === values.category
+    );
+    const selectedSubCategory = subCategories.find(
+      (subCat) => subCat._id === values.subCategory
+    );
+
+    console.log(selectedSubCategory);
+
+    // Create video data object
+    const videoData = {
+      title: values.title,
+      categoryId: values.category,
+      category: selectedCategory?.name, // Send both ID and name for convenience
+      subCategoryId: values.subCategory,
+      subCategory: selectedSubCategory?.name, // Send both ID and name
+      duration: formattedDuration,
+      description: values.description || "",
+      equipment: equipmentTags,
+      uploadDate: currentVideo?.uploadDate || new Date().toLocaleDateString(),
+    };
+
+    // In edit mode, add ID to data object - use _id consistently
+    if (isEditMode && currentVideo?._id) {
+      videoData.id = currentVideo._id; // Ensure the ID is set
+    }
+
+    // Create a new FormData object
+    const formDataToSend = new FormData();
+
+    // Append video data as JSON string
+    formDataToSend.append("data", JSON.stringify(videoData));
+
+    // Append files if they exist
+    if (thumbnailFile) {
+      formDataToSend.append("thumbnail", thumbnailFile);
+    }
+
+    if (videoFile) {
+      formDataToSend.append("video", videoFile);
+    }
+
+    // For debugging - log what's being sent
+    console.log("Video data being sent:", videoData);
+
+    // Send request to API
+    const response = isEditMode
+      ? await updateVideo({
+          id: currentVideo._id, // Pass the ID as part of the request
+          videoData: formDataToSend, // Pass the video data
+        }).unwrap()
+      : await addVideo(formDataToSend).unwrap();
+
+    console.log("Server response:", response);
+    message.success(`Video ${isEditMode ? "updated" : "added"} successfully`);
+
+    // Close modal and refresh video list
+    onSuccess();
+    onCancel();
+  } catch (error) {
+    console.error("Error submitting video:", error);
+    message.error(
+      `Failed to ${isEditMode ? "update" : "add"} video: ${
+        error.data?.message || error.message || "Unknown error"
+      }`
+    );
+  } finally {
+    setSubmitting(false);
+  }
+};
+
+
 
   // Upload props configuration
   const thumbnailUploadProps = {
@@ -314,223 +359,214 @@ const VideoFormModal = ({
     showUploadList: false,
   };
 
-  if (isLoadingSubCategories) <Spinner />
-    return (
-      <Modal
-        title={isEditMode ? "Edit Video" : "Add New Video"}
-        visible={visible}
-        onCancel={onCancel}
-        footer={null}
-        width={1000}
-        destroyOnClose
-        closable={!isProcessing}
-        maskClosable={!isProcessing}
+  if (isLoadingSubCategories) return <Spinner />;
+
+  return (
+    <Modal
+      title={isEditMode ? "Edit Video" : "Add New Video"}
+      visible={visible}
+      onCancel={onCancel}
+      footer={null}
+      width={1000}
+      destroyOnClose
+      closable={!isProcessing}
+      maskClosable={!isProcessing}
+    >
+      <Spin
+        spinning={isProcessing}
+        indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
+        tip={isEditMode ? "Updating video..." : "Adding new video..."}
       >
-        <Spin
-          spinning={isProcessing}
-          indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-          tip={isEditMode ? "Updating video..." : "Adding new video..."}
-        >
-          <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="col-span-1">
-                <Form.Item
-                  label="Title"
-                  name="title"
-                  rules={[
-                    { required: true, message: "Please enter video title" },
-                  ]}
-                >
-                  <Input placeholder="Enter Video Title" className="py-3" />
-                </Form.Item>
-              </div>
-
-              <div className="col-span-1">
-                <Form.Item
-                  label="Category"
-                  name="category"
-                  rules={[
-                    { required: true, message: "Please select category" },
-                  ]}
-                >
-                  <Select
-                    placeholder="Select Category"
-                    onChange={handleCategorySelectChange}
-                    loading={!categories}
-                  >
-                    {categories?.map((cat) => (
-                      <Option key={cat._id} value={cat._id}>
-                        {cat.name}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
-
-              <div className="col-span-1">
-                <Form.Item
-                  label="Sub Category"
-                  name="subCategory"
-                  rules={[
-                    { required: true, message: "Please select sub category" },
-                  ]}
-                >
-                  <Select placeholder="Select Sub Category">
-                    {subCategories?.map((subCat) => (
-                      <Option key={subCat._id} value={subCat._id}>
-                        {subCat.name} {/* Render the name of the subCategory */}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </div>
+        <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="col-span-1">
+              <Form.Item
+                label="Title"
+                name="title"
+                rules={[
+                  { required: true, message: "Please enter video title" },
+                ]}
+              >
+                <Input placeholder="Enter Video Title" className="py-3" />
+              </Form.Item>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="col-span-1">
-                <Form.Item
-                  label="Duration"
-                  name="duration"
-                  rules={[{ required: true, message: "Please enter duration" }]}
+            <div className="col-span-1">
+              <Form.Item
+                label="Category"
+                name="category"
+                rules={[{ required: true, message: "Please select category" }]}
+              >
+                <Select
+                  placeholder="Select Category"
+                  onChange={handleCategorySelectChange}
+                  loading={!categories}
                 >
-                  <Input
-                    placeholder="Video Duration (MM:SS)"
-                    className="py-3"
-                    disabled={!!videoDuration}
-                  />
-                </Form.Item>
-              </div>
+                  {categories?.map((cat) => (
+                    <Option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </div>
 
-              <div className="col-span-2">
-                <Form.Item label="Equipment" name="equipment">
-                  <div className="border border-gray-300 rounded-md p-2 min-h-[40px]">
-                    {equipmentTags.map((tag) => (
-                      <Tag
-                        key={tag}
-                        color="error"
-                        closable
-                        className="mb-1 mr-1"
-                        onClose={() => {
-                          setEquipmentTags(
-                            equipmentTags.filter((t) => t !== tag)
-                          );
-                        }}
-                      >
-                        {tag}
-                      </Tag>
-                    ))}
-                    <Input
-                      className="border-none outline-none p-0 w-24"
-                      placeholder="Add tag"
-                      onPressEnter={(e) => {
-                        e.preventDefault();
+            <div className="col-span-1">
+              <Form.Item
+                label="Sub Category"
+                name="subCategory"
+                rules={[
+                  { required: true, message: "Please select sub category" },
+                ]}
+              >
+                <Select
+                  placeholder="Select Sub Category"
+                  loading={isLoadingSubCategories}
+                  disabled={!localCategoryId || isLoadingSubCategories}
+                >
+                  {subCategories?.map((subCat) => (
+                    <Option key={subCat._id} value={subCat._id}>
+                      {subCat.name}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="col-span-1">
+              <Form.Item
+                label="Duration"
+                name="duration"
+                rules={[{ required: true, message: "Please enter duration" }]}
+              >
+                <Input placeholder="Video Duration (MM:SS)" className="py-3" />
+              </Form.Item>
+            </div>
+
+            <div className="col-span-2">
+              <Form.Item label="Equipment" name="equipment">
+                <div className="border border-gray-300 rounded-md p-2 min-h-[40px]">
+                  {equipmentTags.map((tag) => (
+                    <Tag
+                      key={tag}
+                      color="error"
+                      closable
+                      className="mb-1 mr-1"
+                      onClose={() => {
+                        setEquipmentTags(
+                          equipmentTags.filter((t) => t !== tag)
+                        );
+                      }}
+                    >
+                      {tag}
+                    </Tag>
+                  ))}
+                  <Input
+                    className="border-none outline-none p-0 w-24"
+                    placeholder="Add tag"
+                    onPressEnter={(e) => {
+                      e.preventDefault();
+                      handleAddTag(e.target.value);
+                      e.target.value = "";
+                    }}
+                    onBlur={(e) => {
+                      if (e.target.value) {
                         handleAddTag(e.target.value);
                         e.target.value = "";
-                      }}
-                      onBlur={(e) => {
-                        if (e.target.value) {
-                          handleAddTag(e.target.value);
-                          e.target.value = "";
-                        }
+                      }
+                    }}
+                  />
+                </div>
+              </Form.Item>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <div>
+              <div className="mb-2 font-medium">Select Thumbnail</div>
+              <div className="flex flex-col items-center border-2 border-dashed border-gray-300 rounded-lg p-4">
+                {thumbnailPreview ? (
+                  <div className="mb-3">
+                    <img
+                      src={getVideoAndThumbnail(thumbnailPreview)}
+                      alt="Thumbnail preview"
+                      style={{
+                        width: "100%",
+                        maxHeight: "150px",
+                        objectFit: "contain",
                       }}
                     />
                   </div>
-                </Form.Item>
+                ) : null}
+
+                <Upload {...thumbnailUploadProps}>
+                  <Button icon={<UploadOutlined />} disabled={isProcessing}>
+                    {thumbnailPreview ? "Change Thumbnail" : "Select Thumbnail"}
+                  </Button>
+                </Upload>
+                {thumbnailPath && !isEditMode && (
+                  <div className="mt-2 text-xs text-gray-500">
+                    Selected: {thumbnailPath}
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-              <div>
-                <div className="mb-2 font-medium">Select Thumbnail</div>
-                <div className="flex flex-col items-center border-2 border-dashed border-gray-300 rounded-lg p-4">
-                  {thumbnailPreview ? (
-                    <div className="mb-3">
-                      <img
-                        src={thumbnailPreview}
-                        alt="Thumbnail preview"
-                        style={{
-                          width: "100%",
-                          maxHeight: "180px",
-                          objectFit: "contain",
-                        }}
-                      />
-                    </div>
-                  ) : null}
+            <div>
+              <div className="mb-2 font-medium">Select Video</div>
+              <div className="flex flex-col items-center border-2 border-dashed border-gray-300 rounded-lg p-4">
+                {videoPreview ? (
+                  <div className="mb-3">
+                    <video
+                      src={videoPreview}
+                      controls
+                      style={{ width: "100%", maxHeight: "180px" }}
+                    />
+                  </div>
+                ) : null}
 
-                  <Upload {...thumbnailUploadProps}>
-                    <Button icon={<UploadOutlined />} disabled={isProcessing}>
-                      {thumbnailPreview
-                        ? "Change Thumbnail"
-                        : "Select Thumbnail"}
-                    </Button>
-                  </Upload>
-                  {thumbnailPath && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      Selected: {thumbnailPath}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <div className="mb-2 font-medium">Select Video</div>
-                <div className="flex flex-col items-center border-2 border-dashed border-gray-300 rounded-lg p-4">
-                  {videoPreview ? (
-                    <div className="mb-3">
-                      <video
-                        src={videoPreview}
-                        controls
-                        style={{ width: "100%", maxHeight: "180px" }}
-                      />
-                    </div>
-                  ) : null}
-
-                  <Upload {...videoUploadProps}>
-                    <Button icon={<UploadOutlined />} disabled={isProcessing}>
-                      {videoPreview ? "Change Video" : "Select Video"}
-                    </Button>
-                  </Upload>
-                  {videoPath && (
-                    <div className="mt-2 text-xs text-gray-500">
-                      Selected: {videoPath}
-                    </div>
-                  )}
-                </div>
+                <Upload {...videoUploadProps}>
+                  <Button icon={<UploadOutlined />} disabled={isProcessing}>
+                    {videoPreview ? "Change Video" : "Select Video"}
+                  </Button>
+                </Upload>
+                {videoPath && !isEditMode && (
+                  <div className="mt-2 text-xs text-gray-500">
+                    Selected: {videoPath}
+                  </div>
+                )}
               </div>
             </div>
+          </div>
 
-            <Form.Item
-              label="Video Description"
-              name="description"
-              className="mt-4"
+          <Form.Item
+            label="Video Description"
+            name="description"
+            className="mt-4"
+          >
+            <TextArea rows={4} placeholder="Enter video description here" />
+          </Form.Item>
+
+          <Form.Item className="flex justify-end mt-4">
+            <Button onClick={onCancel} disabled={isProcessing} className="mr-2">
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              danger
+              htmlType="submit"
+              loading={isProcessing}
+              disabled={isProcessing}
             >
-              <TextArea rows={4} placeholder="Enter video description here" />
-            </Form.Item>
-
-            <Form.Item className="flex justify-end mt-4">
-              <Button
-                onClick={onCancel}
-                disabled={isProcessing}
-                className="mr-2"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="primary"
-                danger
-                htmlType="submit"
-                loading={isProcessing}
-                disabled={isProcessing}
-              >
-                {isEditMode ? "Update Video" : "Add Video"}
-              </Button>
-            </Form.Item>
-          </Form>
-        </Spin>
-      </Modal>
-    );
+              {isEditMode ? "Update Video" : "Add Video"}
+            </Button>
+          </Form.Item>
+        </Form>
+      </Spin>
+    </Modal>
+  );
 };
 
 export default VideoFormModal;
-
-         

@@ -32,22 +32,9 @@ import { getVideoAndThumbnail } from "../common/imageUrl";
 import { useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
 import { render } from "react-dom";
 import moment from "moment/moment";
+import { FilteringIcon } from "../common/Svg";
 
-const FilteringIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    style={{ marginRight: "8px" }}
-  >
-    <path
-      d="M0.75 4.2308H12.169C12.5131 5.79731 13.9121 6.97336 15.5805 6.97336C17.2488 6.97336 18.6478 5.79736 18.9919 4.2308H23.25C23.6642 4.2308 24 3.89498 24 3.4808C24 3.06661 23.6642 2.7308 23.25 2.7308H18.9915C18.6467 1.16508 17.2459 -0.0117188 15.5805 -0.0117188C13.9141 -0.0117188 12.5139 1.16489 12.1693 2.7308H0.75C0.335812 2.7308 0 3.06661 0 3.4808C0 3.89498 0.335812 4.2308 0.75 4.2308ZM13.588 3.48277L13.588 3.4747C13.5913 2.37937 14.4851 1.48833 15.5805 1.48833C16.6743 1.48833 17.5681 2.37816 17.5728 3.47297L17.573 3.48398C17.5712 4.58119 16.6781 5.47341 15.5805 5.47341C14.4833 5.47341 13.5904 4.58208 13.5879 3.48553L13.588 3.48277ZM23.25 19.769H18.9915C18.6467 18.2033 17.2459 17.0265 15.5805 17.0265C13.9141 17.0265 12.5139 18.2031 12.1693 19.769H23.25C23.6642 19.769 24 20.1047 24 20.519C24 20.9332 23.6642 21.269 23.25 21.269ZM15.5805 22.5115C14.4833 22.5115 13.5904 21.6202 13.5879 20.5237L13.588 20.5209L13.588 20.5129C13.5913 19.4175 14.4851 18.5265 15.5805 18.5265C16.6743 18.5265 17.5681 19.4163 17.5728 20.511L17.573 20.5221C17.5714 21.6194 16.6782 22.5115 15.5805 22.5115ZM23.25 11.2499H11.831C11.4869 9.68339 10.0879 8.50739 8.41955 8.50739C6.75117 8.50739 5.35223 9.68339 5.00808 11.2499H0.75C0.335812 11.2499 0 11.5857 0 11.9999C0 12.4141 0.335812 12.7499 0.75 12.7499H5.00845C5.35331 14.3156 6.75413 15.4924 8.41955 15.4924C10.0859 15.4924 11.4861 14.3158 11.8307 12.7499H23.25C23.6642 12.7499 24 12.4141 24 11.9999C24 11.5857 23.6642 11.2499 23.25 11.2499ZM10.412 11.9979L10.412 12.006C10.4087 13.1013 9.51492 13.9924 8.41955 13.9924C7.32572 13.9924 6.43191 13.1025 6.42717 12.0078L6.42703 11.9968C6.42867 10.8995 7.32188 10.0074 8.41955 10.0074C9.5167 10.0074 10.4096 10.8987 10.4121 11.9953L10.412 11.9979Z"
-      fill="#000" // Set the color of the icon to black or any other color
-    />
-  </svg>
-);
+
 
 const VideoManagementSystem = () => {
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
@@ -73,106 +60,115 @@ const VideoManagementSystem = () => {
   console.log(videos);
   const [deleteVideo] = useDeleteVideoMutation();
   const [updateVideo] = useUpdateVideoMutation();
-  const [updateVideoStatus]=useUpdateVideoStatusMutation()
+  const [updateVideoStatus] = useUpdateVideoStatusMutation();
 
   // Filter videos when data changes
-  useEffect(() => {
-    if (videos) {
-      handleFilterChange();
-    }
-  }, [statusFilter, categoryFilter, videos]);
+ useEffect(() => {
+   if (videos) {
+     handleFilterChange();
+   }
+ }, [statusFilter, categoryFilter, videos]);
 
-  // Filter logic
-  const handleFilterChange = () => {
-    if (!videos) return;
+ // Filter logic
+ const handleFilterChange = () => {
+   if (!videos) return;
 
-    const filtered = videos.filter(
-      (video) =>
-        (statusFilter === "All" || video.status === statusFilter) &&
-        (categoryFilter === "All" || video.category === categoryFilter)
-    );
-    setFilteredVideos(filtered);
-  };
+   const filtered = videos.filter(
+     (video) =>
+       (statusFilter === "All" || video.status === statusFilter) &&
+       (categoryFilter === "All" || video.category === categoryFilter)
+   );
+   setFilteredVideos(filtered);
+ };
 
-  // Show form modal for creating/editing
-  const showFormModal = (record = null) => {
-    if (record) {
-      setEditingId(record.id);
-      setCurrentVideo(record);
-      setEquipmentTags(record.equipment || []);
+ // Show form modal for creating/editing
+ const showFormModal = (record = null) => {
+   if (record) {
+     console.log("Editing video record:", record);
 
-      // Find category ID based on category name
-      const categoryObj = categories.find(
-        (cat) => cat.name === record.category
-      );
-      if (categoryObj) {
-        setSelectedCategoryId(categoryObj._id);
-      }
-    } else {
-      setEditingId(null);
-      setCurrentVideo(null);
-      setEquipmentTags([]);
-      setSelectedCategoryId(null);
-    }
-    setIsFormModalVisible(true);
-  };
+     setEditingId(record._id); // Use _id consistently
+     setCurrentVideo({
+       ...record,
+       id: record._id, // Ensure id is available for backward compatibility
+     });
 
-  // Show details modal
-  const showDetailsModal = (record) => {
-    setCurrentVideo(record);
-    setIsDetailsModalVisible(true);
-  };
+     // Set equipment tags
+     setEquipmentTags(record.equipment || []);
 
-  // Handle form submission
-  const handleFormSubmit = async () => {
-    // Form submission is handled by VideoFormModal
-    setIsFormModalVisible(false);
-    refetch();
-  };
+     // Find category ID based on category name
+     const categoryObj = categories.find((cat) => cat.name === record.category);
 
-  // Handle video deletion
-  const handleDeleteVideo = (id) => {
-    Modal.confirm({
-      title: "Are you sure you want to delete this video?",
-      content: "This action cannot be undone.",
-      okText: "Yes",
-      okType: "danger",
-      cancelText: "No",
-      onOk: async () => {
-        try {
-          await deleteVideo(id).unwrap();
-          message.success("Video deleted successfully");
-          refetch();
-        } catch (error) {
-          message.error("Failed to delete video");
-          console.error("Error deleting video:", error);
-        }
-      },
-    });
-  };
+     if (categoryObj) {
+       setSelectedCategoryId(categoryObj._id);
+     } else {
+       console.warn("Category not found for:", record.category);
+       setSelectedCategoryId(null);
+     }
+   } else {
+     // Reset for new video
+     setEditingId(null);
+     setCurrentVideo(null);
+     setEquipmentTags([]);
+     setSelectedCategoryId(null);
+   }
+   setIsFormModalVisible(true);
+ };
 
-  // Handle status change
-  const handleStatusChange = async (checked, record) => {
-    try {
-      const newStatus = checked ? "active" : "inactive";
-      await updateVideoStatus({
-        id: record._id,
-        ...record,
-        status: newStatus,
-      }).unwrap();
-      message.success(`Video status updated to ${newStatus}`);
-      refetch();
-    } catch (error) {
-      message.error("Failed to update video status");
-      console.error("Error updating video status:", error);
-    }
-  };
+ // Show details modal
+ const showDetailsModal = (record) => {
+   setCurrentVideo(record);
+   setIsDetailsModalVisible(true);
+ };
 
-  // Handle category selection change
-  const handleCategoryChange = (categoryId) => {
-    setSelectedCategoryId(categoryId);
-  };
+ // Handle form submission
+ const handleFormSubmit = async () => {
+   // Form submission is handled by VideoFormModal
+   setIsFormModalVisible(false);
+   refetch();
+ };
 
+ // Handle video deletion
+ const handleDeleteVideo = (id) => {
+   Modal.confirm({
+     title: "Are you sure you want to delete this video?",
+     content: "This action cannot be undone.",
+     okText: "Yes",
+     okType: "danger",
+     cancelText: "No",
+     onOk: async () => {
+       try {
+         await deleteVideo(id).unwrap();
+         message.success("Video deleted successfully");
+         refetch();
+       } catch (error) {
+         message.error("Failed to delete video");
+         console.error("Error deleting video:", error);
+       }
+     },
+   });
+ };
+
+ // Handle status change
+ const handleStatusChange = async (checked, record) => {
+   try {
+     const newStatus = checked ? "active" : "inactive";
+     await updateVideoStatus({
+       id: record._id,
+       ...record,
+       status: newStatus,
+     }).unwrap();
+     message.success(`Video status updated to ${newStatus}`);
+     refetch();
+   } catch (error) {
+     message.error("Failed to update video status");
+     console.error("Error updating video status:", error);
+   }
+ };
+
+ // Handle category selection change
+ const handleCategoryChange = (categoryId) => {
+   setSelectedCategoryId(categoryId);
+ };
   // Filter menus
   const filterMenu = (
     <Menu>
@@ -209,7 +205,7 @@ const VideoManagementSystem = () => {
       width: 70,
       align: "center",
       render: (text, record, index) => {
-        return `# ${index + 1}`; 
+        return `# ${index + 1}`;
       },
     },
 

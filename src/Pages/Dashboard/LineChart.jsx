@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { useGetRevenueQuery } from "../../redux/apiSlices/homeSlice";
 
 // Registering chart.js components
 ChartJS.register(
@@ -23,26 +24,18 @@ ChartJS.register(
 );
 
 const LineChart = () => {
-  // Data for the line chart
+  const { data: revenueData } = useGetRevenueQuery();
+  
+
+   const months = revenueData?.data.map((item) => item.month);
+  const totalRevenue = revenueData?.data.map((item) => item.totalRevenue);
+  
   const data = {
-    labels: [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ], // Months
+    labels: months,
     datasets: [
       {
         label: "Total Revenue",
-        data: [150, 120, 145, 160, 180, 387, 225, 210, 230, 126, 250, 300],
+        data: totalRevenue,
         fill: false,
         borderColor: "#DE5555", // Line color changed to #DE5555
         backgroundColor: "transparent",

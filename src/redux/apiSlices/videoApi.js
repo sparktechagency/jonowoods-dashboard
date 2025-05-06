@@ -42,8 +42,8 @@ const videoApi = api.injectEndpoints({
     updateVideo: builder.mutation({
       query: ({ id, videoData }) => {
         return {
-          url: `/videos/update/${id}`,
-          method: "PATCH",
+          url: `/admin/videos/managment/update-video/${id}`,
+          method: "PUT",
           body: videoData,
         };
       },

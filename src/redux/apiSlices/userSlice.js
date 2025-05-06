@@ -1,24 +1,67 @@
 import { api } from "../api/baseApi";
 
-const userSlice = api.injectEndpoints({
-    endpoints: (builder)=>({
-        users: builder.query({
-            query: ({page, search})=> {
-                const params = new URLSearchParams();
-                if(page) params.append("page", page)
-                if(search)params.append("search", search)
-                return{
-                    url: `/auth/get-all-user?${params.toString()}`,
-                    method: "GET",
-                    headers:{
-                        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
-                    }
-                }
-            }
-        }),
-    })
-})
+
+const userManagementApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getAllUsers: builder.query({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args && args.length > 0) {
+          args.forEach((arg) => {
+            params.append(arg.name, arg.value);
+          });
+        }
+        return {
+          url: "/admin/user/managment",
+          method: "GET",
+          params,
+        };
+      },
+      transformResponse: (response) => {
+        const parsed = response;
+        return {
+          users: parsed.data,
+          pagination: parsed.pagination,
+        };
+      },
+    }),
+
+    // Update user status (active/blocked)
+    updateUserStatus: builder.mutation({
+      query: ({ userId, status }) => {
+        return {
+          url: `/admin/user/managment/${userId}`,
+          method: "PUT",
+          body: { status },
+        };
+      },
+    }),
+
+    // Get user details by ID
+    getUserDetails: builder.query({
+      query: (userId) => {
+        return {
+          url: `/users/${userId}`,
+          method: "GET",
+        };
+      },
+      transformResponse: (response) => {
+        let parsed;
+        try {
+          parsed =
+            typeof response === "string" ? JSON.parse(response) : response;
+        } catch (e) {
+          parsed = response;
+        }
+
+        return parsed.data;
+      },
+    }),
+  }),
+});
 
 export const {
-    useUsersQuery
-} = userSlice;
+  useGetAllUsersQuery,
+  useUpdateUserStatusMutation,
+  useGetUserDetailsQuery,
+} = userManagementApi;

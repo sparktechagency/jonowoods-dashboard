@@ -1,21 +1,47 @@
 import { api } from "../api/baseApi";
 
-const homeSlice = api.injectEndpoints({
-    endpoints: (builder)=>({
-        summary: builder.query({
-            query: ()=> {
-                return{
-                    url: `/order`,
-                    method: "GET",
-                    headers:{
-                        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
-                    }
-                }
-            }
-        }),
-    })
-})
+const analyticsApi = api.injectEndpoints({
+  endpoints: (builder) => ({
+    getRevenue: builder.query({
+      query: () => {
+        return {
+          url: "/admin/dashboard/revenue",
+          method: "GET",
+        };
+      },
+      transformResponse: ({ data }) => {
+        return data; 
+      },
+    }),
+
+    getStatistics: builder.query({
+      query: () => {
+        return {
+          url: "/admin/dashboard/statistics",
+          method: "GET",
+        };
+      },
+      transformResponse: ({ data }) => {
+        return data; 
+      },
+    }),
+
+    getRecentUsers: builder.query({
+      query: () => {
+        return {
+          url: "/admin/dashboard/resent-users",
+          method: "GET",
+        };
+      },
+      transformResponse: ({ data }) => {
+        return data; 
+      },
+    }),
+  }),
+});
 
 export const {
-    useSummaryQuery
-} = homeSlice;
+  useGetRevenueQuery,
+  useGetStatisticsQuery,
+  useGetRecentUsersQuery,
+} = analyticsApi;
