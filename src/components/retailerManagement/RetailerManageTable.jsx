@@ -27,6 +27,7 @@ import {
   useDeleteVideoMutation,
   useUpdateVideoMutation,
   useUpdateVideoStatusMutation,
+  useGetVideoByIdQuery,
 } from "../../redux/apiSlices/videoApi";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import { useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
@@ -40,6 +41,7 @@ const VideoManagementSystem = () => {
   const [editingId, setEditingId] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
   const [equipmentTags, setEquipmentTags] = useState([]);
+  const [selectedVideoId, setSelectedVideoId] = useState(null);
 
   // State for filtering and pagination
   const [statusFilter, setStatusFilter] = useState("All");
@@ -49,6 +51,11 @@ const VideoManagementSystem = () => {
     pageSize: 10,
   });
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+
+  // Only fetch video details when we have a selectedVideoId for details view
+  const { data: videoDetails } = useGetVideoByIdQuery(selectedVideoId, {
+    skip: !selectedVideoId, // Skip this query when selectedVideoId is null
+  });
 
   // API hooks
   const { data: categoryData } = useGetCategoryQuery();
@@ -65,7 +72,6 @@ const VideoManagementSystem = () => {
     category: categoryFilter,
     status: statusFilter,
   });
-  console.log(videosData)
 
   const videos = videosData?.data || [];
   const paginationData = videosData?.pagination || {
@@ -76,6 +82,39 @@ const VideoManagementSystem = () => {
 
   const [deleteVideo] = useDeleteVideoMutation();
   const [updateVideoStatus] = useUpdateVideoStatusMutation();
+
+  // Update currentVideo when videoDetails is fetched
+  useEffect(() => {
+    if (videoDetails && selectedVideoId) {
+      // Update current video with fresh data from API
+      setCurrentVideo({
+        ...videoDetails,
+        id: videoDetails._id || videoDetails.id, // Ensure id is available for backward compatibility
+      });
+
+      // Update equipment tags if editing
+      if (isFormModalVisible && editingId) {
+        setEquipmentTags(videoDetails.equipment || []);
+
+        // Find category ID based on category name
+        if (categories.length > 0 && videoDetails.category) {
+          const categoryObj = categories.find(
+            (cat) => cat.name === videoDetails.category
+          );
+
+          if (categoryObj) {
+            setSelectedCategoryId(categoryObj._id);
+          }
+        }
+      }
+    }
+  }, [
+    videoDetails,
+    selectedVideoId,
+    categories,
+    isFormModalVisible,
+    editingId,
+  ]);
 
   // Reset pagination when filters change
   useEffect(() => {
@@ -89,6 +128,9 @@ const VideoManagementSystem = () => {
   const showFormModal = (record = null) => {
     if (record) {
       setEditingId(record._id);
+      setSelectedVideoId(record._id); // Set selectedVideoId to fetch fresh data
+
+      // Initial setup with existing record data
       setCurrentVideo({
         ...record,
         id: record._id, // Ensure id is available for backward compatibility
@@ -114,13 +156,22 @@ const VideoManagementSystem = () => {
       setCurrentVideo(null);
       setEquipmentTags([]);
       setSelectedCategoryId(null);
+      setSelectedVideoId(null); // Clear selectedVideoId for new video
     }
     setIsFormModalVisible(true);
   };
 
-  // Show details modal
+  // Show details modal - Two options for handling details view:
+
+  // Option 1: Use existing record data from the table (no extra API call)
   const showDetailsModal = (record) => {
     setCurrentVideo(record);
+    setIsDetailsModalVisible(true);
+  };
+
+  // Option 2: Fetch detailed data via API (use this if you need more details than what's in the table)
+  const showDetailsModalWithFetch = (record) => {
+    setSelectedVideoId(record._id);
     setIsDetailsModalVisible(true);
   };
 
@@ -180,6 +231,20 @@ const VideoManagementSystem = () => {
       current: pagination.current,
       pageSize: pagination.pageSize,
     });
+  };
+
+  // Reset selected video ID when modals are closed
+  const handleDetailsModalClose = () => {
+    setIsDetailsModalVisible(false);
+    setSelectedVideoId(null);
+  };
+
+  const handleFormModalClose = () => {
+    setIsFormModalVisible(false);
+    // Only clear selectedVideoId if not editing (for new video creation)
+    if (!editingId) {
+      setSelectedVideoId(null);
+    }
   };
 
   // Filter menus
@@ -308,11 +373,12 @@ const VideoManagementSystem = () => {
             icon={<EditOutlined style={{ color: "#f55" }} />}
             onClick={() => showFormModal(record)}
           />
-          {/* View Button */}
+          {/* View Button - Choose one of these approaches based on your needs */}
           <Button
             type="text"
             icon={<EyeOutlined style={{ color: "#55f" }} />}
-            onClick={() => showDetailsModal(record)}
+            onClick={() => showDetailsModal(record)} // Option 1: Use existing data
+            // onClick={() => showDetailsModalWithFetch(record)} // Option 2: Fetch fresh data
           />
           {/* Status Switch */}
           <Switch
@@ -419,7 +485,7 @@ const VideoManagementSystem = () => {
       {/* Add/Edit Video Modal */}
       <VideoFormModal
         visible={isFormModalVisible}
-        onCancel={() => setIsFormModalVisible(false)}
+        onCancel={handleFormModalClose}
         onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
         editingId={editingId}
@@ -433,7 +499,7 @@ const VideoManagementSystem = () => {
       {/* Video Details Modal */}
       <VideoDetailsModal
         visible={isDetailsModalVisible}
-        onCancel={() => setIsDetailsModalVisible(false)}
+        onCancel={handleDetailsModalClose}
         currentVideo={currentVideo}
       />
     </div>

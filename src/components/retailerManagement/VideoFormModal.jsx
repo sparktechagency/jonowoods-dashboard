@@ -44,6 +44,7 @@ const VideoFormModal = ({
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
   const [localCategoryId, setLocalCategoryId] = useState(selectedCategoryId);
+  
 
   // API hooks
   const [addVideo, { isLoading: isAdding }] = useAddVideoMutation();
@@ -64,7 +65,6 @@ const VideoFormModal = ({
   useEffect(() => {
     if (visible) {
       if (currentVideo) {
-        console.log("Current video for editing:", currentVideo);
 
         // Find the category ID based on the category name
         const categoryObj = categories.find(
@@ -72,7 +72,6 @@ const VideoFormModal = ({
         );
 
         const categoryId = categoryObj?._id;
-        console.log(categoryId);
 
         // Set local category ID for fetching subcategories
         setLocalCategoryId(categoryId);
@@ -248,7 +247,6 @@ const handleFormSubmit = async (values) => {
       (subCat) => subCat._id === values.subCategory
     );
 
-    console.log(selectedSubCategory);
 
     // Create video data object
     const videoData = {
@@ -283,8 +281,7 @@ const handleFormSubmit = async (values) => {
       formDataToSend.append("video", videoFile);
     }
 
-    // For debugging - log what's being sent
-    console.log("Video data being sent:", videoData);
+   
 
     // Send request to API
     const response = isEditMode
@@ -294,7 +291,6 @@ const handleFormSubmit = async (values) => {
         }).unwrap()
       : await addVideo(formDataToSend).unwrap();
 
-    console.log("Server response:", response);
     message.success(`Video ${isEditMode ? "updated" : "added"} successfully`);
 
     // Close modal and refresh video list
@@ -494,7 +490,7 @@ const handleFormSubmit = async (values) => {
                       alt="Thumbnail preview"
                       style={{
                         width: "100%",
-                        maxHeight: "150px",
+                        maxHeight: "180px",
                         objectFit: "contain",
                       }}
                     />
@@ -520,7 +516,7 @@ const handleFormSubmit = async (values) => {
                 {videoPreview ? (
                   <div className="mb-3">
                     <video
-                      src={videoPreview}
+                      src={getVideoAndThumbnail(videoPreview)}
                       controls
                       style={{ width: "100%", maxHeight: "180px" }}
                     />

@@ -62,7 +62,7 @@ const videoApi = api.injectEndpoints({
     getVideoById: builder.query({
       query: (id) => {
         return {
-          url: `/videos/${id}`,
+          url: `/admin/videos/managment/videos/${id}`,
           method: "GET",
         };
       },

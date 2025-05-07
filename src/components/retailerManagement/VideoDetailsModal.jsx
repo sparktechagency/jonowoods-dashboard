@@ -4,7 +4,7 @@ import { CloseCircleOutlined } from "@ant-design/icons";
 import { getImageUrl, getVideoAndThumbnail } from "../common/imageUrl";
 
 const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
-  console.log(currentVideo);
+ 
   const [form] = Form.useForm();
 
   return (
@@ -94,9 +94,9 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
                   overflow: "hidden",
                 }}
               >
-                {currentVideo.video ? (
+                {currentVideo.videoUrl ? (
                   <video
-                    src={currentVideo.video}
+                    src={getVideoAndThumbnail(currentVideo.videoUrl)}
                     controls
                     style={{
                       width: "100%",
