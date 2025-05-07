@@ -30,145 +30,158 @@ import {
 } from "../../redux/apiSlices/videoApi";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import { useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
-import { render } from "react-dom";
 import moment from "moment/moment";
 import { FilteringIcon } from "../common/Svg";
 
-
-
 const VideoManagementSystem = () => {
+  // State for modals and editing
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
   const [equipmentTags, setEquipmentTags] = useState([]);
+
+  // State for filtering and pagination
   const [statusFilter, setStatusFilter] = useState("All");
   const [categoryFilter, setCategoryFilter] = useState("All");
-  const [filteredVideos, setFilteredVideos] = useState([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+  });
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   // API hooks
   const { data: categoryData } = useGetCategoryQuery();
   const categories = categoryData?.data || [];
 
-  // Get all videos
+  // Get all videos with filtering and pagination
   const {
-    data: videos,
+    data: videosData,
     isLoading: isLoadingVideos,
     refetch,
-  } = useGetAllVideosQuery();
-  console.log(videos);
+  } = useGetAllVideosQuery({
+    page: pagination.current,
+    pageSize: pagination.pageSize,
+    category: categoryFilter,
+    status: statusFilter,
+  });
+  console.log(videosData)
+
+  const videos = videosData?.data || [];
+  const paginationData = videosData?.pagination || {
+    total: 0,
+    current: 1,
+    pageSize: 10,
+  };
+
   const [deleteVideo] = useDeleteVideoMutation();
-  const [updateVideo] = useUpdateVideoMutation();
   const [updateVideoStatus] = useUpdateVideoStatusMutation();
 
-  // Filter videos when data changes
- useEffect(() => {
-   if (videos) {
-     handleFilterChange();
-   }
- }, [statusFilter, categoryFilter, videos]);
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPagination((prev) => ({
+      ...prev,
+      current: 1, // Reset to first page when filters change
+    }));
+  }, [statusFilter, categoryFilter]);
 
- // Filter logic
- const handleFilterChange = () => {
-   if (!videos) return;
+  // Show form modal for creating/editing
+  const showFormModal = (record = null) => {
+    if (record) {
+      setEditingId(record._id);
+      setCurrentVideo({
+        ...record,
+        id: record._id, // Ensure id is available for backward compatibility
+      });
 
-   const filtered = videos.filter(
-     (video) =>
-       (statusFilter === "All" || video.status === statusFilter) &&
-       (categoryFilter === "All" || video.category === categoryFilter)
-   );
-   setFilteredVideos(filtered);
- };
+      // Set equipment tags
+      setEquipmentTags(record.equipment || []);
 
- // Show form modal for creating/editing
- const showFormModal = (record = null) => {
-   if (record) {
-     console.log("Editing video record:", record);
+      // Find category ID based on category name
+      const categoryObj = categories.find(
+        (cat) => cat.name === record.category
+      );
 
-     setEditingId(record._id); // Use _id consistently
-     setCurrentVideo({
-       ...record,
-       id: record._id, // Ensure id is available for backward compatibility
-     });
+      if (categoryObj) {
+        setSelectedCategoryId(categoryObj._id);
+      } else {
+        console.warn("Category not found for:", record.category);
+        setSelectedCategoryId(null);
+      }
+    } else {
+      // Reset for new video
+      setEditingId(null);
+      setCurrentVideo(null);
+      setEquipmentTags([]);
+      setSelectedCategoryId(null);
+    }
+    setIsFormModalVisible(true);
+  };
 
-     // Set equipment tags
-     setEquipmentTags(record.equipment || []);
+  // Show details modal
+  const showDetailsModal = (record) => {
+    setCurrentVideo(record);
+    setIsDetailsModalVisible(true);
+  };
 
-     // Find category ID based on category name
-     const categoryObj = categories.find((cat) => cat.name === record.category);
+  // Handle form submission
+  const handleFormSubmit = async () => {
+    // Form submission is handled by VideoFormModal
+    setIsFormModalVisible(false);
+    refetch();
+  };
 
-     if (categoryObj) {
-       setSelectedCategoryId(categoryObj._id);
-     } else {
-       console.warn("Category not found for:", record.category);
-       setSelectedCategoryId(null);
-     }
-   } else {
-     // Reset for new video
-     setEditingId(null);
-     setCurrentVideo(null);
-     setEquipmentTags([]);
-     setSelectedCategoryId(null);
-   }
-   setIsFormModalVisible(true);
- };
+  // Handle video deletion
+  const handleDeleteVideo = (id) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this video?",
+      content: "This action cannot be undone.",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await deleteVideo(id).unwrap();
+          message.success("Video deleted successfully");
+          refetch();
+        } catch (error) {
+          message.error("Failed to delete video");
+          console.error("Error deleting video:", error);
+        }
+      },
+    });
+  };
 
- // Show details modal
- const showDetailsModal = (record) => {
-   setCurrentVideo(record);
-   setIsDetailsModalVisible(true);
- };
+  // Handle status change
+  const handleStatusChange = async (checked, record) => {
+    try {
+      const newStatus = checked ? "active" : "inactive";
+      await updateVideoStatus({
+        id: record._id,
+        ...record,
+        status: newStatus,
+      }).unwrap();
+      message.success(`Video status updated to ${newStatus}`);
+      refetch();
+    } catch (error) {
+      message.error("Failed to update video status");
+      console.error("Error updating video status:", error);
+    }
+  };
 
- // Handle form submission
- const handleFormSubmit = async () => {
-   // Form submission is handled by VideoFormModal
-   setIsFormModalVisible(false);
-   refetch();
- };
+  // Handle category selection change
+  const handleCategoryChange = (categoryId) => {
+    setSelectedCategoryId(categoryId);
+  };
 
- // Handle video deletion
- const handleDeleteVideo = (id) => {
-   Modal.confirm({
-     title: "Are you sure you want to delete this video?",
-     content: "This action cannot be undone.",
-     okText: "Yes",
-     okType: "danger",
-     cancelText: "No",
-     onOk: async () => {
-       try {
-         await deleteVideo(id).unwrap();
-         message.success("Video deleted successfully");
-         refetch();
-       } catch (error) {
-         message.error("Failed to delete video");
-         console.error("Error deleting video:", error);
-       }
-     },
-   });
- };
+  // Handle table pagination change
+  const handleTableChange = (pagination) => {
+    setPagination({
+      current: pagination.current,
+      pageSize: pagination.pageSize,
+    });
+  };
 
- // Handle status change
- const handleStatusChange = async (checked, record) => {
-   try {
-     const newStatus = checked ? "active" : "inactive";
-     await updateVideoStatus({
-       id: record._id,
-       ...record,
-       status: newStatus,
-     }).unwrap();
-     message.success(`Video status updated to ${newStatus}`);
-     refetch();
-   } catch (error) {
-     message.error("Failed to update video status");
-     console.error("Error updating video status:", error);
-   }
- };
-
- // Handle category selection change
- const handleCategoryChange = (categoryId) => {
-   setSelectedCategoryId(categoryId);
- };
   // Filter menus
   const filterMenu = (
     <Menu>
@@ -205,10 +218,12 @@ const VideoManagementSystem = () => {
       width: 70,
       align: "center",
       render: (text, record, index) => {
-        return `# ${index + 1}`;
+        // Calculate the actual index based on pagination
+        const actualIndex =
+          (pagination.current - 1) * pagination.pageSize + index + 1;
+        return `# ${actualIndex}`;
       },
     },
-
     {
       title: "Video Title",
       dataIndex: "title",
@@ -220,16 +235,27 @@ const VideoManagementSystem = () => {
       dataIndex: "thumbnailUrl",
       key: "thumbnailUrl",
       align: "center",
-      render: (_, record) => (
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <img
-            src={getVideoAndThumbnail(record.thumbnailUrl)}
-            alt="thumbnail"
-            style={{ width: 100, height: 50, objectFit: "cover" }}
-            className="rounded-lg"
-          />
-        </div>
-      ),
+      render: (_, record) => {
+        return (
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            {isLoadingVideos ? (
+              <Spin size="small" /> // Show spinner while loading
+            ) : (
+              <img
+                src={getVideoAndThumbnail(record.thumbnailUrl)}
+                alt="thumbnail"
+                style={{
+                  width: 100,
+                  height: 50,
+                  objectFit: "cover",
+                  visibility: isLoadingVideos ? "hidden" : "visible", // Hide image while loading
+                }}
+                className="rounded-lg"
+              />
+            )}
+          </div>
+        );
+      },
     },
     {
       title: "Category",
@@ -252,7 +278,6 @@ const VideoManagementSystem = () => {
         return moment(text).format("L");
       },
     },
-
     {
       title: "Duration",
       dataIndex: "duration",
@@ -378,11 +403,17 @@ const VideoManagementSystem = () => {
 
       <Table
         columns={columns}
-        dataSource={filteredVideos}
-        pagination={true}
-        rowKey="id"
+        dataSource={videos}
+        pagination={{
+          current: pagination.current,
+          pageSize: pagination.pageSize,
+          total: paginationData.total || 0,
+        }}
+        onChange={handleTableChange}
+        rowKey="_id"
         bordered
         size="small"
+        className="custom-table"
       />
 
       {/* Add/Edit Video Modal */}

@@ -13,17 +13,50 @@ const videoApi = api.injectEndpoints({
       },
     }),
 
-    // GET: Retrieve all videos
+    // Updated getAllVideos query with proper filtering and pagination
     getAllVideos: builder.query({
-      query: () => {
+      query: (args) => {
+        // Initialize URLSearchParams for query parameters
+        const params = new URLSearchParams();
+
+        // Check if args is an object (for filtering and pagination)
+        if (args && typeof args === "object") {
+          // Handle pagination parameters
+          if (args.page) {
+            params.append("page", args.page);
+          }
+          if (args.pageSize) {
+            params.append("limit", args.pageSize);
+          }
+
+          // Handle category filter
+          if (args.category && args.category !== "All") {
+            params.append("category", args.category);
+          }
+
+          // Handle status filter
+          if (args.status && args.status !== "All") {
+            params.append("status", args.status.toLowerCase());
+          }
+        }
+
         return {
           url: "/admin/videos/managment/videos",
           method: "GET",
+          params,
         };
       },
-      transformResponse: ({ data }) => {
-        return data;
+      transformResponse: (response) => {
+        return {
+          data: response.data || [],
+          pagination: response.pagination || {
+            total: 0,
+            current: 1,
+            pageSize: 10,
+          },
+        };
       },
+      providesTags: ["Videos"],
     }),
 
     getVideoById: builder.query({
