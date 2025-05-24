@@ -29,6 +29,10 @@ import CategoryManagement from "../components/SalesRepsManagement/SalesRepsManag
 import Subsciber from "../Pages/Dashboard/Subsciber";
 import SubscriptionManagements from "../components/subscriptionmanagement/SubscriptionManagements";
 import QuotationManagement from "../components/quatation/QuatationManagement";
+import SubCategoryManagement from "../components/SalesRepsManagement/detailsSalesReps/CategoryDetails";
+import LoginCredentials from "../components/loginCredentials/LoginCredentials";
+import CommingSoonVideoPage from "../components/comingSoon/CommingSoonVideoPage";
+import TodayVideos from "../components/todayVideos/TodayVideos";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
@@ -58,8 +62,8 @@ const router = createBrowserRouter([
         element: <CategoryManagement />,
       },
       {
-        path: "/salesRepsManage/:categoryId",
-        element: <CategoryManagement />,
+        path: "/subcategory-management/:categoryId",
+        element: <SubCategoryManagement />,
       },
       {
         path: "/inventory",
@@ -72,6 +76,18 @@ const router = createBrowserRouter([
       {
         path: "/loyaltyProgram",
         element: <SubscriptionManagements />,
+      },
+      {
+        path: "/comingSoon",
+        element: <CommingSoonVideoPage />,
+      },
+      {
+        path: "/todayVideo",
+        element: <TodayVideos />,
+      },
+      {
+        path: "/loginCredentials",
+        element: <LoginCredentials />,
       },
       {
         path: "/subsciption",

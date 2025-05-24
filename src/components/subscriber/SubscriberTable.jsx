@@ -2,10 +2,13 @@ import React, { useState, useRef } from "react";
 import JoditEditor from "jodit-react";
 import { Button, Input, Form, message } from "antd";
 import "./PushNotification.css";
+import { usePushNotificationSendMutation } from "../../redux/apiSlices/pushNotification";
 
 const PushNotification = () => {
   const editor = useRef(null);
   const [form] = Form.useForm();
+  const [pushNotificationSend, { isLoading }] =
+    usePushNotificationSendMutation();
 
   // Jodit editor configuration
   const config = {
@@ -65,23 +68,25 @@ const PushNotification = () => {
     toolbarAdaptive: true,
   };
 
-  const handleSubmit = (values) => {
-    console.log("Form values:", values);
-
-    // No need to manually add body since it's now properly connected to the form
+  const handleSubmit = async (values) => {
     const notificationData = {
-      ...values,
+      title: values.title,
+      message: values.message, 
+      // receiver: values.receiver || "", 
     };
-    console.log("Sending notification:", notificationData);
 
-    // Simulating an API call for sending notification
-    setTimeout(() => {
-      // Success message
+
+    try {
+      const result = await pushNotificationSend(notificationData).unwrap();
       message.success("Notification sent successfully!");
-
-      // Clear form and text editor after successful submission
       form.resetFields();
-    }, 1000);
+      if (editor.current) {
+        editor.current.value = "";
+      }
+    } catch (error) {
+      console.error("Error sending notification:", error);
+      message.error("Failed to send notification. Please try again.");
+    }
   };
 
   return (
@@ -99,39 +104,40 @@ const PushNotification = () => {
           <Input placeholder="Write Your Title Here" />
         </Form.Item>
 
-        <Form.Item
-          label="Type"
-          name="type"
+        {/* <Form.Item
+          label="Receiver"
+          name="receiver"
           rules={[
-            { required: true, message: "Please select a notification type" },
+            { required: false }, 
           ]}
         >
-          <Input placeholder="Write Notification Type" />
-        </Form.Item>
+          <Input placeholder="Enter receiver (optional)" />
+        </Form.Item> */}
 
         <Form.Item
-          label="Body"
-          name="body"
+          label="Message"
+          name="message"
           rules={[
             { required: true, message: "Please add notification content" },
           ]}
-          // This is the key fix - we need to provide getValueFromEvent to connect
-          // the Jodit editor with the form
           getValueFromEvent={(_, editor) => editor?.value}
         >
           <JoditEditor
             ref={editor}
             config={config}
             onChange={(newContent) => {
-              // This will trigger form validation and update
-              form.setFieldsValue({ body: newContent });
+              form.setFieldsValue({ message: newContent });
             }}
           />
         </Form.Item>
 
         <div className="button-group mt-20">
-         
-          <Button type="primary" htmlType="submit" className="send-button h-10 px-16">
+          <Button
+            type="primary"
+            htmlType="submit"
+            className="send-button h-10 px-16"
+            loading={isLoading}
+          >
             Send
           </Button>
         </div>

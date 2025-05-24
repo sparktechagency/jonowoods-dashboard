@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, Upload } from "antd";
 import { UploadOutlined, ReloadOutlined } from "@ant-design/icons";
+import { useParams } from "react-router-dom";
 
-const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
+const SubCategoryForm = ({
+  visible,
+  onCancel,
+  onSubmit,
+  initialValues,
+  parentCategoryId,
+}) => {
   const [form] = Form.useForm();
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const { id } = useParams();
+  console.log(parentCategoryId);
 
   useEffect(() => {
     if (visible) {

@@ -16,6 +16,7 @@ import {
 } from "chart.js";
 import OrderTable from "../../components/home/OrderTable";
 import { useGetStatisticsQuery } from "../../redux/apiSlices/homeSlice";
+import Spinner from "../../components/common/Spinner";
 
 ChartJS.register(
   CategoryScale,
@@ -28,8 +29,16 @@ ChartJS.register(
 
 const Home = () => {
 
-  const { data } = useGetStatisticsQuery()
-  console.log(data)
+  const { data, isLoading } = useGetStatisticsQuery()
+
+
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center ">
+         <Spinner />
+        </div>
+      );
+    }
 
   return (
     <div className="">

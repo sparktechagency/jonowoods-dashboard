@@ -16,8 +16,9 @@ import {
 } from "../../redux/apiSlices/userSlice.js";
 import UserDetailsModal from "./UserDetailsModal";
 import GradientButton from "../common/GradiantButton";
-import { FilteringIcon } from "../common/Svg";
+import { Filtering, FilteringIcon } from "../common/Svg";
 import moment from "moment";
+import Spinner from "../common/Spinner.jsx";
 
 const UserManagementTable = () => {
   const [searchText, setSearchText] = useState(""); 
@@ -225,6 +226,15 @@ const UserManagementTable = () => {
     </Menu>
   );
 
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
   return (
     <div style={{ width: "100%" }}>
       <div className="flex justify-between mb-6 items-center">
@@ -243,7 +253,7 @@ const UserManagementTable = () => {
                 style={{ border: "none" }}
               >
                 <Space>
-                  <FilteringIcon className="filtering-icon" />
+                  <Filtering className="filtering-icon" />
                   <span className="filter-text">
                     {statusFilter === "All" ? "All Status" : statusFilter}
                   </span>
@@ -258,7 +268,7 @@ const UserManagementTable = () => {
                 style={{ border: "none" }}
               >
                 <Space>
-                  <FilteringIcon className="filtering-icon" />
+                  <Filtering className="filtering-icon" />
                   <span className="filter-text">
                     {planFilter === "All" ? "All Plans" : planFilter}
                   </span>

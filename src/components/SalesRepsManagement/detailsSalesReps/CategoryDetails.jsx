@@ -1,66 +1,300 @@
-import React from "react";
-import { Button } from "antd";
-import SubCategoryTable from "./SubCategoryTable";
+import React, { useState, useEffect } from "react";
+import { Button, Modal, message } from "antd";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  useGetSubCategoriesQuery,
+  useCreateSubCategoryMutation,
+  useUpdateSubCategoryMutation,
+  useDeleteSubCategoryMutation,
+  useToggleSubCategoryStatusMutation,
+} from "../../../redux/apiSlices/subCategoryApi";
 import { getImageUrl } from "../../common/imageUrl";
+import Spinner from "../../common/Spinner";
+import SubCategoryTable from "./SubCategoryTable";
+import SubCategoryForm from "./SubCategoryForm";
+import { useGetSingleCategoryQuery } from "../../../redux/apiSlices/categoryApi";
 
-const CategoryDetails = ({
-  category,
-  subCategories,
-  onBack,
-  onAddSubCategory,
-  onEditSubCategory,
-  onStatusChange,
-  onDeleteSubCategory,
-}) => {
+const SubCategoryManagement = () => {
+  const navigate = useNavigate();
+  const { categoryId } = useParams();
+  console.log("Category ID:", categoryId);
+  console.log("subcategory");
+
+  const [subCategoryModalVisible, setSubCategoryModalVisible] = useState(false);
+  const [editingSubCategory, setEditingSubCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+
+  // Fetch category and subcategory data
+  const { data: singleCategoryData, isLoading: singleCategoryLoading } =
+    useGetSingleCategoryQuery(categoryId, {
+      skip: !categoryId,
+    });
+
+  const { data: subCategoryData, isLoading: subCategoryLoading } =
+    useGetSubCategoriesQuery();
+  console.log(subCategoryData);
+  // API mutations for subcategories
+  const [createSubCategory] = useCreateSubCategoryMutation();
+  const [updateSubCategory] = useUpdateSubCategoryMutation();
+  const [deleteSubCategory] = useDeleteSubCategoryMutation();
+  const [toggleSubCategoryStatus] = useToggleSubCategoryStatusMutation();
+
+  // Extract the actual data
+  const subCategories = subCategoryData?.data || [];
+
+  useEffect(() => {
+    if (singleCategoryData && categoryId) {
+      // Find the subcategories that belong to this category
+      const categorySubCategories = subCategories.filter(
+        (subCat) => subCat.categoryId === singleCategoryData.data._id
+      );
+
+      // Enhance the selected category with its subcategories
+      const enhancedCategory = {
+        ...singleCategoryData.data,
+        subCategory: categorySubCategories,
+      };
+
+      setSelectedCategory(enhancedCategory);
+    }
+  }, [singleCategoryData, subCategories, categoryId]);
+
+  const showSubCategoryModal = (record = null) => {
+    setEditingSubCategory(record);
+    setSubCategoryModalVisible(true);
+  };
+
+  const handleSubCategoryFormSubmit = async (values, thumbnailFile) => {
+    try {
+      console.log("Selected Category:", selectedCategory);
+      console.log("Form values:", values);
+      console.log("Thumbnail file:", thumbnailFile);
+
+      // First, ensure we have a selected category for new subcategories
+      if (!editingSubCategory && (!selectedCategory || !selectedCategory._id)) {
+        message.error("No category selected. Please select a category first.");
+        return;
+      }
+
+      const formData = new FormData();
+
+      // Prepare subcategory data
+      const subCategoryData = {
+        name: values.name,
+        // Add other fields as needed
+      };
+
+      // IMPORTANT: Explicitly set categoryId for new subcategory
+      if (!editingSubCategory) {
+        subCategoryData.categoryId = selectedCategory._id;
+        console.log("Adding categoryId:", selectedCategory._id);
+      }
+
+      // Double-check that categoryId is set for new subcategories
+      if (!editingSubCategory && !subCategoryData.categoryId) {
+        console.error("Missing categoryId in payload:", subCategoryData);
+        message.error("Category ID is required. Please try again.");
+        return;
+      }
+
+      // Log the final data being sent
+      console.log("Final subCategoryData:", subCategoryData);
+
+      // Convert data to JSON string and append to formData
+      formData.append("data", JSON.stringify(subCategoryData));
+
+      // Append thumbnail file if it exists
+      if (thumbnailFile) {
+        console.log("Appending thumbnail file:", thumbnailFile.name);
+        formData.append("thumbnail", thumbnailFile);
+      } else if (!editingSubCategory) {
+        // For new subcategories, thumbnail is required
+        message.error("Please upload a thumbnail image.");
+        return;
+      }
+
+      // Log FormData contents (for debugging)
+      console.log("FormData contents:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key + ":", value);
+      }
+
+      if (editingSubCategory && editingSubCategory._id) {
+        // Update sub-category (PATCH)
+        const response = await updateSubCategory({
+          id: editingSubCategory._id,
+          updatedData: formData,
+        }).unwrap();
+
+        console.log("Update subcategory response:", response);
+        message.success("Sub-category updated successfully!");
+      } else {
+        // Create new sub-category (POST)
+        const response = await createSubCategory(formData).unwrap();
+        console.log("Create subcategory response:", response);
+        message.success("Sub-category created successfully!");
+      }
+
+      setSubCategoryModalVisible(false);
+      setEditingSubCategory(null);
+    } catch (error) {
+      console.error("Error saving subcategory:", error);
+
+      // Add more detailed error logging
+      if (error.data) {
+        console.error("Server error response:", error.data);
+        console.error("Server error message:", error.data.message);
+      }
+
+      const errorMessage =
+        error.data?.message || error.message || "Unknown error";
+      message.error(`Failed to save sub-category: ${errorMessage}`);
+    }
+  };
+
+  const handleSubCategoryCancel = () => {
+    setSubCategoryModalVisible(false);
+    setEditingSubCategory(null);
+  };
+
+  const handleSubCategoryDelete = (id) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this sub-category?",
+      content: "This action cannot be undone",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await deleteSubCategory(id).unwrap();
+          message.success("Sub-category deleted successfully!");
+        } catch (error) {
+          console.error("Error deleting subcategory:", error);
+          message.error("Failed to delete subcategory. Please try again.");
+        }
+      },
+    });
+  };
+
+  const handleSubCategoryStatusChange = async (checked, record) => {
+    try {
+      await toggleSubCategoryStatus({
+        id: record._id,
+        status: checked ? "active" : "inactive",
+      }).unwrap();
+      message.success(
+        `Sub-category ${checked ? "activated" : "deactivated"} successfully!`
+      );
+    } catch (error) {
+      console.error("Error updating subcategory status:", error);
+      message.error("Failed to update subcategory status. Please try again.");
+    }
+  };
+
+  const handleBackFromDetails = () => {
+    // Navigate back to the main category listing page
+    navigate("/salesRepsManage");
+  };
+
+  // Format subcategories for the details view
+  const formattedSubCategories = subCategories
+    .filter((subCat) => subCat.categoryId === categoryId)
+    .map((subCategory) => ({
+      id: subCategory._id,
+      _id: subCategory._id,
+      name: subCategory.name,
+      parentCategoryId: subCategory.categoryId,
+      thumbnail: subCategory.thumbnail,
+      videoCount: subCategory.videoCount || 0,
+      createdDate: new Date(subCategory.createdAt).toLocaleDateString("en-US", {
+        month: "long",
+        day: "2-digit",
+        year: "numeric",
+      }),
+      status: subCategory.status || "active",
+      categoryType: subCategory.categoryType || "Free", // Adding this for consistency
+    }));
+
+  if (singleCategoryLoading || subCategoryLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!selectedCategory) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div>Category not found</div>
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div className="p-4">
+      {/* Category Details Header */}
       <div className="flex justify-between mb-4 items-center">
         <div className="flex items-center">
-          <Button onClick={onBack} className="mr-2">
+          <Button onClick={handleBackFromDetails} className="mr-2">
             Back
           </Button>
           <div>
-            <h2>Category Details</h2>
+            <h2>Category Management</h2>
           </div>
         </div>
       </div>
 
+      {/* Category Information */}
       <div className="flex mb-6">
         <div className="w-1/5">
           <img
-            src={getImageUrl(category.thumbnail)}
+            src={getImageUrl(selectedCategory.thumbnail)}
             alt="Category"
             className="w-full h-40 rounded"
           />
         </div>
         <div className="ml-6">
-          <h3 className="text-xl mb-2">Category Name: {category.name}</h3>
-          <p>Category Type: {category.categoryType}</p>
-          <p>Total Video: {category.videoCount}</p>
+          <h3 className="text-xl mb-2">
+            Category Name: {selectedCategory.name}
+          </h3>
+          <p>Category Type: {selectedCategory.categoryType}</p>
+          <p>Total Video: {selectedCategory.videoCount}</p>
         </div>
       </div>
 
+      {/* Sub Category List Header */}
       <div className="mb-4 flex justify-between">
         <h3 className="text-lg mb-2">
-          Sub Category List ({category.subCategory.length})
+          Sub Category List ({formattedSubCategories.length})
         </h3>
         <Button
           type="primary"
-          onClick={onAddSubCategory}
+          onClick={() => showSubCategoryModal()}
           className="bg-red-500 py-5"
         >
           Add New Sub Category
         </Button>
       </div>
 
+      {/* Sub Category Table */}
       <SubCategoryTable
-        subCategories={subCategories}
-        onEdit={onEditSubCategory}
-        onStatusChange={onStatusChange}
-        onDelete={onDeleteSubCategory}
+        subCategories={formattedSubCategories}
+        onEdit={showSubCategoryModal}
+        onStatusChange={handleSubCategoryStatusChange}
+        onDelete={handleSubCategoryDelete}
+      />
+
+      {/* Add/Edit Sub Category Modal */}
+      <SubCategoryForm
+        visible={subCategoryModalVisible}
+        onCancel={handleSubCategoryCancel}
+        onSubmit={handleSubCategoryFormSubmit}
+        initialValues={editingSubCategory}
+        parentCategoryId={selectedCategory?._id}
       />
     </div>
   );
 };
 
-export default CategoryDetails;
+export default SubCategoryManagement;

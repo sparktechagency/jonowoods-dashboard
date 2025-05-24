@@ -17,21 +17,21 @@ const comingSoonApi = api.injectEndpoints({
     getAllComingSoon: builder.query({
       query: () => {
         return {
-          url: "/admin/comingSoon/all",
+          url: "/admin/comingSoon",
           method: "GET",
         };
       },
-      transformResponse: ({ data }) => {
-        return data;
-      },
+      // transformResponse: ({ data }) => {
+      //   return data;
+      // },
     }),
 
     // PATCH: Update a Coming Soon entry
     updateComingSoon: builder.mutation({
       query: ({ id, comingSoonData }) => {
         return {
-          url: `/admin/comingSoon/update/${id}`,
-          method: "PUT",
+          url: `/admin/comingSoon/${id}`,
+          method: "PATCH",
           body: comingSoonData,
         };
       },
@@ -41,7 +41,7 @@ const comingSoonApi = api.injectEndpoints({
     deleteComingSoon: builder.mutation({
       query: (id) => {
         return {
-          url: `/admin/comingSoon/delete/${id}`,
+          url: `/admin/comingSoon/${id}`,
           method: "DELETE",
         };
       },

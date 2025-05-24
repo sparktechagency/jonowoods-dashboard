@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Select, Button, Upload } from "antd";
 import { UploadOutlined, ReloadOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../../common/imageUrl";
+import { useParams } from "react-router-dom";
 
 const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
   const [thumbnailFile, setThumbnailFile] = useState(null);
+ 
   const [previewUrl, setPreviewUrl] = useState("/api/placeholder/400/200");
 
   useEffect(() => {
@@ -87,8 +89,8 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
           rules={[{ required: true, message: "Please select category type!" }]}
         >
           <Select placeholder="Free/Paid">
-            <Select.Option value="Free">Free</Select.Option>
-            <Select.Option value="Paid">Paid</Select.Option>
+            <Select.Option value="free">Free</Select.Option>
+            <Select.Option value="paid">Paid</Select.Option>
           </Select>
         </Form.Item>
         <Form.Item name="thumbnail" label="Thumbnail">

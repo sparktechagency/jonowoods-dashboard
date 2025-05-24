@@ -6,13 +6,14 @@ import {
   useUpdateProfileMutation,
 } from "../../../redux/apiSlices/authSlice";
 import { getImageUrl } from "../../../components/common/imageUrl";
+import Spinner from "../../../components/common/Spinner";
 
 const UserProfile = () => {
   const [form] = Form.useForm();
   const [imageUrl, setImageUrl] = useState(null);
   const [fileList, setFileList] = useState([]);
   const [imageFile, setImageFile] = useState(null);
-  const { data } = useProfileQuery();
+  const { data,isLoading } = useProfileQuery();
   const [updateProfile] = useUpdateProfileMutation();
 
   const user = data?.data;
@@ -51,18 +52,12 @@ const UserProfile = () => {
   }, [imageUrl]);
 
   const handleImageChange = (info) => {
-    // Only keep the most recent file in the list
     const limitedFileList = info.fileList.slice(-1);
     setFileList(limitedFileList);
 
     if (limitedFileList.length > 0 && limitedFileList[0].originFileObj) {
-      // Store the file for form submission
       setImageFile(limitedFileList[0].originFileObj);
-
-      // Create blob URL for preview
       const newImageUrl = URL.createObjectURL(limitedFileList[0].originFileObj);
-
-      // Clean up previous blob URL if exists
       if (imageUrl && imageUrl.startsWith("blob:")) {
         URL.revokeObjectURL(imageUrl);
       }
@@ -86,12 +81,11 @@ const UserProfile = () => {
       message.error("Image must be smaller than 2MB.");
     }
 
-    return false; // Return false to prevent auto upload
+    return false; 
   };
 
   const onFinish = async (values) => {
     try {
-      // Create user data object
       const userData = {
         name: values.name,
         email: values.email,
@@ -99,24 +93,17 @@ const UserProfile = () => {
         phone: values.phone || "",
       };
 
-      // Create a new FormData object to send to backend
       const formDataToSend = new FormData();
-
-      // Append user data as a JSON string
       formDataToSend.append("data", JSON.stringify(userData));
-
-      // Check if image exists and append it to FormData
       if (imageFile) {
         formDataToSend.append("image", imageFile);
       }
 
-      // Send the FormData to the backend using your existing mutation
       const response = await updateProfile(formDataToSend).unwrap();
 
       if (response.success) {
         message.success("Profile updated successfully!");
 
-        // Update token if returned in the response
         if (response.token) {
           localStorage.setItem("accessToken", response.token);
         }
@@ -130,6 +117,15 @@ const UserProfile = () => {
       );
     }
   };
+
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center ">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center rounded-lg shadow-xl">

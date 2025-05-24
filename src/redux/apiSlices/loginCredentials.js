@@ -1,18 +1,18 @@
 import { api } from "../api/baseApi";
 
-const subCategorySlice = api.injectEndpoints({
+const loginCredentialApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    createSubCategory: builder.mutation({
+    createBackUpAdmin: builder.mutation({
       query: (subCategoryData) => {
         return {
-          url: "/admin/subcategory/create",
+          url: "/admin/managment/create-admin",
           method: "POST",
           body: subCategoryData,
         };
       },
-      invalidatesTags: ["SubCategories", "Categories"],
+      invalidatesTags: ["Admin"],
     }),
-    updateSubCategory: builder.mutation({
+    updateBackUpAdmin: builder.mutation({
       query: ({ id, updatedData }) => {
         return {
           url: `/admin/subcategory/${id}`,
@@ -20,21 +20,21 @@ const subCategorySlice = api.injectEndpoints({
           body: updatedData,
         };
       },
-      invalidatesTags: ["SubCategories", "Categories"],
+      invalidatesTags: ["SubCategories"],
     }),
-    deleteSubCategory: builder.mutation({
+    deleteBackUpAdmin: builder.mutation({
       query: (id) => {
         return {
-          url: `/admin/subcategory/${id}`,
+          url: `/admin/managment/${id}`,
           method: "DELETE",
         };
       },
-      invalidatesTags: ["SubCategories", "Categories"],
+      invalidatesTags: ["SubCategories"],
     }),
-    getSubCategories: builder.query({
+    getLoginCredentials: builder.query({
       query: () => {
         return {
-          url: "/admin/subcategory",
+          url: "/admin/managment/get-admin",
           method: "GET",
         };
       },
@@ -49,7 +49,7 @@ const subCategorySlice = api.injectEndpoints({
       },
       providesTags: ["SubCategories"],
     }),
-    toggleSubCategoryStatus: builder.mutation({
+    toggleBackUpAdminStatus: builder.mutation({
       query: ({ id, status }) => {
         return {
           url: `/admin/subcategory/${id}`,
@@ -57,16 +57,16 @@ const subCategorySlice = api.injectEndpoints({
           body: { status },
         };
       },
-      invalidatesTags: ["SubCategories", "Categories"],
+      invalidatesTags: ["SubCategories"],
     }),
   }),
 });
 
 export const {
-  useGetSubCategoriesQuery,
-  useCreateSubCategoryMutation,
-  useUpdateSubCategoryMutation,
-  useDeleteSubCategoryMutation,
+  useGetLoginCredentialsQuery,
+  useCreateBackUpAdminMutation,
+  useUpdateBackUpAdminMutation,
+  useDeleteBackUpAdminMutation,
   useGetSingleSubCategoryQuery,
-  useToggleSubCategoryStatusMutation,
-} = subCategorySlice;
+  useToggleBackUpAdminStatusMutation,
+} = loginCredentialApi;

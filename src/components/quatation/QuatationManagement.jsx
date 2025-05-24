@@ -27,6 +27,8 @@ import {
   useDeleteQuotationMutation,
   useToggleQuotationStatusMutation,
 } from "../../redux/apiSlices/quatationApi";
+import { Filtering } from "../common/Svg";
+import Spinner from "../common/Spinner";
 
 const FilteringIcon = () => (
   <svg
@@ -263,6 +265,14 @@ const QuotationManagement = () => {
     },
   ];
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+       <Spinner />
+      </div>
+    );
+  }
+
   return (
     <div className="p-4">
       <div className="flex justify-between mb-4">
@@ -280,7 +290,7 @@ const QuotationManagement = () => {
             style={{ border: "none" }}
           >
             <Space>
-              <FilteringIcon className="filtering-icon" />
+              <Filtering className="filtering-icon" />
               {selectedStatus} <DownOutlined />
             </Space>
           </Button>
@@ -300,7 +310,7 @@ const QuotationManagement = () => {
         dataSource={filteredData}
         pagination={true}
         loading={isLoading}
-        className="border rounded"
+        className="border rounded custom-table"
         rowClassName="hover:bg-gray-50"
       />
 

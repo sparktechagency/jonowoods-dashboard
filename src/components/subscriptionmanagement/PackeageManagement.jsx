@@ -8,6 +8,7 @@ import {
   useDeleteSubscriptionPackageMutation,
 } from "../../redux/apiSlices/subscriptionManagementApi";
 import Spinner from "../common/Spinner";
+import { Filtering } from "../common/Svg";
 
 // Custom Filter Icon SVG component
 const FilteringIcon = () => (
@@ -189,7 +190,9 @@ export default function SubscriptionPackagesManagement() {
     </Menu>
   );
 
-  if (isLoadingPackages) <Spinner />;
+if(isLoadingPackages) {
+    return <Spinner />;
+  }
   return (
     <div className="">
       {/* Type Filter */}
@@ -200,8 +203,8 @@ export default function SubscriptionPackagesManagement() {
               className="py-5 mr-2 text-white bg-red-600 hover:text-black"
               style={{ border: "none" }}
             >
-              <div className="flex items-center">
-                <FilteringIcon />
+              <div className="flex items-center gap-4">
+                <Filtering />
                 <span>
                   {selectedType === "All" ? "All Types" : selectedType}
                 </span>

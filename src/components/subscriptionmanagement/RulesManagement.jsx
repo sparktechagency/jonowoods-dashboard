@@ -96,7 +96,9 @@ export default function SubscriptionRulesManagement() {
     height: 200,
   };
 
-  if (isLoadingRules) <Spinner />;
+  if (isLoadingRules) {
+    return <Spinner />;
+  }
   return (
     <div className="mb-8">
       {/* Add Subscription Rules Button */}

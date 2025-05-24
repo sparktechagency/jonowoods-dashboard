@@ -257,7 +257,8 @@ const SalesManagementTable = () => {
           pagination={{ pageSize: 10 }}
           bordered={false}
           size="small"
-          className="custom-table" // Custom class for adding borders
+          className="custom-table" 
+          
         />
         {/* Render the modal with the selected order data */}
         <DetailsModal

@@ -11,6 +11,7 @@ import {
   LoyaltyProgram,
   SubscriptionManagement,
   UserManagement,
+  LoginCredentials,
 } from "../../components/common/Svg";
 import image4 from "../../assets/image4.png"; // Logo image
 
@@ -103,6 +104,21 @@ const Sidebar = () => {
       label: <Link to="/subsciption">Push Notification</Link>,
     },
     {
+      key: "/comingSoon",
+      icon: renderIcon(LoyaltyProgram, "/comingSoon"),
+      label: <Link to="/comingSoon"> Coming Soon</Link>,
+    },
+    {
+      key: "/todayVideo",
+      icon: renderIcon(LoyaltyProgram, "/todayVideo"),
+      label: <Link to="/todayVideo"> Today Video's</Link>,
+    },
+    {
+      key: "/loginCredentials",
+      icon: renderIcon(LoginCredentials, "/loginCredentials"),
+      label: <Link to="/loginCredentials">Login Credentials</Link>,
+    },
+    {
       key: "subMenuSetting",
       icon: renderIcon(Settings, "subMenuSetting"),
       label: "Settings",
@@ -160,7 +176,7 @@ const Sidebar = () => {
         to={"/"}
         className="flex items-center justify-center  border-b-2 border-primary"
       >
-        <img src={image4} alt="logo" className="w-40 h-32" />
+        <img src={image4} alt="logo" className="w-60 h-36" />
       </Link>
       <Menu
         mode="inline"

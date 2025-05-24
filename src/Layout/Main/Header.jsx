@@ -6,10 +6,15 @@ import { Badge } from "antd";
 import { useUser } from "../../provider/User";
 import { Select } from "antd";
 import { countries } from "../../Translation/Countries"; // Assuming you have a list of countries
+import { useProfileQuery } from "../../redux/apiSlices/authSlice";
+import { getImageUrl } from "../../components/common/imageUrl";
 
 const Header = () => {
   const { user } = useUser();
   const [selectedLanguage, setSelectedLanguage] = useState("eng-us");
+  const {data}=useProfileQuery();
+  const myProfile = data?.data;
+  console.log("user", myProfile);
 
   
 
@@ -50,17 +55,15 @@ const Header = () => {
               width: 45,
               height: 45,
             }}
-            src={src}
+            src={getImageUrl(myProfile?.image)}
             alt="profile-pic"
             className="clip"
           />
           <div className="flex flex-col text-black">
             <p className="font-bold">
-              {/* {user?.firstName} {user?.lastName} */}
-              Jonowoods
+              {myProfile?.name}
             </p>
-            {/* <p>{user?.role || "user"}</p> */}
-            admin
+            <p>{myProfile?.role || "user"}</p>
           </div>
         </Link>
       </div>

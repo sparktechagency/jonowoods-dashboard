@@ -1,12 +1,11 @@
-import { SyncOutlined } from '@ant-design/icons';
 
+import "./spinner.css";
 const Spinner = () => {
-    return (
-        <div className="flex items-center gap-2">
-            <SyncOutlined  spin />
-            <p className="text-[15px]">Loading...</p>
-        </div>
-    )
-}
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="loader"></div>
+    </div>
+  );
+};
 
 export default Spinner;

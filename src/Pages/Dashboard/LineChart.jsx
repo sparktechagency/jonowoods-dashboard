@@ -12,6 +12,7 @@ import {
   Legend,
 } from "chart.js";
 import { useGetRevenueQuery } from "../../redux/apiSlices/homeSlice";
+import Spinner from "../../components/common/Spinner";
 
 // Registering chart.js components
 ChartJS.register(
@@ -24,7 +25,7 @@ ChartJS.register(
 );
 
 const LineChart = () => {
-  const { data: revenueData } = useGetRevenueQuery();
+  const { data: revenueData,isLoading } = useGetRevenueQuery();
   
 
    const months = revenueData?.data.map((item) => item.month);
@@ -103,6 +104,8 @@ const LineChart = () => {
       },
     },
   };
+
+
 
   return (
     <div style={{ width: "100%", height: "250px" }} className="text-black">

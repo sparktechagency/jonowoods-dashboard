@@ -90,43 +90,43 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
             <Col span={24}>
               <Text style={labelStyle}>Subscription:</Text>{" "}
               <Text style={valueStyle}>
-                {userDetails.subscriptionInfo.subscription}
+                {userDetails?.subscriptionInfo?.subscription}
               </Text>
             </Col>
             <Col span={24}>
               <Text style={labelStyle}>Subscription Plan:</Text>{" "}
               <Text style={valueStyle}>
-                {userDetails.subscriptionInfo.plan}
+                {userDetails?.subscriptionInfo?.plan}
               </Text>
             </Col>
             <Col span={24}>
               <Text style={labelStyle}>Amount:</Text>{" "}
               <Text style={valueStyle}>
-                {userDetails.subscriptionInfo.amount}
+                {userDetails?.subscriptionInfo?.amount}
               </Text>
             </Col>
             <Col span={24}>
               <Text style={labelStyle}>Date:</Text>{" "}
               <Text style={valueStyle}>
-                {userDetails.subscriptionInfo.date}
+                {userDetails?.subscriptionInfo?.date}
               </Text>
             </Col>
             <Col span={24}>
               <Text style={labelStyle}>Subscription Day Remaining:</Text>{" "}
               <Text style={valueStyle}>
-                {userDetails.subscriptionInfo.remaining}
+                {userDetails?.subscriptionInfo?.remaining}
               </Text>
             </Col>
             <Col span={24}>
               <Text style={labelStyle}>Transaction ID:</Text>{" "}
               <Text style={valueStyle}>
-                {userDetails.subscriptionInfo.transactionId}
+                {userDetails?.subscriptionInfo?.transactionId}
               </Text>
             </Col>
             <Col span={24}>
               <Text style={labelStyle}>Payment By:</Text>{" "}
               <Text style={valueStyle}>
-                {userDetails.subscriptionInfo.paymentBy}
+                {userDetails?.subscriptionInfo?.paymentBy}
               </Text>
             </Col>
           </Row>

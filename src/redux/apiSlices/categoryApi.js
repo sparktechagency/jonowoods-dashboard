@@ -8,7 +8,6 @@ const categorySlice = api.injectEndpoints({
           url: "/admin/category/create",
           method: "POST",
           body: categoryData,
-          // Disable content type, let browser set it with boundary for FormData
           formData: true,
         };
       },
@@ -80,8 +79,8 @@ const categorySlice = api.injectEndpoints({
     toggleCategoryStatus: builder.mutation({
       query: ({ id, status }) => {
         return {
-          url: `/admin/category/toggle-status/${id}`,
-          method: "PATCH",
+          url: `/admin/category/${id}`,
+          method: "PUT",
           body: { status },
         };
       },

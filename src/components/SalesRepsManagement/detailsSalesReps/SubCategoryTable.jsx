@@ -1,6 +1,6 @@
 import React from "react";
-import { Table, Button, Space, Switch, Tag } from "antd";
-import { EditOutlined } from "@ant-design/icons";
+import { Table, Button, Space, Switch, Tag, Popconfirm } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../../common/imageUrl";
 
 const SubCategoryTable = ({
@@ -32,7 +32,8 @@ const SubCategoryTable = ({
           <img
             src={getImageUrl(thumbnail)}
             alt="thumbnail"
-            style={{ width: 100, height: 40, objectFit: "contain" }}
+            className="object-cover rounded-xl"
+            style={{ width: 100, height: 60 }}
           />
         </div>
       ),
@@ -74,6 +75,7 @@ const SubCategoryTable = ({
     {
       title: "Action",
       key: "action",
+      align: "center",
       render: (_, record) => (
         <Space>
           <Button
@@ -87,9 +89,15 @@ const SubCategoryTable = ({
             size="small"
             onChange={(checked) => onStatusChange(checked, record)}
           />
+          <Button
+            type="text"
+            icon={<DeleteOutlined />}
+            className="text-red-500"
+            title="Delete Sub-category"
+            onClick={() => onDelete(record._id)}
+          />
         </Space>
       ),
-      align: "center",
     },
   ];
 
@@ -101,6 +109,7 @@ const SubCategoryTable = ({
       pagination={{ pageSize: 10 }}
       bordered
       size="small"
+      className="custom-table"
     />
   );
 };
