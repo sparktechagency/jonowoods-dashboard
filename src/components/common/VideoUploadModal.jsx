@@ -177,9 +177,9 @@ const VideoFormModal = ({
         message.error("You can only upload image files!");
         return false;
       }
-      const isLt5M = file.size / 1024 / 1024 < 5;
-      if (!isLt5M) {
-        message.error("Image must be smaller than 5MB!");
+      const isLt20M = file.size / 1024 / 1024 < 20;
+      if (!isLt20M) {
+        message.error("Image must be smaller than 20MB!");
         return false;
       }
       return false; // Prevent auto upload
@@ -223,9 +223,9 @@ const VideoFormModal = ({
         message.error("You can only upload video files!");
         return false;
       }
-      const isLt100M = file.size / 1024 / 1024 < 100;
-      if (!isLt100M) {
-        message.error("Video must be smaller than 100MB!");
+      const isLt2000M = file.size / 1024 / 1024 < 2000;
+      if (!isLt2000M) {
+        message.error("Video must be smaller than 2GB!");
         return false;
       }
       return false; // Prevent auto upload
@@ -570,7 +570,7 @@ const VideoFormModal = ({
               <div className="flex flex-col items-center justify-center h-full">
                 <UploadOutlined className="text-4xl mb-2" />
                 <p>Click or drag image to upload</p>
-                <p className="text-gray-500 text-sm">Max size: 5MB</p>
+                <p className="text-gray-500 text-sm">Max size: 20MB</p>
                 {editingItem && (
                   <p className="text-blue-500 text-xs">
                     Leave empty to keep existing thumbnail
@@ -595,7 +595,7 @@ const VideoFormModal = ({
               <div className="flex flex-col items-center justify-center h-full">
                 <UploadOutlined className="text-4xl mb-2" />
                 <p>Click or drag video to upload</p>
-                <p className="text-gray-500 text-sm">Max size: 100MB</p>
+                <p className="text-gray-500 text-sm">Max size: 2GB</p>
                 {editingItem && (
                   <p className="text-blue-500 text-xs">
                     Leave empty to keep existing video

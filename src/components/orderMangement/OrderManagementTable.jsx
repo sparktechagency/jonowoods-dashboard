@@ -240,7 +240,7 @@ const UserManagementTable = () => {
       <div className="flex justify-between mb-6 items-center">
         <Input
           placeholder="Search by user name or email"
-          prefix={<SearchOutlined />}
+          // prefix={<SearchOutlined />}
           style={{ width: 300, height: 40 }}
           onChange={handleSearch}
         />

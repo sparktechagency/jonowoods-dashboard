@@ -33,6 +33,7 @@ import SubCategoryManagement from "../components/SalesRepsManagement/detailsSale
 import LoginCredentials from "../components/loginCredentials/LoginCredentials";
 import CommingSoonVideoPage from "../components/comingSoon/CommingSoonVideoPage";
 import TodayVideos from "../components/todayVideos/TodayVideos";
+import CourseDetailsVideoManagement from "../components/retailerManagement/CourseDetailsVideoManagement";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
@@ -56,6 +57,10 @@ const router = createBrowserRouter([
       {
         path: "/retailer",
         element: <Retailer />,
+      },
+      {
+        path: "/retailer/:subCategoryId",
+        element: <CourseDetailsVideoManagement />,
       },
       {
         path: "/salesRepsManage",

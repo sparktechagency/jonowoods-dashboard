@@ -47,7 +47,7 @@ const VideoUploadSystem = ({ pageType , apiHooks }) => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(2);
   const [searchText, setSearchText] = useState("");
 
   // Build query params

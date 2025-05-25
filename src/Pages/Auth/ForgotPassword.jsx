@@ -14,20 +14,15 @@ const ForgotPassword = () => {
 
   const onFinish = async (values) => {
     try {
-      // Call forgot password API with email
       const response = await forgotPassword({ email: values.email }).unwrap();
       console.log(response);
-
-      // Check if the response is successful
       if (response.success) {
-        // If successful, navigate to OTP verification page
         navigate(
           "/auth/verify-otp?email=" +
             encodeURIComponent(values.email) +
             "&type=forgot-password"
         );
       } else {
-        // Show error if the API response is not successful
         setVerificationStatus("Failed to send OTP. Please try again.");
       }
     } catch (err) {

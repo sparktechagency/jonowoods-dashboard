@@ -12,6 +12,7 @@ import {
   SubscriptionManagement,
   UserManagement,
   LoginCredentials,
+  ComingSoon
 } from "../../components/common/Svg";
 import image4 from "../../assets/image4.png"; // Logo image
 
@@ -105,12 +106,12 @@ const Sidebar = () => {
     },
     {
       key: "/comingSoon",
-      icon: renderIcon(LoyaltyProgram, "/comingSoon"),
+      icon: renderIcon(ComingSoon, "/comingSoon"),
       label: <Link to="/comingSoon"> Coming Soon</Link>,
     },
     {
       key: "/todayVideo",
-      icon: renderIcon(LoyaltyProgram, "/todayVideo"),
+      icon: renderIcon(VideoManagement, "/todayVideo"),
       label: <Link to="/todayVideo"> Today Video's</Link>,
     },
     {

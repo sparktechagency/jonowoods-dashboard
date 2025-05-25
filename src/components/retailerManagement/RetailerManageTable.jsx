@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   Button,
@@ -8,7 +8,6 @@ import {
   Dropdown,
   Menu,
   message,
-  Spin,
   Tag,
 } from "antd";
 import {
@@ -16,436 +15,350 @@ import {
   EyeOutlined,
   DownOutlined,
   PlusOutlined,
-  LoadingOutlined,
   DeleteOutlined,
 } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import VideoFormModal from "./VideoFormModal";
 import VideoDetailsModal from "./VideoDetailsModal";
 import GradientButton from "../common/GradiantButton";
 import {
   useGetAllVideosQuery,
   useDeleteVideoMutation,
-  useUpdateVideoMutation,
   useUpdateVideoStatusMutation,
   useGetVideoByIdQuery,
 } from "../../redux/apiSlices/videoApi";
 import { getVideoAndThumbnail } from "../common/imageUrl";
-import { useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
 import moment from "moment/moment";
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
+import { useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
 
 const VideoManagementSystem = () => {
-  // State for modals and editing
+  const navigate = useNavigate();
+
+  // Modal and editing states
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
   const [equipmentTags, setEquipmentTags] = useState([]);
-  const [selectedVideoId, setSelectedVideoId] = useState(null);
 
-  // State for filtering and pagination - FIXED: Removed duplicate pagination state
+  // Filters and pagination
   const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [searchText, setSearchText] = useState("");
 
-  // FIXED: Removed selectedCategoryId state as it's redundant
+  // Build query params
+  const queryParams = [];
+  if (statusFilter !== "all")
+    queryParams.push({ name: "status", value: statusFilter });
+  if (typeFilter !== "all")
+    queryParams.push({ name: "type", value: typeFilter });
+  if (categoryFilter !== "all")
+    queryParams.push({ name: "category", value: categoryFilter });
+  queryParams.push({ name: "page", value: currentPage });
+  queryParams.push({ name: "limit", value: pageSize });
 
-  // FIXED: Proper query params construction
-  const queryParams = React.useMemo(() => {
-    const params = [];
-
-    if (searchText) {
-      params.push({ name: "searchTerm", value: searchText });
-    }
-
-    if (statusFilter && statusFilter !== "all") {
-      params.push({ name: "status", value: statusFilter });
-    }
-
-    if (categoryFilter && categoryFilter !== "all") {
-      params.push({ name: "category", value: categoryFilter });
-    }
-
-    // Add pagination params
-    params.push({ name: "page", value: currentPage });
-    params.push({ name: "limit", value: pageSize });
-
-    return params;
-  }, [searchText, statusFilter, categoryFilter, currentPage, pageSize]);
-
-  // Only fetch video details when we have a selectedVideoId for details view
-  const { data: videoDetails } = useGetVideoByIdQuery(selectedVideoId, {
-    skip: !selectedVideoId,
-  });
-
-  // API hooks
+  // API calls
   const { data: categoryData } = useGetCategoryQuery();
   const categories = categoryData?.data || [];
+  console.log(categoryData)
 
-  // FIXED: Get all videos with proper query params
   const {
     data: videosData,
     isLoading: isLoadingVideos,
     refetch,
-  } = useGetAllVideosQuery(queryParams.length > 0 ? queryParams : []);
-  console.log(videosData)
+  } = useGetAllVideosQuery(queryParams);
 
   const videos = videosData?.data || [];
   const paginationData = videosData?.pagination || {
     total: 0,
     current: 1,
-    pageSize: 5,
+    pageSize: 10,
   };
+
+  // Fetch single video data when editingId is set
+  const { data: videoDetails } = useGetVideoByIdQuery(editingId, {
+    skip: !editingId,
+  });
 
   const [deleteVideo] = useDeleteVideoMutation();
   const [updateVideoStatus] = useUpdateVideoStatusMutation();
 
-  // Update currentVideo when videoDetails is fetched
+  // Update currentVideo and equipmentTags whenever videoDetails or editingId changes
   useEffect(() => {
-    if (videoDetails && selectedVideoId) {
+    if (editingId && videoDetails) {
       setCurrentVideo({
         ...videoDetails,
         id: videoDetails._id || videoDetails.id,
       });
-
-      if (isFormModalVisible && editingId) {
-        setEquipmentTags(videoDetails.equipment || []);
-      }
+      setEquipmentTags(videoDetails.equipment || []);
+    } else if (!editingId) {
+      setCurrentVideo(null);
+      setEquipmentTags([]);
     }
-  }, [videoDetails, selectedVideoId, isFormModalVisible, editingId]);
+  }, [editingId, videoDetails]);
 
-  // FIXED: Reset to first page when filters change
+  // Reset page on filter change
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, categoryFilter, searchText]);
+  }, [statusFilter, categoryFilter]);
 
-  const showFormModal = useCallback((record = null) => {
+  // Show form modal for add or edit
+  const showFormModal = (record = null) => {
     if (record) {
       setEditingId(record._id);
-      setSelectedVideoId(record._id);
-      setCurrentVideo({
-        ...record,
-        id: record._id,
-      });
-      setEquipmentTags(record.equipment || []);
+      // currentVideo & equipmentTags will update automatically via useEffect above
     } else {
       setEditingId(null);
-      setCurrentVideo(null);
-      setEquipmentTags([]);
-      setSelectedVideoId(null);
     }
     setIsFormModalVisible(true);
-  }, []);
+  };
 
-  // Show details modal
-  const showDetailsModal = useCallback((record) => {
-    setCurrentVideo(record);
-    setIsDetailsModalVisible(true);
-  }, []);
-
-  // Handle form submission
-  const handleFormSubmit = useCallback(async () => {
-    try {
-      setIsFormModalVisible(false);
-      setEditingId(null);
-      setCurrentVideo(null);
-      setEquipmentTags([]);
-      setSelectedVideoId(null);
-      await refetch();
-    } catch (error) {
-      console.error("Error in form submit:", error);
+  // Show details modal and set editingId to fetch video details
+  const showDetailsModal = (record) => {
+    if (record.type === "class") {
+      setEditingId(record._id);
+      setIsDetailsModalVisible(true);
+    } else if (record.type === "course") {
+      const subCategoryId = record.subCategoryId?._id || record.subCategoryId;
+      if (subCategoryId) {
+        navigate(`/retailer/${subCategoryId}`);
+      } else {
+        message.error("Subcategory ID not found");
+      }
     }
-  }, [refetch]);
+  };
 
-  // Handle video deletion
-  const handleDeleteVideo = useCallback(
-    (id) => {
-      Modal.confirm({
-        title: "Are you sure you want to delete this video?",
-        content: "This action cannot be undone.",
-        okText: "Yes",
-        okType: "danger",
-        cancelText: "No",
-        onOk: async () => {
-          try {
-            await deleteVideo(id).unwrap();
-            message.success("Video deleted successfully");
-            refetch();
-          } catch (error) {
-            message.error("Failed to delete video");
-            console.error("Error deleting video:", error);
-          }
-        },
-      });
-    },
-    [deleteVideo, refetch]
-  );
-
-  // Handle status change
-  const handleStatusChange = useCallback(
-    (checked, record) => {
-      const newStatus = checked ? "active" : "inactive";
-
-      Modal.confirm({
-        title: `Are you sure you want to set the status to "${newStatus}"?`,
-        okText: "Yes",
-        cancelText: "No",
-        okButtonProps: {
-          style: {
-            backgroundColor: "red",
-            borderColor: "red",
-          },
-        },
-        onOk: async () => {
-          try {
-            await updateVideoStatus({
-              id: record._id,
-              ...record,
-              status: newStatus,
-            }).unwrap();
-            message.success(`Video status updated to ${newStatus}`);
-            refetch();
-          } catch (error) {
-            message.error("Failed to update video status");
-            console.error("Error updating video status:", error);
-          }
-        },
-      });
-    },
-    [updateVideoStatus, refetch]
-  );
-
-  // FIXED: Handle table pagination change
-  const handleTableChange = useCallback((paginationConfig) => {
-    setCurrentPage(paginationConfig.current);
-    setPageSize(paginationConfig.pageSize);
-  }, []);
-
-  // Handle modal close
-  const handleDetailsModalClose = useCallback(() => {
-    setIsDetailsModalVisible(false);
-    setSelectedVideoId(null);
-  }, []);
-
-  const handleFormModalClose = useCallback(() => {
+  // Close form modal and reset states
+  const closeFormModal = () => {
     setIsFormModalVisible(false);
     setEditingId(null);
     setCurrentVideo(null);
     setEquipmentTags([]);
-    setSelectedVideoId(null);
-  }, []);
+  };
 
+  // Close details modal and reset states
+  const closeDetailsModal = () => {
+    setIsDetailsModalVisible(false);
+    setEditingId(null);
+    setCurrentVideo(null);
+    setEquipmentTags([]);
+  };
 
-  const handleCategoryFilterChange = useCallback((category) => {
+  // After form submission, close modal and refresh list
+  const handleFormSubmit = async () => {
+    closeFormModal();
+    await refetch();
+  };
+
+  // Delete video with confirmation
+  const handleDeleteVideo = (id) => {
+    Modal.confirm({
+      title: "Are you sure you want to delete this video?",
+      content: "This action cannot be undone.",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await deleteVideo(id).unwrap();
+          message.success("Video deleted successfully");
+          refetch();
+        } catch {
+          message.error("Failed to delete video");
+        }
+      },
+    });
+  };
+
+  // Change video status with confirmation
+  const handleStatusChange = (checked, record) => {
+    const newStatus = checked ? "active" : "inactive";
+    Modal.confirm({
+      title: `Are you sure you want to set the status to "${newStatus}"?`,
+      okText: "Yes",
+      cancelText: "No",
+      okButtonProps: { style: { backgroundColor: "red", borderColor: "red" } },
+      onOk: async () => {
+        try {
+          await updateVideoStatus({
+            id: record._id,
+            ...record,
+            status: newStatus,
+          }).unwrap();
+          message.success(`Video status updated to ${newStatus}`);
+          refetch();
+        } catch {
+          message.error("Failed to update video status");
+        }
+      },
+    });
+  };
+
+  // Pagination handler
+  const handleTableChange = (paginationConfig) => {
+    setCurrentPage(paginationConfig.current);
+    setPageSize(paginationConfig.pageSize);
+  };
+
+  // Filter handlers
+  const handleCategoryFilter = (category) =>
     setCategoryFilter(category.toLowerCase());
-  }, []);
+  const handleStatusFilter = (status) => setStatusFilter(status.toLowerCase());
+  const handleTypeFilter = (type) => setTypeFilter(type.toLowerCase());
 
-  const handleStatusFilterChange = useCallback((status) => {
-    setStatusFilter(status.toLowerCase());
-  }, []);
-
-  // FIXED: Filter menus with proper key handling
-  const filterMenu = React.useMemo(
-    () => (
-      <Menu>
-        <Menu.Item key="all" onClick={() => handleCategoryFilterChange("all")}>
-          All Categories
+  // Filter menus
+  const categoryMenu = (
+    <Menu>
+      <Menu.Item key="all" onClick={() => handleCategoryFilter("all")}>
+        All Categories
+      </Menu.Item>
+      {categories.map((cat) => (
+        <Menu.Item key={cat._id} onClick={() => handleCategoryFilter(cat.name)}>
+          {cat.name}
         </Menu.Item>
-        {categories?.map((cat) => (
-          <Menu.Item
-            key={cat._id}
-            onClick={() => handleCategoryFilterChange(cat.name)}
-          >
-            {cat.name}
-          </Menu.Item>
-        ))}
-      </Menu>
-    ),
-    [categories, handleCategoryFilterChange]
+      ))}
+    </Menu>
   );
 
-  const statusMenu = React.useMemo(
-    () => (
-      <Menu>
-        <Menu.Item key="all" onClick={() => handleStatusFilterChange("all")}>
-          All Status
-        </Menu.Item>
-        <Menu.Item
-          key="active"
-          onClick={() => handleStatusFilterChange("active")}
-        >
-          Active
-        </Menu.Item>
-        <Menu.Item
-          key="inactive"
-          onClick={() => handleStatusFilterChange("inactive")}
-        >
-          Inactive
-        </Menu.Item>
-      </Menu>
-    ),
-    [handleStatusFilterChange]
+  const statusMenu = (
+    <Menu>
+      <Menu.Item key="all" onClick={() => handleStatusFilter("all")}>
+        All Status
+      </Menu.Item>
+      <Menu.Item key="active" onClick={() => handleStatusFilter("active")}>
+        Active
+      </Menu.Item>
+      <Menu.Item key="inactive" onClick={() => handleStatusFilter("inactive")}>
+        Inactive
+      </Menu.Item>
+    </Menu>
   );
 
-  // FIXED: Table columns with proper pagination calculation
-  const columns = React.useMemo(
-    () => [
-      {
-        title: "SL",
-        key: "id",
-        width: 70,
-        align: "center",
-        render: (text, record, index) => {
-          const actualIndex = (currentPage - 1) * pageSize + index + 1;
-          return `# ${actualIndex}`;
-        },
-      },
-      {
-        title: "Video Title",
-        dataIndex: "title",
-        key: "title",
-        align: "center",
-      },
-      {
-        title: "Thumbnail",
-        dataIndex: "thumbnailUrl",
-        key: "thumbnailUrl",
-        align: "center",
-        render: (_, record) => {
-          return (
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              {isLoadingVideos ? (
-                <Spin size="small" />
-              ) : (
-                <img
-                  src={getVideoAndThumbnail(record.thumbnailUrl)}
-                  alt="thumbnail"
-                  style={{
-                    width: 100,
-                    height: 50,
-                    objectFit: "cover",
-                    visibility: isLoadingVideos ? "hidden" : "visible",
-                  }}
-                  className="rounded-lg"
-                />
-              )}
-            </div>
-          );
-        },
-      },
-      {
-        title: "Category",
-        dataIndex: "category",
-        key: "category",
-        align: "center",
-      },
-      {
-        title: "Sub Category",
-        dataIndex: "subCategory",
-        key: "subCategory",
-        align: "center",
-      },
-      {
-        title: "Upload Date",
-        dataIndex: "createdAt",
-        key: "createdAt",
-        align: "center",
-        render: (text) => {
-          return moment(text).format("L");
-        },
-      },
-      {
-        title: "Duration",
-        dataIndex: "duration",
-        key: "duration",
-        align: "center",
-      },
-      {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        align: "center",
-        render: (status) => (
-          <Tag color={status === "active" ? "success" : "error"}>
-            {status === "active" ? "Active" : "Inactive"}
-          </Tag>
-        ),
-      },
-      {
-        title: "Action",
-        key: "action",
-        align: "center",
-        render: (_, record) => (
-          <Space
+  const typeMenu = (
+    <Menu>
+      <Menu.Item key="all" onClick={() => handleTypeFilter("all")}>
+        All Type
+      </Menu.Item>
+      <Menu.Item key="class" onClick={() => handleTypeFilter("class")}>
+        Class
+      </Menu.Item>
+      <Menu.Item key="course" onClick={() => handleTypeFilter("course")}>
+        Course
+      </Menu.Item>
+    </Menu>
+  );
+
+  // Table columns
+  const columns = [
+    {
+      title: "SL",
+      key: "id",
+      width: 70,
+      align: "center",
+      render: (_, __, index) => `# ${(currentPage - 1) * pageSize + index + 1}`,
+    },
+    {
+      title: "Video Title",
+      dataIndex: "title",
+      key: "title",
+      align: "center",
+    },
+    {
+      title: "Thumbnail",
+      dataIndex: "thumbnailUrl",
+      key: "thumbnailUrl",
+      align: "center",
+      render: (_, record) => (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <img
+            src={getVideoAndThumbnail(record.thumbnailUrl)}
+            alt="thumbnail"
+            style={{ width: 100, height: 50, objectFit: "cover" }}
+            className="rounded-lg"
+          />
+        </div>
+      ),
+    },
+    {
+      title: "Category",
+      dataIndex: ["categoryId", "name"],
+      key: "category",
+      align: "center",
+    },
+    {
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+      align: "center",
+    },
+    {
+      title: "Upload Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      align: "center",
+      render: (text) => moment(text).format("L"),
+    },
+    {
+      title: "Duration",
+      dataIndex: "duration",
+      key: "duration",
+      align: "center",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      align: "center",
+      render: (status) => (
+        <Tag color={status === "active" ? "success" : "error"}>
+          {status === "active" ? "Active" : "Inactive"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Action",
+      key: "action",
+      align: "center",
+      render: (_, record) => (
+        <Space size="small">
+          <Button
+            type="text"
+            icon={<EditOutlined style={{ color: "#f55" }} />}
+            onClick={() => showFormModal(record)}
+          />
+          <Button
+            type="text"
+            icon={<EyeOutlined style={{ color: "#55f" }} />}
+            onClick={() => showDetailsModal(record)}
+            title={
+              record.type === "class"
+                ? "View Details"
+                : "View Subcategory Videos"
+            }
+          />
+          <Switch
             size="small"
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            <Button
-              type="text"
-              icon={<EditOutlined style={{ color: "#f55" }} />}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                showFormModal(record);
-              }}
-            />
-            <Button
-              type="text"
-              icon={<EyeOutlined style={{ color: "#55f" }} />}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                showDetailsModal(record);
-              }}
-            />
-            <Switch
-              size="small"
-              checked={record.status === "active"}
-              onChange={(checked, e) => {
-                if (e) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }
-                handleStatusChange(checked, record);
-              }}
-              onClick={(checked, e) => {
-                if (e) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }
-              }}
-              style={{
-                backgroundColor: record.status === "active" ? "red" : "gray",
-              }}
-            />
-            <Button
-              type="text"
-              icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleDeleteVideo(record._id);
-              }}
-            />
-          </Space>
-        ),
-      },
-    ],
-    [
-      currentPage,
-      pageSize,
-      isLoadingVideos,
-      showFormModal,
-      showDetailsModal,
-      handleStatusChange,
-      handleDeleteVideo,
-    ]
-  );
+            checked={record.status === "active"}
+            onChange={(checked) => handleStatusChange(checked, record)}
+            style={{
+              backgroundColor: record.status === "active" ? "red" : "gray",
+            }}
+          />
+          <Button
+            type="text"
+            icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
+            onClick={() => handleDeleteVideo(record._id)}
+          />
+        </Space>
+      ),
+    },
+  ];
 
-  // Get display text for filters
+  // Display text helpers
   const getCategoryDisplayText = () => {
     if (categoryFilter === "all") return "All Categories";
     const category = categories.find(
@@ -454,76 +367,79 @@ const VideoManagementSystem = () => {
     return category ? category.name : "All Categories";
   };
 
+  const getTypeDisplayText = () => {
+    if (typeFilter === "all") return "All Type";
+    return typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1);
+  };
+
   const getStatusDisplayText = () => {
     if (statusFilter === "all") return "All Status";
     return statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1);
   };
 
   if (isLoadingVideos) {
-    return (
-      <div>
-        <Spinner />
-      </div>
-    );
+    return <Spinner />;
   }
 
   return (
     <div>
       <div className="flex justify-end gap-6 mb-6">
-        <div className="">
-          <Space size="small" className="flex gap-4">
-            <Dropdown
-              overlay={filterMenu}
-              trigger={["click"]}
-              placement="bottomLeft"
+        <Space size="small" className="flex gap-4">
+          <Dropdown
+            overlay={categoryMenu}
+            trigger={["click"]}
+            placement="bottomLeft"
+          >
+            <Button
+              className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
+              style={{ border: "none" }}
             >
-              <Button
-                className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
-                style={{ border: "none" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <Space>
-                  <Filtering className="filtering-icon" />
-                  <span className="filter-text">
-                    {getCategoryDisplayText()}
-                  </span>
-                  <DownOutlined />
-                </Space>
-              </Button>
-            </Dropdown>
+              <Space>
+                <Filtering className="filtering-icon" />
+                <span className="filter-text">{getCategoryDisplayText()}</span>
+                <DownOutlined />
+              </Space>
+            </Button>
+          </Dropdown>
 
-            <Dropdown
-              overlay={statusMenu}
-              trigger={["click"]}
-              placement="bottomLeft"
+          <Dropdown
+            overlay={statusMenu}
+            trigger={["click"]}
+            placement="bottomLeft"
+          >
+            <Button
+              className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
+              style={{ border: "none" }}
             >
-              <Button
-                className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
-                style={{ border: "none" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <Space>
-                  <Filtering className="filtering-icon" />
-                  <span className="filter-text">{getStatusDisplayText()}</span>
-                  <DownOutlined />
-                </Space>
-              </Button>
-            </Dropdown>
-          </Space>
-        </div>
+              <Space>
+                <Filtering className="filtering-icon" />
+                <span className="filter-text">{getStatusDisplayText()}</span>
+                <DownOutlined />
+              </Space>
+            </Button>
+          </Dropdown>
+
+          <Dropdown
+            overlay={typeMenu}
+            trigger={["click"]}
+            placement="bottomLeft"
+          >
+            <Button
+              className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
+              style={{ border: "none" }}
+            >
+              <Space>
+                <Filtering className="filtering-icon" />
+                <span className="filter-text">{getTypeDisplayText()}</span>
+                <DownOutlined />
+              </Space>
+            </Button>
+          </Dropdown>
+        </Space>
+
         <GradientButton
           type="primary"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            showFormModal();
-          }}
+          onClick={() => showFormModal()}
           className="py-5"
           icon={<PlusOutlined />}
         >
@@ -545,17 +461,12 @@ const VideoManagementSystem = () => {
         size="small"
         className="custom-table"
         scroll={{ x: "max-content" }}
-        onRow={(record) => ({
-          onClick: (e) => {
-            e.stopPropagation();
-          },
-        })}
       />
 
       {/* Add/Edit Video Modal */}
       <VideoFormModal
         visible={isFormModalVisible}
-        onCancel={handleFormModalClose}
+        onCancel={closeFormModal}
         onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
         editingId={editingId}
@@ -567,7 +478,7 @@ const VideoManagementSystem = () => {
       {/* Video Details Modal */}
       <VideoDetailsModal
         visible={isDetailsModalVisible}
-        onCancel={handleDetailsModalClose}
+        onCancel={closeDetailsModal}
         currentVideo={currentVideo}
       />
     </div>

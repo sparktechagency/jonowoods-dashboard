@@ -14,7 +14,7 @@ const Header = () => {
   const [selectedLanguage, setSelectedLanguage] = useState("eng-us");
   const {data}=useProfileQuery();
   const myProfile = data?.data;
-  console.log("user", myProfile);
+  // console.log("user", myProfile);
 
   
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Form,
@@ -7,21 +7,20 @@ import {
   Tag,
   Button,
   message,
-  Spin,
   Upload,
+  Image,
 } from "antd";
-import { LoadingOutlined, UploadOutlined } from "@ant-design/icons";
-
+import { InboxOutlined } from "@ant-design/icons";
 import {
   useAddVideoMutation,
   useUpdateVideoMutation,
 } from "../../redux/apiSlices/videoApi";
 import { useGetSingleSubCategoryQuery } from "../../redux/apiSlices/subCategoryApi";
-import Spinner from "../common/Spinner";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 
 const { Option } = Select;
 const { TextArea } = Input;
+const { Dragger } = Upload;
 
 const VideoFormModal = ({
   visible,
@@ -29,409 +28,198 @@ const VideoFormModal = ({
   onSuccess,
   currentVideo,
   categories,
-  selectedCategoryId,
-  onCategoryChange,
   equipmentTags,
   setEquipmentTags,
 }) => {
   const [form] = Form.useForm();
-
-  // State management
-  const [thumbnailPath, setThumbnailPath] = useState("");
-  const [videoPath, setVideoPath] = useState("");
-  const [thumbnailPreview, setThumbnailPreview] = useState("");
-  const [videoPreview, setVideoPreview] = useState("");
-  const [videoDuration, setVideoDuration] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [categoryId, setCategoryId] = useState(null);
+  const [videoType, setVideoType] = useState(null);
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
-  const [localCategoryId, setLocalCategoryId] = useState(null);
-  const [tagInputValue, setTagInputValue] = useState(""); // New state for tag input
+  const [tagInput, setTagInput] = useState("");
 
-  // API hooks
+  const isEditMode = !!currentVideo?._id;
+
   const [addVideo, { isLoading: isAdding }] = useAddVideoMutation();
   const [updateVideo, { isLoading: isUpdating }] = useUpdateVideoMutation();
 
-  // Fetch subcategories based on selected category ID
-  const { data: subCategoryData, isLoading: isLoadingSubCategories } =
-    useGetSingleSubCategoryQuery(localCategoryId, {
-      skip: !localCategoryId,
-    });
+  const { data: subCategoryData } = useGetSingleSubCategoryQuery(categoryId, {
+    skip: !categoryId || videoType === "class",
+  });
 
   const subCategories = subCategoryData?.data || [];
-  const isProcessing = isAdding || isUpdating || submitting;
-  const isEditMode = !!currentVideo?._id;
+  const isLoading = isAdding || isUpdating;
 
-  // Initialize form when modal opens
+  // Initialize form data
   useEffect(() => {
-    if (visible) {
-      if (currentVideo) {
-        const categoryObj = categories?.find(
-          (cat) => cat.name === currentVideo.category
-        );
-        const categoryId = categoryObj?._id;
-        setLocalCategoryId(categoryId);
+    if (visible && currentVideo) {
+      const categoryObj = categories?.find(
+        (cat) => cat.name === currentVideo.category
+      );
+      setCategoryId(categoryObj?._id);
+      setVideoType(currentVideo.type || "course"); // Default to courses if not set
 
-        form.setFieldsValue({
-          title: currentVideo.title,
-          category: categoryId,
-          duration: currentVideo.duration || "",
-          description: currentVideo.description || "",
-        });
-
-        // Set preview URLs for existing media - Use getVideoAndThumbnail for server URLs
-        setThumbnailPreview(currentVideo.thumbnailUrl || "");
-        setVideoPreview(currentVideo.videoUrl || "");
-        setVideoDuration(currentVideo.duration || "");
-        setThumbnailPath(currentVideo.thumbnailUrl || "");
-        setVideoPath("");
-        setThumbnailFile(null);
-        setVideoFile(null);
-
-        if (categoryId && onCategoryChange) {
-          onCategoryChange(categoryId);
-        }
-      } else {
-        // Reset form for new video
-        form.resetFields();
-        setThumbnailPreview("");
-        setVideoPreview("");
-        setVideoDuration("");
-        setThumbnailPath("");
-        setVideoPath("");
-        setThumbnailFile(null);
-        setVideoFile(null);
-        setLocalCategoryId(null);
-        setTagInputValue("");
-      }
+      form.setFieldsValue({
+        serial: currentVideo.serial || undefined,
+        title: currentVideo.title,
+        type: currentVideo.type || "course",
+        category: categoryObj?._id,
+        duration: currentVideo.duration || "",
+        description: currentVideo.description || "",
+      });
+    } else if (visible) {
+      form.resetFields();
+      setCategoryId(null);
+      setVideoType(null);
+      setThumbnailFile(null);
+      setVideoFile(null);
+      setTagInput("");
     }
-  }, [visible, currentVideo, form, categories, onCategoryChange]);
+  }, [visible, currentVideo, categories, form]);
 
+  // Set subcategory when data loads
   useEffect(() => {
-    if (isEditMode && currentVideo && subCategories.length > 0) {
+    if (
+      isEditMode &&
+      currentVideo &&
+      subCategories.length > 0 &&
+      videoType === "course"
+    ) {
       const subCategoryObj = subCategories.find(
-        (subCat) => subCat.name === currentVideo.subCategory
+        (sub) => sub.name === currentVideo.subCategory
       );
       if (subCategoryObj) {
-        form.setFieldsValue({
-          subCategory: subCategoryObj._id,
-        });
+        form.setFieldsValue({ subCategory: subCategoryObj._id });
       }
     }
-  }, [subCategories, isEditMode, currentVideo, form]);
+  }, [subCategories, isEditMode, currentVideo, form, videoType]);
 
-  useEffect(() => {
-    return () => {
-      if (thumbnailPreview && thumbnailPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(thumbnailPreview);
-      }
-      if (videoPreview && videoPreview.startsWith("blob:")) {
-        URL.revokeObjectURL(videoPreview);
-      }
-    };
-  }, [thumbnailPreview, videoPreview]);
+  // Handle file uploads
+  const handleThumbnailUpload = (info) => {
+    const file = info.fileList[0];
+    setThumbnailFile(file?.originFileObj || file);
+  };
 
-  // Handle adding equipment tags
-  const handleAddTag = useCallback(
-    (tag) => {
-      const trimmedTag = tag.trim();
-      if (trimmedTag && !equipmentTags.includes(trimmedTag)) {
-        setEquipmentTags([...equipmentTags, trimmedTag]);
-      }
-      setTagInputValue(""); // Clear input after adding tag
-    },
-    [equipmentTags, setEquipmentTags]
-  );
+  const handleVideoUpload = (info) => {
+    const file = info.fileList[0];
+    setVideoFile(file?.originFileObj || file);
 
-  // Handle tag input change
-  const handleTagInputChange = useCallback((e) => {
-    setTagInputValue(e.target.value);
-  }, []);
-
-  // Handle tag input - Prevent form submission on Enter
-  const handleTagInputKeyDown = useCallback(
-    (e) => {
-      // Prevent form submission on Enter
-      if (e.key === "Enter") {
-        e.preventDefault();
-        e.stopPropagation();
-        const value = tagInputValue.trim();
-        if (value) {
-          handleAddTag(value);
-        }
-        return false; // Ensure no form submission
-      }
-    },
-    [tagInputValue, handleAddTag]
-  );
-
-  const handleEquipmentKeyPress = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addEquipment();
+    // Auto-extract duration
+    if (file?.originFileObj) {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        const duration = Math.floor(video.duration);
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        const formatted = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+        form.setFieldsValue({ duration: formatted });
+      };
+      video.src = URL.createObjectURL(file.originFileObj);
     }
   };
 
-  // Handle tag input blur
-  const handleTagInputBlur = useCallback(() => {
-    const value = tagInputValue.trim();
-    if (value) {
-      handleAddTag(value);
+  // Handle equipment tags
+  const addTag = () => {
+    const tag = tagInput.trim();
+    if (tag && !equipmentTags.includes(tag)) {
+      setEquipmentTags([...equipmentTags, tag]);
+      setTagInput("");
     }
-  }, [tagInputValue, handleAddTag]);
+  };
 
-  // Handle thumbnail selection - FIXED VERSION
-  const handleThumbnailChange = useCallback(
-    (info) => {
-      if (info.file) {
-        setThumbnailFile(info.file);
+  const removeTag = (tagToRemove) => {
+    setEquipmentTags(equipmentTags.filter((tag) => tag !== tagToRemove));
+  };
 
-        // Clean up previous blob URL if exists
-        if (thumbnailPreview && thumbnailPreview.startsWith("blob:")) {
-          URL.revokeObjectURL(thumbnailPreview);
-        }
-
-        // Create a preview URL for the image
-        const previewURL = URL.createObjectURL(info.file);
-        setThumbnailPreview(previewURL);
-        setThumbnailPath(info.file.name);
-      }
-    },
-    [thumbnailPreview]
-  );
-
-  // Handle video selection - FIXED VERSION
-  const handleVideoChange = useCallback(
-    (info) => {
-      if (info.file) {
-        setVideoFile(info.file);
-
-        // Clean up previous blob URL if exists
-        if (videoPreview && videoPreview.startsWith("blob:")) {
-          URL.revokeObjectURL(videoPreview);
-        }
-
-        // Create a preview URL for the video
-        const previewURL = URL.createObjectURL(info.file);
-        setVideoPreview(previewURL);
-        setVideoPath(info.file.name);
-
-        // Try to get video duration
-        const video = document.createElement("video");
-        video.preload = "metadata";
-        video.onloadedmetadata = () => {
-          try {
-            const duration = Math.floor(video.duration);
-            const minutes = Math.floor(duration / 60);
-            const seconds = duration % 60;
-            const formattedDuration = `${minutes}:${
-              seconds < 10 ? "0" + seconds : seconds
-            }`;
-            setVideoDuration(formattedDuration);
-            form.setFieldsValue({ duration: formattedDuration });
-          } catch (error) {
-            console.warn("Could not extract video duration:", error);
-          }
-        };
-        video.onerror = () => {
-          console.warn("Could not load video metadata");
-        };
-        video.src = previewURL;
-      }
-    },
-    [videoPreview, form]
-  );
-
-  // Handle category change - Fixed to prevent reload
-  const handleCategorySelectChange = useCallback(
-    (value) => {
-      // Prevent unnecessary updates
-      if (value !== localCategoryId) {
-        // Clear subcategory selection when category changes
-        form.setFieldsValue({ subCategory: undefined });
-        setLocalCategoryId(value);
-
-        // Call parent handler if provided
-        if (onCategoryChange) {
-          onCategoryChange(value);
-        }
-      }
-    },
-    [localCategoryId, form, onCategoryChange]
-  );
+  // Handle type change
+  const handleTypeChange = (value) => {
+    setVideoType(value);
+    // Clear subcategory when switching to classes
+    if (value === "class") {
+      form.setFieldsValue({ subCategory: "" });
+    }
+  };
 
   // Handle form submission
-  const handleFormSubmit = useCallback(
-    async (values) => {
-      try {
-        setSubmitting(true);
+  const handleSubmit = async (values) => {
+    try {
+      // Validation for new videos
+      if (!isEditMode && (!thumbnailFile || !videoFile)) {
+        message.error("Please upload both thumbnail and video");
+        return;
+      }
 
-        // Validate required files for new video
-        if (!thumbnailFile && !isEditMode && !thumbnailPath) {
-          message.error("Please select a thumbnail");
-          return;
-        }
+      // Get category and subcategory names
+      const selectedCategory = categories?.find(
+        (cat) => cat._id === values.category
+      );
+      const selectedSubCategory =
+        videoType === "course"
+          ? subCategories?.find((sub) => sub._id === values.subCategory)
+          : null;
 
-        if (!videoFile && !isEditMode && !videoPath) {
-          message.error("Please select a video");
-          return;
-        }
-
-        // Format duration properly
-        const formattedDuration = values.duration.includes(" Min")
+      const videoData = {
+        serial: values.serial,
+        title: values.title,
+        type: values.type,
+        categoryId: values.category,
+        category: selectedCategory?.name,
+        subCategoryId: videoType === "course" ? values.subCategory : "",
+        subCategory: videoType === "course" ? selectedSubCategory?.name : "",
+        duration: values.duration.includes("Min")
           ? values.duration
-          : `${values.duration} Min`;
+          : `${values.duration} Min`,
+        description: values.description || "",
+        equipment: equipmentTags,
+        uploadDate: currentVideo?.uploadDate || new Date().toLocaleDateString(),
+      };
 
-        // Find the category and subcategory names based on their IDs
-        const selectedCategory = categories?.find(
-          (cat) => cat._id === values.category
-        );
-        const selectedSubCategory = subCategories?.find(
-          (subCat) => subCat._id === values.subCategory
-        );
-
-        // Create video data object
-        const videoData = {
-          title: values.title,
-          categoryId: values.category,
-          category: selectedCategory?.name,
-          subCategoryId: values.subCategory,
-          subCategory: selectedSubCategory?.name,
-          duration: formattedDuration,
-          description: values.description || "",
-          equipment: equipmentTags,
-          uploadDate:
-            currentVideo?.uploadDate || new Date().toLocaleDateString(),
-        };
-
-        // In edit mode, add ID to data object
-        if (isEditMode && currentVideo?._id) {
-          videoData.id = currentVideo._id;
-        }
-
-        // Create FormData
-        const formDataToSend = new FormData();
-        formDataToSend.append("data", JSON.stringify(videoData));
-
-        // Append files if they exist
-        if (thumbnailFile) {
-          formDataToSend.append("thumbnail", thumbnailFile);
-        }
-
-        if (videoFile) {
-          formDataToSend.append("video", videoFile);
-        }
-
-        // Send request to API
-        const response = isEditMode
-          ? await updateVideo({
-              id: currentVideo._id,
-              videoData: formDataToSend,
-            }).unwrap()
-          : await addVideo(formDataToSend).unwrap();
-
-        message.success(
-          `Video ${isEditMode ? "updated" : "added"} successfully`
-        );
-
-        // Close modal and refresh video list
-        onSuccess();
-        onCancel();
-      } catch (error) {
-        console.error("Error submitting video:", error);
-        message.error(
-          `Failed to ${isEditMode ? "update" : "add"} video: ${
-            error.data?.message || error.message || "Unknown error"
-          }`
-        );
-      } finally {
-        setSubmitting(false);
+      if (isEditMode) {
+        videoData.id = currentVideo._id;
       }
-    },
-    [
-      thumbnailFile,
-      isEditMode,
-      thumbnailPath,
-      videoFile,
-      videoPath,
-      categories,
-      subCategories,
-      equipmentTags,
-      currentVideo,
-      updateVideo,
-      addVideo,
-      onSuccess,
-      onCancel,
-    ]
-  );
 
-  // Prevent form submission on Enter key
-  const handleFormKeyDown = useCallback((e) => {
-    if (e.key === "Enter") {
-      // Allow Enter only for textarea elements
-      if (e.target.tagName !== "TEXTAREA") {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
+      // Create FormData
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(videoData));
+
+      if (thumbnailFile) formData.append("thumbnail", thumbnailFile);
+      if (videoFile) formData.append("video", videoFile);
+
+      // Submit
+      const response = isEditMode
+        ? await updateVideo({
+            id: currentVideo._id,
+            videoData: formData,
+          }).unwrap()
+        : await addVideo(formData).unwrap();
+
+      message.success(`Video ${isEditMode ? "updated" : "added"} successfully`);
+      onSuccess();
+      onCancel();
+    } catch (error) {
+      message.error(`Failed to ${isEditMode ? "update" : "add"} video`);
     }
-  }, []);
+  };
 
-  // Upload props configuration
-  const thumbnailUploadProps = {
-    beforeUpload: (file) => {
-      const isImage = file.type.startsWith("image/");
-      if (!isImage) {
-        message.error("You can only upload image files!");
-        return Upload.LIST_IGNORE;
-      }
-
-      const isLessThan20MB = file.size / 1024 / 1024 < 20;
-      if (!isLessThan20MB) {
-        message.error("Image must be smaller than 20MB.");
-        return Upload.LIST_IGNORE;
-      }
-
-      handleThumbnailChange({ file });
-      return false;
-    },
+  // Upload configurations
+  const uploadProps = {
+    beforeUpload: () => false, // Prevent auto upload
+    maxCount: 1,
     showUploadList: false,
   };
 
-  const videoUploadProps = {
-    beforeUpload: (file) => {
-      const isVideo = file.type.startsWith("video/");
-      if (!isVideo) {
-        message.error("You can only upload video files!");
-        return Upload.LIST_IGNORE;
-      }
-
-      const isLessThan2000MB = file.size / 1024 / 1024 < 2000;
-      if (!isLessThan2000MB) {
-        message.error("Video must be smaller than 2000MB.");
-        return Upload.LIST_IGNORE;
-      }
-
-      handleVideoChange({ file });
-      return false;
-    },
-    showUploadList: false,
+  const thumbnailProps = {
+    ...uploadProps,
+    accept: "image/*",
+    onChange: handleThumbnailUpload,
   };
 
-  // Helper function to get the correct preview URL
-  const getPreviewUrl = (url, isBlob = false) => {
-    if (!url) return "";
-
-    // If it's a blob URL (newly selected file), return as is
-    if (url.startsWith("blob:")) {
-      return url;
-    }
-
-    // If it's a server URL (existing file), use getVideoAndThumbnail
-    return getVideoAndThumbnail(url);
+  const videoProps = {
+    ...uploadProps,
+    accept: "video/*",
+    onChange: handleVideoUpload,
   };
-
-  if (isLoadingSubCategories) return <Spinner />;
 
   return (
     <Modal
@@ -439,268 +227,183 @@ const VideoFormModal = ({
       open={visible}
       onCancel={onCancel}
       footer={null}
-      width={1000}
+      width={900}
       destroyOnClose
-      closable={!isProcessing}
-      maskClosable={!isProcessing}
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleFormSubmit}
-        preserve={false}
-        onKeyDown={handleFormKeyDown}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="col-span-1">
-            <Form.Item
-              label="Title"
-              name="title"
-              rules={[{ required: true, message: "Please enter video title" }]}
-            >
-              <Input
-                placeholder="Enter Video Title"
-                className="py-3"
-                onPressEnter={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              />
-            </Form.Item>
-          </div>
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        {/* First row: Title, Category, Type, SubCategory (if course) */}
+        <div className="grid grid-cols-3 gap-4">
+          <Form.Item
+            label="Title"
+            name="title"
+            rules={[{ required: true, message: "Please enter title" }]}
+          >
+            <Input placeholder="Video Title" />
+          </Form.Item>
 
-          <div className="col-span-1">
-            <Form.Item
-              label="Category"
-              name="category"
-              rules={[{ required: true, message: "Please select category" }]}
+          <Form.Item
+            label="Category"
+            name="category"
+            rules={[{ required: true, message: "Please select category" }]}
+          >
+            <Select
+              placeholder="Select Category"
+              onChange={(value) => {
+                setCategoryId(value);
+                form.setFieldsValue({ subCategory: undefined });
+              }}
             >
-              <Select
-                placeholder="Select Category"
-                onChange={handleCategorySelectChange}
-                value={localCategoryId}
-                loading={!categories || categories.length === 0}
-                notFoundContent={
-                  !categories || categories.length === 0 ? (
-                    <div className="text-center py-2">
-                      <Spin size="small" />
-                      <div className="mt-1">Loading categories...</div>
-                    </div>
-                  ) : (
-                    "No categories found"
-                  )
-                }
-                getPopupContainer={(trigger) => trigger.parentElement}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }
-                }}
-              >
-                {categories?.map((cat) => (
-                  <Option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </div>
+              {categories?.map((cat) => (
+                <Option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-          <div className="col-span-1">
+          <Form.Item
+            label="Type"
+            name="type"
+            rules={[{ required: true, message: "Please select type" }]}
+          >
+            <Select placeholder="Select Type" onChange={handleTypeChange}>
+              <Option value="class">class</Option>
+              <Option value="course">course</Option>
+            </Select>
+          </Form.Item>
+        </div>
+
+        {/* Second row: Serial (only in edit mode), SubCategory (if course), Duration */}
+        <div className="grid grid-cols-3 gap-4">
+          {isEditMode && (
+            <Form.Item
+              label="Serial Name"
+              name="serial"
+              rules={[
+                { required: true, message: "Please enter serial name" },
+                {
+                  type: "number",
+                  min: 1,
+                  message: "Serial name must be a positive number",
+                  transform: (value) => (value ? Number(value) : undefined),
+                },
+              ]}
+            >
+              <Input type="number" placeholder="Serial Name (number)" />
+            </Form.Item>
+          )}
+
+          {videoType === "course" && (
             <Form.Item
               label="Sub Category"
               name="subCategory"
-              rules={[
-                { required: true, message: "Please select sub category" },
-              ]}
+              rules={[{ required: true, message: "Please select subcategory" }]}
             >
-              <Select
-                placeholder="Select Sub Category"
-                loading={isLoadingSubCategories}
-                disabled={!localCategoryId || isLoadingSubCategories}
-                notFoundContent={
-                  isLoadingSubCategories ? (
-                    <div className="text-center py-2">
-                      <Spin size="small" />
-                      <div className="mt-1">Loading subcategories...</div>
-                    </div>
-                  ) : !localCategoryId ? (
-                    "Please select a category first"
-                  ) : (
-                    "No subcategories found"
-                  )
-                }
-                getPopupContainer={(trigger) => trigger.parentElement}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }
-                }}
-              >
-                {subCategories?.map((subCat) => (
-                  <Option key={subCat._id} value={subCat._id}>
-                    {subCat.name}
+              <Select placeholder="Select Sub Category" disabled={!categoryId}>
+                {subCategories?.map((sub) => (
+                  <Option key={sub._id} value={sub._id}>
+                    {sub.name}
                   </Option>
                 ))}
               </Select>
             </Form.Item>
-          </div>
+          )}
+
+          <Form.Item
+            label="Duration"
+            name="duration"
+            rules={[{ required: true, message: "Please enter duration" }]}
+          >
+            <Input placeholder="MM:SS" />
+          </Form.Item>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="col-span-1">
-            <Form.Item
-              label="Duration"
-              name="duration"
-              rules={[{ required: true, message: "Please enter duration" }]}
-            >
+        {/* Equipment - Full width */}
+        <div className="grid grid-cols-1 gap-4">
+          <Form.Item label="Equipment">
+            <div className="border rounded p-2 min-h-[32px] w-full">
+              {equipmentTags.map((tag) => (
+                <Tag
+                  key={tag}
+                  closable
+                  onClose={() => removeTag(tag)}
+                  className="mb-1"
+                >
+                  {tag}
+                </Tag>
+              ))}
               <Input
-                placeholder="Video Duration (MM:SS)"
-                className="py-3"
-                onPressEnter={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onPressEnter={addTag}
+                onBlur={addTag}
+                placeholder="Add equipment"
+                className="border-none"
+                style={{ width: "200px" }}
               />
-            </Form.Item>
-          </div>
+            </div>
+          </Form.Item>
+        </div>
 
-          <div className="col-span-2">
-            <Form.Item label="Equipment" name="equipment">
-              <div className="border border-gray-300 rounded-md p-2 min-h-[40px]">
-                {equipmentTags.map((tag) => (
-                  <Tag
-                    key={tag}
-                    color="error"
-                    closable
-                    className="mb-1 mr-1"
-                    onClose={() => {
-                      setEquipmentTags(equipmentTags.filter((t) => t !== tag));
-                    }}
-                  >
-                    {tag}
-                  </Tag>
-                ))}
-                <Input
-                  className="border-none outline-none p-0 w-24"
-                  placeholder="Add tag"
-                  value={tagInputValue}
-                  onChange={handleTagInputChange}
-                  onKeyDown={handleTagInputKeyDown}
-                  onBlur={handleTagInputBlur}
-                  onPressEnter={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
+        {/* File Uploads */}
+        <div className="grid grid-cols-2 gap-4">
+          <Form.Item label="Thumbnail" required={!isEditMode}>
+            <Dragger {...thumbnailProps}>
+              <InboxOutlined className="text-2xl mb-2" />
+              <p>Click or drag image to upload</p>
+            </Dragger>
+            {(thumbnailFile || currentVideo?.thumbnailUrl) && (
+              <div className="mt-2 text-center">
+                <Image
+                  src={
+                    thumbnailFile
+                      ? URL.createObjectURL(thumbnailFile)
+                      : getVideoAndThumbnail(currentVideo.thumbnailUrl)
+                  }
+                  width={150}
+                  height={100}
+                  style={{ objectFit: "cover" }}
                 />
               </div>
-            </Form.Item>
-          </div>
+            )}
+          </Form.Item>
+
+          <Form.Item label="Video" required={!isEditMode}>
+            <Dragger {...videoProps}>
+              <InboxOutlined className="text-2xl mb-2" />
+              <p>Click or drag video to upload</p>
+            </Dragger>
+            {(videoFile || currentVideo?.videoUrl) && (
+              <div className="mt-2 text-center">
+                <video
+                  src={
+                    videoFile
+                      ? URL.createObjectURL(videoFile)
+                      : getVideoAndThumbnail(currentVideo.videoUrl)
+                  }
+                  controls
+                  width={200}
+                  height={120}
+                />
+              </div>
+            )}
+          </Form.Item>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-          <div>
-            <div className="mb-2 font-medium">Select Thumbnail</div>
-            <div className="flex flex-col items-center border-2 border-dashed border-gray-300 rounded-lg p-4">
-              {thumbnailPreview ? (
-                <div className="mb-3">
-                  <img
-                    src={getPreviewUrl(thumbnailPreview)}
-                    alt="Thumbnail preview"
-                    style={{
-                      width: "100%",
-                      maxHeight: "180px",
-                      objectFit: "contain",
-                    }}
-                    onError={(e) => {
-                      console.log("Thumbnail preview error:", e);
-                      // Fallback: try direct URL without getVideoAndThumbnail
-                      if (!e.target.src.startsWith("blob:")) {
-                        e.target.src = thumbnailPreview;
-                      }
-                    }}
-                  />
-                </div>
-              ) : null}
-
-              <Upload {...thumbnailUploadProps}>
-                <Button icon={<UploadOutlined />} disabled={isProcessing}>
-                  {thumbnailPreview ? "Change Thumbnail" : "Select Thumbnail"}
-                </Button>
-              </Upload>
-              {thumbnailPath && !isEditMode && (
-                <div className="mt-2 text-xs text-gray-500">
-                  Selected: {thumbnailPath}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <div className="mb-2 font-medium">Select Video</div>
-            <div className="flex flex-col items-center border-2 border-dashed border-gray-300 rounded-lg p-4">
-              {videoPreview ? (
-                <div className="mb-3">
-                  <video
-                    src={getPreviewUrl(videoPreview)}
-                    controls
-                    style={{ width: "100%", maxHeight: "180px" }}
-                    onError={(e) => {
-                      console.log("Video preview error:", e);
-                      // Fallback: try direct URL without getVideoAndThumbnail
-                      if (!e.target.src.startsWith("blob:")) {
-                        e.target.src = videoPreview;
-                      }
-                    }}
-                  />
-                </div>
-              ) : null}
-
-              <Upload {...videoUploadProps}>
-                <Button icon={<UploadOutlined />} disabled={isProcessing}>
-                  {videoPreview ? "Change Video" : "Select Video"}
-                </Button>
-              </Upload>
-              {videoPath && !isEditMode && (
-                <div className="mt-2 text-xs text-gray-500">
-                  Selected: {videoPath}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <Form.Item
-          label="Video Description"
-          name="description"
-          className="mt-4"
-        >
-          <TextArea
-            rows={4}
-            placeholder="Enter video description here"
-            onPressEnter={(e) => {
-              // Allow Enter in textarea but prevent form submission
-              e.stopPropagation();
-            }}
-          />
+        {/* Description */}
+        <Form.Item label="Description" name="description">
+          <TextArea rows={3} placeholder="Video description" />
         </Form.Item>
 
-        <Form.Item className="flex justify-end mt-4">
-          <Button onClick={onCancel} disabled={isProcessing} className="mr-2">
+        {/* Actions */}
+        <div className="flex justify-end gap-2">
+          <Button onClick={onCancel} disabled={isLoading}>
             Cancel
           </Button>
-          <Button
-            type="primary"
-            danger
-            htmlType="submit"
-            loading={isProcessing}
-            disabled={isProcessing}
-          >
-            {isEditMode ? "Update Video" : "Add Video"}
+          <Button type="primary" htmlType="submit" loading={isLoading}>
+            {isEditMode ? "Update" : "Add"} Video
           </Button>
-        </Form.Item>
+        </div>
       </Form>
     </Modal>
   );

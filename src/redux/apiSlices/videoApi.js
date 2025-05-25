@@ -16,14 +16,12 @@ const videoApi = api.injectEndpoints({
     // Updated getAllVideos query with proper filtering and pagination
     getAllVideos: builder.query({
       query: (args) => {
-       
-          const params = new URLSearchParams();
-  
-          if (args) {
-            args.forEach((arg) => {
-              params.append(arg.name, arg.value);
-            });
-          }
+        const params = new URLSearchParams();
+        if (args) {
+          args.forEach((arg) => {
+            params.append(arg.name, arg.value);
+          });
+        }
 
         return {
           url: "/admin/videos/managment/videos",
@@ -42,6 +40,37 @@ const videoApi = api.injectEndpoints({
         };
       },
       providesTags: ["Videos"],
+    }),
+
+    // NEW: Get videos by subcategory with pagination
+    getVideosBySubCategory: builder.query({
+      query: ({ subCategoryId, page = 1, limit = 10 }) => {
+        return {
+          url: `/admin/videos/managment/videos-by-subcategory/${subCategoryId}`,
+          method: "GET",
+          params: { page, limit },
+        };
+      },
+      transformResponse: (response) => {
+        return {
+          data: response.data || [],
+          pagination: response.pagination || {
+            total: 0,
+            current: 1,
+            pageSize: 10,
+          },
+        };
+      },
+      providesTags: ["Videos"],
+    }),
+
+    getCoursesAllVideos: builder.query({
+      query: (courseId) => {
+        return {
+          url: `/admin/videos/managment/get-all-videos-by-course/${courseId}`,
+          method: "GET",
+        };
+      },
     }),
 
     getVideoById: builder.query({
@@ -77,7 +106,7 @@ const videoApi = api.injectEndpoints({
       },
     }),
 
-    // NEW: Toggle video status (active/inactive)
+    // Toggle video status (active/inactive)
     updateVideoStatus: builder.mutation({
       query: ({ id, status }) => {
         return {
@@ -86,6 +115,36 @@ const videoApi = api.injectEndpoints({
           body: { status },
         };
       },
+    }),
+
+    // NEW: Get all categories
+    // getCategory: builder.query({
+    //   query: () => {
+    //     return {
+    //       url: "/admin/categories",
+    //       method: "GET",
+    //     };
+    //   },
+    //   transformResponse: (response) => {
+    //     return {
+    //       data: response.data || [],
+    //     };
+    //   },
+    //   providesTags: ["Categories"],
+    // }),
+
+    // NEW: Get subcategory by ID
+    getSubCategoryById: builder.query({
+      query: (id) => {
+        return {
+          url: `/admin/videos/managment/get-all-videos-by-course/${id}`,
+          method: "GET",
+        };
+      },
+      transformResponse: (response) => {
+        return response.data || {};
+      },
+      providesTags: ["SubCategories"],
     }),
   }),
 });
@@ -96,5 +155,10 @@ export const {
   useGetVideoByIdQuery,
   useUpdateVideoMutation,
   useDeleteVideoMutation,
-  useUpdateVideoStatusMutation, 
+  useUpdateVideoStatusMutation,
+  useGetCoursesAllVideosQuery,
+  // NEW exports for missing endpoints
+  useGetVideosBySubCategoryQuery,
+  // useGetCategoryQuery,
+  useGetSubCategoryByIdQuery,
 } = videoApi;

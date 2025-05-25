@@ -3,6 +3,8 @@ import { Modal, Form, Input, Button, Upload } from "antd";
 import { UploadOutlined, ReloadOutlined } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 
+const { TextArea } = Input;
+
 const SubCategoryForm = ({
   visible,
   onCancel,
@@ -21,6 +23,7 @@ const SubCategoryForm = ({
       if (initialValues) {
         form.setFieldsValue({
           name: initialValues.name,
+          description: initialValues.description,
         });
         setPreviewUrl(initialValues.thumbnail);
       } else {
@@ -82,6 +85,20 @@ const SubCategoryForm = ({
         >
           <Input placeholder="Write Sub Category Title" />
         </Form.Item>
+
+        <Form.Item
+          name="description"
+          label="Description"
+          rules={[
+            {
+              required: true,
+              message: "Please input sub category description!",
+            },
+          ]}
+        >
+          <TextArea rows={4} placeholder="Write Sub Category Description" />
+        </Form.Item>
+
         <Form.Item name="thumbnail" label="Thumbnail">
           <div className="bg-gray-100 p-1 rounded">
             {previewUrl && (
