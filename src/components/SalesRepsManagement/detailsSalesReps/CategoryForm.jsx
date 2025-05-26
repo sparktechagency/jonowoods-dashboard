@@ -89,8 +89,8 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
           rules={[{ required: true, message: "Please select category type!" }]}
         >
           <Select placeholder="Free/Paid">
-            <Select.Option value="free">Free</Select.Option>
-            <Select.Option value="paid">Paid</Select.Option>
+            <Select.Option value="class">Class</Select.Option>
+            <Select.Option value="Course">Course</Select.Option>
           </Select>
         </Form.Item>
         <Form.Item name="thumbnail" label="Thumbnail">

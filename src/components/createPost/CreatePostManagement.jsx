@@ -16,70 +16,73 @@ import {
   DownOutlined,
   PlusOutlined,
   DeleteOutlined,
+  FileTextOutlined,
+  FileImageOutlined,
+  VideoCameraOutlined,
 } from "@ant-design/icons";
 import GradientButton from "../common/GradiantButton";
 import { Filtering } from "../common/Svg";
 import moment from "moment/moment";
-import VideoFormModal from "./VideoUploadModal";
-import Spinner from "./Spinner";
-import { getVideoAndThumbnail } from "./imageUrl";
-import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
+import PostFormModal from "./PostFormModal";
+import { getVideoAndThumbnail } from "../common/imageUrl";
+import { useCreatePostMutation, useDeletePostMutation, useGetAllPostsQuery, useGetPostByIdQuery, useUpdatePostMutation, useUpdatePostStatusMutation } from "../../redux/apiSlices/createPostApi";
+import Spinner from "../common/Spinner";
 
-const VideoUploadSystem = ({ pageType, apiHooks }) => {
-  const {
-    useGetAllQuery,
-    useGetByIdQuery,
-    deleteItem,
-    updateItemStatus,
-    createItem,
-    updateItem,
-  } = apiHooks;
+const PostManagementSystem = () => {
+
 
   // State management
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [selectedItemId, setSelectedItemId] = useState(null);
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Filtering and pagination
   const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Build query params for getAllQuery
+  // Build query params
   const queryParams = React.useMemo(() => {
     const params = [];
     if (statusFilter !== "all") {
       params.push({ name: "status", value: statusFilter });
     }
+    if (typeFilter !== "all") {
+      params.push({ name: "type", value: typeFilter });
+    }
     params.push({ name: "page", value: currentPage });
     params.push({ name: "limit", value: pageSize });
     return params;
-  }, [statusFilter, currentPage, pageSize]);
+  }, [statusFilter, typeFilter, currentPage, pageSize]);
 
-  // Fetch all items
+  // API calls
   const {
-    data: itemsData,
-    isLoading: isLoadingItems,
+    data: postsData,
+    isLoading: isLoadingPosts,
     refetch,
-  } = useGetAllQuery(queryParams);
+    } = useGetAllPostsQuery();
+    
+    console.log(postsData)
 
-  // Fetch single item for details and edit form
-  const { data: itemDetails, isLoading: isLoadingDetails } = useGetByIdQuery(
-    selectedItemId,
-    { skip: !selectedItemId }
-  );
+  const { data: postDetails, isLoading: isLoadingDetails } =
+    useGetPostByIdQuery(selectedItemId, { skip: !selectedItemId });
 
-  // Handle edit button click - sets both IDs and opens form modal
+  const [deletePost] = useDeletePostMutation();
+  const [updatePostStatus] = useUpdatePostStatusMutation();
+  const [createPost] = useCreatePostMutation();
+  const [updatePost] = useUpdatePostMutation();
+
+  // Handle edit button click
   const handleEdit = (id) => {
     setSelectedItemId(id);
     setEditingId(id);
     setIsFormModalVisible(true);
   };
 
-  // Handle add new button click - resets IDs and opens form modal
+  // Handle add new button click
   const showFormModal = () => {
     setSelectedItemId(null);
     setEditingId(null);
@@ -92,8 +95,8 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
     setIsDetailsModalVisible(true);
   };
 
-  const items = itemsData?.data || [];
-  const paginationData = itemsData?.pagination || {
+  const posts = postsData?.data || [];
+  const paginationData = postsData?.pagination || {
     total: 0,
     current: 1,
     pageSize: 10,
@@ -102,7 +105,7 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter]);
+  }, [statusFilter, typeFilter]);
 
   // Form submit handler
   const handleFormSubmit = useCallback(
@@ -110,14 +113,14 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
       setIsSubmitting(true);
       try {
         if (editingId) {
-          await updateItem({
+          await updatePost({
             id: editingId,
-            comingSoonData: formData,
+            postData: formData,
           });
-          message.success(`${getPageTitle()} updated successfully`);
+          message.success("Post updated successfully");
         } else {
-          await createItem(formData);
-          message.success(`${getPageTitle()} created successfully`);
+          await createPost(formData);
+          message.success("Post created successfully");
         }
 
         setIsFormModalVisible(false);
@@ -127,7 +130,7 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
       } catch (error) {
         console.error("Error in form submit:", error);
         message.error(
-          `Failed to ${editingId ? "update" : "create"} ${getPageTitle()}: ${
+          `Failed to ${editingId ? "update" : "create"} post: ${
             error?.message || "Unknown error"
           }`
         );
@@ -135,31 +138,31 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
         setIsSubmitting(false);
       }
     },
-    [editingId, createItem, updateItem, refetch]
+    [editingId, createPost, updatePost, refetch]
   );
 
   // Delete handler
-  const handleDeleteItem = useCallback(
+  const handleDeletePost = useCallback(
     (id) => {
       Modal.confirm({
-        title: `Are you sure you want to delete this ${getPageTitle()} item?`,
+        title: "Are you sure you want to delete this post?",
         content: "This action cannot be undone.",
         okText: "Yes",
         okType: "danger",
         cancelText: "No",
         onOk: async () => {
           try {
-            await deleteItem(id);
-            message.success(`${getPageTitle()} item deleted successfully`);
+            await deletePost(id);
+            message.success("Post deleted successfully");
             refetch();
           } catch (error) {
-            message.error(`Failed to delete ${getPageTitle()} item`);
-            console.error("Error deleting item:", error);
+            message.error("Failed to delete post");
+            console.error("Error deleting post:", error);
           }
         },
       });
     },
-    [deleteItem, refetch]
+    [deletePost, refetch]
   );
 
   // Status change handler
@@ -175,17 +178,10 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
         },
         onOk: async () => {
           try {
-            if (updateItemStatus) {
-              await updateItemStatus({
-                id: record._id,
-                status: newStatus,
-              });
-            } else {
-              await updateItem({
-                id: record._id,
-                formData: { ...record, status: newStatus },
-              });
-            }
+            await updatePostStatus({
+              id: record._id,
+              status: newStatus,
+            });
             message.success(`Status updated to ${newStatus}`);
             refetch();
           } catch (error) {
@@ -195,7 +191,7 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
         },
       });
     },
-    [updateItemStatus, updateItem, refetch]
+    [updatePostStatus, refetch]
   );
 
   // Table change handler
@@ -216,10 +212,16 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
     setSelectedItemId(null);
   };
 
+  // Filter handlers
   const handleStatusFilterChange = useCallback((status) => {
     setStatusFilter(status.toLowerCase());
   }, []);
 
+  const handleTypeFilterChange = useCallback((type) => {
+    setTypeFilter(type.toLowerCase());
+  }, []);
+
+  // Dropdown menus
   const statusMenu = React.useMemo(
     () => (
       <Menu>
@@ -243,6 +245,54 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
     [handleStatusFilterChange]
   );
 
+  const typeMenu = React.useMemo(
+    () => (
+      <Menu>
+        <Menu.Item key="all" onClick={() => handleTypeFilterChange("all")}>
+          All Types
+        </Menu.Item>
+        <Menu.Item key="text" onClick={() => handleTypeFilterChange("text")}>
+          Text Posts
+        </Menu.Item>
+        <Menu.Item key="image" onClick={() => handleTypeFilterChange("image")}>
+          Image Posts
+        </Menu.Item>
+        <Menu.Item key="video" onClick={() => handleTypeFilterChange("video")}>
+          Video Posts
+        </Menu.Item>
+      </Menu>
+    ),
+    [handleTypeFilterChange]
+  );
+
+  // Get post type icon
+  const getPostTypeIcon = (type) => {
+    switch (type) {
+      case "text":
+        return <FileTextOutlined style={{ color: "#1890ff" }} />;
+      case "image":
+        return <FileImageOutlined style={{ color: "#52c41a" }} />;
+      case "video":
+        return <VideoCameraOutlined style={{ color: "#ff4d4f" }} />;
+      default:
+        return <FileTextOutlined />;
+    }
+  };
+
+  // Get post type color
+  const getPostTypeColor = (type) => {
+    switch (type) {
+      case "text":
+        return "blue";
+      case "image":
+        return "green";
+      case "video":
+        return "red";
+      default:
+        return "default";
+    }
+  };
+
   // Table columns
   const columns = React.useMemo(
     () => [
@@ -261,38 +311,70 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
         dataIndex: "title",
         key: "title",
         align: "center",
+        ellipsis: true,
       },
       {
-        title: "Category",
-        dataIndex: "category",
-        key: "category",
+        title: "Type",
+        dataIndex: "type",
+        key: "type",
         align: "center",
-      },
-      {
-        title: "Duration",
-        dataIndex: "duration",
-        key: "duration",
-        align: "center",
-      },
-      {
-        title: "Thumbnail",
-        dataIndex: "thumbnailUrl",
-        key: "thumbnailUrl",
-        align: "center",
-        render: (_, record) => (
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <img
-              src={getVideoAndThumbnail(record.thumbnailUrl)}
-              alt="thumbnail"
-              style={{
-                width: 100,
-                height: 50,
-                objectFit: "cover",
-              }}
-              className="rounded-lg"
-            />
-          </div>
+        render: (type) => (
+          <Tag icon={getPostTypeIcon(type)} color={getPostTypeColor(type)}>
+            {type?.toUpperCase()}
+          </Tag>
         ),
+      },
+      {
+        title: "Preview",
+        key: "preview",
+        align: "center",
+        render: (_, record) => {
+          if (record.type === "text") {
+            return (
+              <div
+                style={{
+                  maxWidth: 200,
+                  maxHeight: 50,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+                dangerouslySetInnerHTML={{
+                  __html: record.content
+                    ? record.content.substring(0, 50) + "..."
+                    : "No content",
+                }}
+              />
+            );
+          } else if (record.type === "image" && record.imageUrl) {
+            return (
+              <img
+                src={getVideoAndThumbnail(record.imageUrl)}
+                alt="preview"
+                style={{
+                  width: 100,
+                  height: 50,
+                  objectFit: "cover",
+                }}
+                className="rounded-lg"
+              />
+            );
+          } else if (record.type === "video" && record.thumbnailUrl) {
+            return (
+              <img
+                src={getVideoAndThumbnail(record.thumbnailUrl)}
+                alt="thumbnail"
+                style={{
+                  width: 100,
+                  height: 50,
+                  objectFit: "cover",
+                }}
+                className="rounded-lg"
+              />
+            );
+          }
+          return <span>No preview</span>;
+        },
       },
       {
         title: "Created Date",
@@ -339,7 +421,7 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
             <Button
               type="text"
               icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
-              onClick={() => handleDeleteItem(record._id)}
+              onClick={() => handleDeletePost(record._id)}
             />
           </Space>
         ),
@@ -351,7 +433,7 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
       handleEdit,
       showDetailsModal,
       handleStatusChange,
-      handleDeleteItem,
+      handleDeletePost,
     ]
   );
 
@@ -360,20 +442,12 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
     return statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1);
   };
 
-  const getPageTitle = () => {
-    switch (pageType) {
-      case "coming-soon":
-        return "Coming Soon";
-      case "today-video":
-        return "Today's Video";
-      case "challenge-video":
-        return "Challenge Video";
-      default:
-        return "Content";
-    }
+  const getTypeDisplayText = () => {
+    if (typeFilter === "all") return "All Types";
+    return typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1);
   };
 
-  if (isLoadingItems) {
+  if (isLoadingPosts) {
     return <Spinner />;
   }
 
@@ -400,6 +474,24 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
                 </Space>
               </Button>
             </Dropdown>
+
+            {/* Type Filter */}
+            <Dropdown
+              overlay={typeMenu}
+              trigger={["click"]}
+              placement="bottomLeft"
+            >
+              <Button
+                className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
+                style={{ border: "none" }}
+              >
+                <Space>
+                  <Filtering className="filtering-icon" />
+                  <span className="filter-text">{getTypeDisplayText()}</span>
+                  <DownOutlined />
+                </Space>
+              </Button>
+            </Dropdown>
           </Space>
         </div>
 
@@ -409,14 +501,14 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
           className="py-5"
           icon={<PlusOutlined />}
         >
-          Add New {getPageTitle()} Content
+          Add New Post
         </GradientButton>
       </div>
 
       {/* Table */}
       <Table
         columns={columns}
-        dataSource={items}
+        dataSource={posts}
         pagination={{
           current: currentPage,
           pageSize: pageSize,
@@ -430,24 +522,24 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
         scroll={{ x: "max-content" }}
       />
 
-      {/* Video Form Modal */}
-      <VideoFormModal
+      {/* Post Form Modal */}
+      <PostFormModal
         visible={isFormModalVisible}
         onClose={handleFormModalClose}
         onSubmit={handleFormSubmit}
-        editingItem={itemDetails?.data}
+        editingItem={postDetails?.data}
         loading={isSubmitting}
       />
 
-      {/* Video Details Modal */}
-      <VideoDetailsModal
+      {/* Post Details Modal */}
+      {/* <PostDetailsModal
         visible={isDetailsModalVisible}
         onCancel={handleDetailsModalClose}
-        currentVideo={itemDetails?.data}
+        currentPost={postDetails?.data}
         loading={isLoadingDetails}
-      />
+      /> */}
     </div>
   );
 };
 
-export default VideoUploadSystem;
+export default PostManagementSystem;

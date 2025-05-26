@@ -85,23 +85,15 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
                 <strong>Video</strong>
               </p>
               <div
-                style={{
-                  width: "100%",
-                  height: 250,
-                  backgroundColor: "#f5f5f5",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  overflow: "hidden",
-                }}
+            
               >
                 {currentVideo.videoUrl ? (
                   <video
                     src={getVideoAndThumbnail(currentVideo.videoUrl)}
                     controls
                     style={{
-                      width: "100%",
-                      height: "100%",
+                      width: "400px",
+                      height: "240px",
                       objectFit: "contain",
                     }}
                   />

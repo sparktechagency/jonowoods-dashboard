@@ -112,12 +112,22 @@ const Sidebar = () => {
     {
       key: "/todayVideo",
       icon: renderIcon(VideoManagement, "/todayVideo"),
-      label: <Link to="/todayVideo"> Today Video's</Link>,
+      label: <Link to="/todayVideo"> Daily Challange's</Link>,
+    },
+    {
+      key: "/dailyInspiration",
+      icon: renderIcon(VideoManagement, "/dailyInspiration"),
+      label: <Link to="/dailyInspiration"> Daily Inspiration's</Link>,
     },
     {
       key: "/loginCredentials",
       icon: renderIcon(LoginCredentials, "/loginCredentials"),
       label: <Link to="/loginCredentials">Login Credentials</Link>,
+    },
+    {
+      key: "/createPost",
+      icon: renderIcon(LoginCredentials, "/createPost"),
+      label: <Link to="/createPost">Create Post</Link>,
     },
     {
       key: "subMenuSetting",
@@ -135,6 +145,10 @@ const Sidebar = () => {
         {
           key: "/privacy-policy",
           label: <Link to="/privacy-policy">Privacy Policy</Link>,
+        },
+        {
+          key: "/login-register",
+          label: <Link to="/login-register">Login And Register Bg</Link>,
         },
       ],
     },
@@ -172,35 +186,38 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="mb-20 h-screen">
-      <Link
-        to={"/"}
-        className="flex items-center justify-center  border-b-2 border-primary"
-      >
-        <img src={image4} alt="logo" className="w-60 h-36" />
-      </Link>
-      <Menu
-        mode="inline"
-        selectedKeys={[selectedKey]}
-        openKeys={openKeys}
-        onOpenChange={handleOpenChange}
-        className="font-poppins text-black sidebar-menu"
-        style={{
-          borderRightColor: "transparent",
-          background: "transparent",
-          marginTop: "30px",
-        }}
-        items={menuItems.map((item) => ({
-          ...item,
-          label: <span>{item.label}</span>,
-          children: item.children
-            ? item.children.map((subItem) => ({
-                ...subItem,
-                label: <span>{subItem.label}</span>,
-              }))
-            : undefined,
-        }))}
-      />
+    <div className="mb-20  h-screen flex flex-col">
+      {/* Logo: fixed height, no scroll */}
+      <div className="flex-shrink-0 border-b-2 border-primary flex items-center justify-center h-36">
+        <img src={image4} alt="logo" className="w-60" />
+      </div>
+
+      {/* Menu: scrollable part */}
+      <div className="flex-1 overflow-y-auto mt-2">
+        <Menu
+          mode="inline"
+          selectedKeys={[selectedKey]}
+          openKeys={openKeys}
+          onOpenChange={handleOpenChange}
+          className="font-poppins text-black sidebar-menu"
+          style={{
+            borderRightColor: "transparent",
+            background: "transparent",
+          }}
+          items={menuItems.map((item) => ({
+            ...item,
+            label: <span>{item.label}</span>,
+            children: item.children
+              ? item.children.map((subItem) => ({
+                  ...subItem,
+                  label: <span>{subItem.label}</span>,
+                }))
+              : undefined,
+          }))}
+        />
+      </div>
+
+      {/* Logout Modal (unchanged) */}
       <Modal
         centered
         title="Confirm Logout"

@@ -34,6 +34,9 @@ import LoginCredentials from "../components/loginCredentials/LoginCredentials";
 import CommingSoonVideoPage from "../components/comingSoon/CommingSoonVideoPage";
 import TodayVideos from "../components/todayVideos/TodayVideos";
 import CourseDetailsVideoManagement from "../components/retailerManagement/CourseDetailsVideoManagement";
+import DailyInspirationPage from "../components/comingSoon/DailyInspiration";
+import PostManagementSystem from "../components/createPost/CreatePostManagement";
+import PageManagement from "../Pages/Dashboard/LoginAndRegisterBG";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
@@ -91,8 +94,16 @@ const router = createBrowserRouter([
         element: <TodayVideos />,
       },
       {
+        path: "/dailyInspiration",
+        element: <DailyInspirationPage />,
+      },
+      {
         path: "/loginCredentials",
         element: <LoginCredentials />,
+      },
+      {
+        path: "/createPost",
+        element: <PostManagementSystem />,
       },
       {
         path: "/subsciption",
@@ -103,8 +114,8 @@ const router = createBrowserRouter([
         element: <Category />,
       },
       {
-        path: "/events",
-        element: <Events />,
+        path: "/login-register",
+        element: <PageManagement />,
       },
       {
         path: "/banner",

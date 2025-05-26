@@ -3,10 +3,10 @@ import { api } from "../api/baseApi";
 const comingSoonApi = api.injectEndpoints({
   endpoints: (builder) => ({
     // POST: Create a new Coming Soon entry
-    createComingSoon: builder.mutation({
+    newDailyChallenge: builder.mutation({
       query: (data) => {
         return {
-          url: "/admin/comingSoon/create",
+          url: "/admin/challenge/create",
           method: "POST",
           body: data,
         };
@@ -14,10 +14,10 @@ const comingSoonApi = api.injectEndpoints({
     }),
 
     // GET: Retrieve all Coming Soon entries
-    getAllComingSoon: builder.query({
+    getDailyChallenge: builder.query({
       query: () => {
         return {
-          url: "/admin/comingSoon",
+          url: "/admin/challenge",
           method: "GET",
         };
       },
@@ -26,16 +26,16 @@ const comingSoonApi = api.injectEndpoints({
       // },
     }),
 
-    getComingSoonById: builder.query({
-      query: (id) => `/admin/comingSoon/${id}`,
+    getSingleDailyChallenge: builder.query({
+      query: (id) => `/admin/challenge/${id}`,
       method: "GET",
     }),
 
     // PATCH: Update a Coming Soon entry
-    updateComingSoon: builder.mutation({
+    updateDailyChallenge: builder.mutation({
       query: ({ id, comingSoonData }) => {
         return {
-          url: `/admin/comingSoon/${id}`,
+          url: `/admin/challenge/${id}`,
           method: "PATCH",
           body: comingSoonData,
         };
@@ -43,21 +43,11 @@ const comingSoonApi = api.injectEndpoints({
     }),
 
     // DELETE: Delete a Coming Soon entry
-    deleteComingSoon: builder.mutation({
+    deleteDailyChallege: builder.mutation({
       query: (id) => {
         return {
-          url: `/admin/comingSoon/${id}`,
+          url: `/admin/challenge/${id}`,
           method: "DELETE",
-        };
-      },
-    }),
-
-    updateComingSoonStatus: builder.mutation({
-      query: ({ id, status }) => {
-        return {
-          url: `/admin/comingSoon/${id}/status`,
-          method: "PATCH",
-          body: { status },
         };
       },
     }),
@@ -65,10 +55,9 @@ const comingSoonApi = api.injectEndpoints({
 });
 
 export const {
-  useCreateComingSoonMutation,
-  useGetAllComingSoonQuery,
-  useUpdateComingSoonMutation,
-  useDeleteComingSoonMutation,
-  useUpdateComingSoonStatusMutation,
-  useGetComingSoonByIdQuery,
+    useGetDailyChallengeQuery,
+    useNewDailyChallengeMutation,
+    useGetSingleDailyChallengeQuery,
+    useUpdateDailyChallengeMutation,
+    useDeleteDailyChallegeMutation,
 } = comingSoonApi;

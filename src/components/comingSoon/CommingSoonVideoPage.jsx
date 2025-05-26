@@ -2,6 +2,7 @@ import {
   useCreateComingSoonMutation,
   useDeleteComingSoonMutation,
   useGetAllComingSoonQuery,
+  useGetComingSoonByIdQuery,
   useUpdateComingSoonMutation,
 } from "../../redux/apiSlices/comingSoonApi";
 import VideoUploadSystem from "../common/VideoUploade";
@@ -11,18 +12,16 @@ const CommingSoonVideoPage = () => {
   const [updateComingSoon] = useUpdateComingSoonMutation();
   const [deleteComingSoon] = useDeleteComingSoonMutation();
 
+
   // Define categories for coming soon videos
   const categories = [
-    "Video/Picture",
-    "Fitness",
-    "Yoga",
-    "Meditation",
-    "Workout",
+ "Comming Soon"
   ];
 
   // Pass API hooks as props to VideoUploadSystem
   const apiHooks = {
     useGetAllQuery: useGetAllComingSoonQuery,
+    useGetByIdQuery: useGetComingSoonByIdQuery,
     deleteItem: deleteComingSoon,
     updateItemStatus: updateComingSoon, // or null if you don't have a specific status update
     createItem: createComingSoon,

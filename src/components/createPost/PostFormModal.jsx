@@ -1,0 +1,408 @@
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import {
+  Modal,
+  Form,
+  Input,
+  Select,
+  Upload,
+  Button,
+  message,
+  Image,
+} from "antd";
+import { InboxOutlined, DeleteOutlined } from "@ant-design/icons";
+// Remove JoditEditor import - it's causing the issue
+// import { JoditEditor } from "jodit-react";
+import { getVideoAndThumbnail } from "../common/imageUrl";
+
+const { TextArea } = Input;
+const { Option } = Select;
+const { Dragger } = Upload;
+
+const PostFormModal = ({
+  visible,
+  onClose,
+  onSubmit,
+  editingItem,
+  loading = false,
+}) => {
+  const [form] = Form.useForm();
+  const editor = useRef(null);
+
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [postType, setPostType] = useState("text");
+  const [textContent, setTextContent] = useState("");
+
+  const isEditMode = !!editingItem;
+
+  const POST_TYPES = [
+    { value: "text", label: "Text Post" },
+    { value: "image", label: "Image Post" },
+    { value: "video", label: "Video Post" },
+  ];
+
+  const getFormTitle = () => (editingItem ? "Edit Post" : "Create New Post");
+
+  useEffect(() => {
+    if (editingItem && visible) {
+      form.setFieldsValue({
+        title: editingItem.title,
+        type: editingItem.type,
+        description: editingItem.description,
+      });
+
+      setPostType(editingItem.type || "text");
+      setTextContent(editingItem.content || "");
+      setThumbnailFile(null);
+      setVideoFile(null);
+      setImageFile(null);
+    } else if (!visible) {
+      form.resetFields();
+      setThumbnailFile(null);
+      setVideoFile(null);
+      setImageFile(null);
+      setPostType("text");
+      setTextContent("");
+    }
+  }, [editingItem, visible, form]);
+
+  const handlePostTypeChange = (value) => {
+    setPostType(value);
+    setThumbnailFile(null);
+    setVideoFile(null);
+    setImageFile(null);
+    setTextContent("");
+  };
+
+  const imageProps = {
+    beforeUpload: (file) => {
+      if (!file.type.startsWith("image/")) {
+        message.error("You can only upload image files!");
+        return false;
+      }
+      if (file.size / 1024 / 1024 > 20) {
+        message.error("Image must be smaller than 20MB!");
+        return false;
+      }
+      setImageFile(file);
+      return false; // prevent auto upload
+    },
+    onRemove: () => {
+      setImageFile(null);
+    },
+    fileList: imageFile ? [imageFile] : [],
+    showUploadList: false,
+  };
+
+  const thumbnailProps = {
+    beforeUpload: (file) => {
+      if (!file.type.startsWith("image/")) {
+        message.error("You can only upload image files!");
+        return false;
+      }
+      if (file.size / 1024 / 1024 > 20) {
+        message.error("Image must be smaller than 20MB!");
+        return false;
+      }
+      setThumbnailFile(file);
+      return false;
+    },
+    onRemove: () => {
+      setThumbnailFile(null);
+    },
+    fileList: thumbnailFile ? [thumbnailFile] : [],
+    showUploadList: false,
+  };
+
+  const videoProps = {
+    beforeUpload: (file) => {
+      if (!file.type.startsWith("video/")) {
+        message.error("You can only upload video files!");
+        return false;
+      }
+      if (file.size / 1024 / 1024 > 2000) {
+        message.error("Video must be smaller than 2GB!");
+        return false;
+      }
+      setVideoFile(file);
+      return false;
+    },
+    onRemove: () => {
+      setVideoFile(null);
+    },
+    fileList: videoFile ? [videoFile] : [],
+    showUploadList: false,
+  };
+
+  const validateForm = () => {
+    if (postType === "text" && !textContent.trim()) {
+      message.error("Please enter text content");
+      return false;
+    }
+    if (postType === "image") {
+      if (!imageFile && !isEditMode) {
+        message.error("Please select an image");
+        return false;
+      }
+      if (isEditMode && !imageFile && !editingItem?.imageUrl) {
+        message.error("Please select an image");
+        return false;
+      }
+    }
+    if (postType === "video") {
+      if (!videoFile && !isEditMode) {
+        message.error("Please select a video");
+        return false;
+      }
+      if (!thumbnailFile && !isEditMode) {
+        message.error("Please select a thumbnail");
+        return false;
+      }
+      if (isEditMode) {
+        if (!videoFile && !editingItem?.videoUrl) {
+          message.error("Please select a video");
+          return false;
+        }
+        if (!thumbnailFile && !editingItem?.thumbnailUrl) {
+          message.error("Please select a thumbnail");
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  const handleFormSubmit = useCallback(
+    async (values) => {
+      try {
+        if (!validateForm()) return;
+
+        const postData = {
+          title: values.title,
+          type: postType,
+          description: values.description || "",
+          uploadDate:
+            editingItem?.uploadDate || new Date().toLocaleDateString(),
+          content: postType === "text" ? textContent : undefined,
+        };
+
+        const formDataToSend = new FormData();
+        formDataToSend.append("data", JSON.stringify(postData));
+
+        if (postType === "image" && imageFile) {
+          formDataToSend.append("image", imageFile);
+        }
+        if (postType === "video") {
+          if (videoFile) formDataToSend.append("video", videoFile);
+          if (thumbnailFile) formDataToSend.append("thumbnail", thumbnailFile);
+        }
+
+        await onSubmit(formDataToSend);
+      } catch (error) {
+        console.error("Error submitting post:", error);
+        message.error(`Failed to ${isEditMode ? "update" : "create"} post`);
+      }
+    },
+    [
+      postType,
+      textContent,
+      thumbnailFile,
+      videoFile,
+      imageFile,
+      editingItem,
+      onSubmit,
+      isEditMode,
+    ]
+  );
+
+  return (
+    <Modal
+      title={getFormTitle()}
+      open={visible}
+      onCancel={onClose}
+      footer={null}
+      width={900}
+      destroyOnClose
+    >
+      <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
+        <Form.Item
+          name="title"
+          label="Post Title"
+          rules={[{ required: true, message: "Please enter post title" }]}
+        >
+          <Input placeholder="Enter Your Post Title" className="h-12" />
+        </Form.Item>
+
+        <Form.Item
+          name="type"
+          label="Post Type"
+          rules={[{ required: true, message: "Please select post type" }]}
+        >
+          <Select
+            placeholder="Select Post Type"
+            className="h-12"
+            onChange={handlePostTypeChange}
+            value={postType}
+          >
+            {POST_TYPES.map((type) => (
+              <Option key={type.value} value={type.value}>
+                {type.label}
+              </Option>
+            ))}
+          </Select>
+        </Form.Item>
+
+        {postType === "text" && (
+          <Form.Item label="Post Content" required>
+            {/* Replace JoditEditor with TextArea for now */}
+            <TextArea
+              rows={8}
+              value={textContent}
+              onChange={(e) => setTextContent(e.target.value)}
+              placeholder="Enter your post content here..."
+            />
+          </Form.Item>
+        )}
+
+        {postType === "image" && (
+          <Form.Item label="Image" required={!isEditMode}>
+            <Dragger {...imageProps}>
+              <InboxOutlined className="text-2xl mb-2" />
+              <p>Click or drag image to upload</p>
+              {isEditMode && (
+                <p className="text-blue-500 text-xs">
+                  Leave empty to keep existing image
+                </p>
+              )}
+            </Dragger>
+            {(imageFile || editingItem?.imageUrl) && (
+              <div className="mt-2 text-center relative">
+                <Image
+                  src={
+                    imageFile
+                      ? URL.createObjectURL(imageFile)
+                      : getVideoAndThumbnail(editingItem.imageUrl)
+                  }
+                  width={400}
+                  height={200}
+                  style={{ objectFit: "cover" }}
+                  className="rounded border"
+                />
+                {imageFile && (
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    onClick={() => setImageFile(null)}
+                    className="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600"
+                    style={{ borderRadius: "50%", width: 24, height: 24 }}
+                  />
+                )}
+              </div>
+            )}
+          </Form.Item>
+        )}
+
+        {postType === "video" && (
+          <div className="grid grid-cols-2 gap-4 mt-4">
+            <Form.Item label="Thumbnail" required={!isEditMode}>
+              <Dragger {...thumbnailProps}>
+                <InboxOutlined className="text-2xl mb-2" />
+                <p>Click or drag thumbnail to upload</p>
+                {isEditMode && (
+                  <p className="text-blue-500 text-xs">
+                    Leave empty to keep existing thumbnail
+                  </p>
+                )}
+              </Dragger>
+              {(thumbnailFile || editingItem?.thumbnailUrl) && (
+                <div className="mt-2 text-center relative">
+                  <Image
+                    src={
+                      thumbnailFile
+                        ? URL.createObjectURL(thumbnailFile)
+                        : getVideoAndThumbnail(editingItem.thumbnailUrl)
+                    }
+                    width={400}
+                    height={200}
+                    style={{ objectFit: "cover" }}
+                    className="rounded border"
+                  />
+                  {thumbnailFile && (
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      onClick={() => setThumbnailFile(null)}
+                      className="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600"
+                      style={{ borderRadius: "50%", width: 24, height: 24 }}
+                    />
+                  )}
+                </div>
+              )}
+            </Form.Item>
+
+            <Form.Item label="Video" required={!isEditMode}>
+              <Dragger {...videoProps}>
+                <InboxOutlined className="text-2xl mb-2" />
+                <p>Click or drag video to upload</p>
+                {isEditMode && (
+                  <p className="text-blue-500 text-xs">
+                    Leave empty to keep existing video
+                  </p>
+                )}
+              </Dragger>
+              {(videoFile || editingItem?.videoUrl) && (
+                <div className="mt-2 text-center relative">
+                  <video
+                    src={
+                      videoFile
+                        ? URL.createObjectURL(videoFile)
+                        : getVideoAndThumbnail(editingItem.videoUrl)
+                    }
+                    controls
+                    style={{ width: 400, height: 200, objectFit: "cover" }}
+                    className="rounded border"
+                  />
+                  {videoFile && (
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      onClick={() => setVideoFile(null)}
+                      className="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600"
+                      style={{ borderRadius: "50%", width: 24, height: 24 }}
+                    />
+                  )}
+                </div>
+              )}
+            </Form.Item>
+          </div>
+        )}
+
+        <Form.Item name="description" label="Description">
+          <TextArea rows={4} placeholder="Add post description (optional)" />
+        </Form.Item>
+
+        <Form.Item>
+          <div className="flex justify-end space-x-4">
+            <Button onClick={onClose} disabled={loading} className="py-6 px-10">
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              className="bg-primary py-6 px-8"
+            >
+              {editingItem ? "Update Post" : "Create Post"}
+            </Button>
+          </div>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
+
+export default PostFormModal;

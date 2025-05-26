@@ -57,9 +57,6 @@ const CourseDetails = () => {
   const { data: subCategoryData, isLoading: isLoadingSubCategory } =
         useGetSubCategoryByIdQuery(subCategoryId);
   
-console.log("SubCategory Data:", subCategoryData);
-    // const subCategoryVideos = subCategoryData?.data || [];
-    // console.log("SubCategory Videos:", subCategoryVideos);
 
   const {
     data: videosData,
@@ -88,7 +85,6 @@ console.log("SubCategory Data:", subCategoryData);
   // Update current video when editing
   useEffect(() => {
     if (editingId) {
-      // fetch videoDetails runs automatically due to hook with editingId dependency
       if (videoDetails) {
         setCurrentVideo({
           ...videoDetails,
@@ -97,13 +93,11 @@ console.log("SubCategory Data:", subCategoryData);
         setEquipmentTags(videoDetails.equipment || []);
       }
     } else {
-      // Clear currentVideo and tags if no editingId or modal closed
       setCurrentVideo(null);
       setEquipmentTags([]);
     }
   }, [editingId, videoDetails]);
 
-  // Modal handlers
   const showFormModal = (record = null) => {
     if (record) {
       setEditingId(record._id); // <-- set editingId to trigger single video fetch
@@ -114,7 +108,7 @@ console.log("SubCategory Data:", subCategoryData);
   };
 
   const showDetailsModal = (record) => {
-    setEditingId(record._id); // <-- set editingId for details modal too
+    setEditingId(record._id);
     setIsDetailsModalVisible(true);
   };
   
@@ -190,14 +184,20 @@ console.log("SubCategory Data:", subCategoryData);
 
   // Table columns
   const columns = [
+    // {
+    //   title: "SL",
+    //   key: "id",
+    //   width: 70,
+    //   align: "center",
+    // },
     {
-      title: "SL",
-      key: "id",
-      width: 70,
+      title: "Serial",
+      dataIndex: "serial",
+      key: "serial",
       align: "center",
-      render: (text, record, index) => {
-        const actualIndex = (currentPage - 1) * pageSize + index + 1;
-        return `# ${actualIndex}`;
+      render: (text) => {
+      
+        return `# ${text}`;
       },
     },
     {
@@ -226,12 +226,7 @@ console.log("SubCategory Data:", subCategoryData);
         </div>
       ),
     },
-    {
-      title: "Serial",
-      dataIndex: "serial",
-      key: "serial",
-      align: "center",
-    },
+
     {
       title: "Upload Date",
       dataIndex: "createdAt",
