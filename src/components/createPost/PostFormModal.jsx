@@ -8,11 +8,11 @@ import {
   Button,
   message,
   Image,
+  InputNumber,
 } from "antd";
 import { InboxOutlined, DeleteOutlined } from "@ant-design/icons";
-// Remove JoditEditor import - it's causing the issue
-// import { JoditEditor } from "jodit-react";
 import { getVideoAndThumbnail } from "../common/imageUrl";
+import JoditTextEditor from "./JoditEditor";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -33,6 +33,7 @@ const PostFormModal = ({
   const [imageFile, setImageFile] = useState(null);
   const [postType, setPostType] = useState("text");
   const [textContent, setTextContent] = useState("");
+  const [videoDuration, setVideoDuration] = useState("");
 
   const isEditMode = !!editingItem;
 
@@ -46,11 +47,29 @@ const PostFormModal = ({
 
   useEffect(() => {
     if (editingItem && visible) {
-      form.setFieldsValue({
-        title: editingItem.title,
+      const fieldsToSet = {
         type: editingItem.type,
-        description: editingItem.description,
-      });
+      };
+
+      // Only set title for image and video posts
+      if (editingItem.type === "image" || editingItem.type === "video") {
+        fieldsToSet.title = editingItem.title;
+      }
+
+      // Only set description and duration for video posts
+      if (editingItem.type === "video") {
+        fieldsToSet.description = editingItem.description;
+        fieldsToSet.duration = editingItem.duration
+          ? String(editingItem.duration)
+          : undefined;
+        setVideoDuration(
+          editingItem.duration ? String(editingItem.duration) : ""
+        );
+      } else {
+        setVideoDuration("");
+      }
+
+      form.setFieldsValue(fieldsToSet);
 
       setPostType(editingItem.type || "text");
       setTextContent(editingItem.content || "");
@@ -64,6 +83,7 @@ const PostFormModal = ({
       setImageFile(null);
       setPostType("text");
       setTextContent("");
+      setVideoDuration("");
     }
   }, [editingItem, visible, form]);
 
@@ -73,6 +93,10 @@ const PostFormModal = ({
     setVideoFile(null);
     setImageFile(null);
     setTextContent("");
+    setVideoDuration("");
+
+    // Reset form fields when type changes
+    form.resetFields(["title", "description", "duration"]);
   };
 
   const imageProps = {
@@ -126,10 +150,24 @@ const PostFormModal = ({
         return false;
       }
       setVideoFile(file);
+
+      // Get video duration when file is selected
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.onloadedmetadata = function () {
+        window.URL.revokeObjectURL(video.src);
+        const duration = Math.round(video.duration);
+        setVideoDuration(String(duration));
+        form.setFieldsValue({ duration: String(duration) });
+      };
+      video.src = URL.createObjectURL(file);
+
       return false;
     },
     onRemove: () => {
       setVideoFile(null);
+      setVideoDuration("");
+      form.setFieldsValue({ duration: undefined });
     },
     fileList: videoFile ? [videoFile] : [],
     showUploadList: false,
@@ -179,19 +217,33 @@ const PostFormModal = ({
         if (!validateForm()) return;
 
         const postData = {
-          title: values.title,
           type: postType,
-          description: values.description || "",
           uploadDate:
             editingItem?.uploadDate || new Date().toLocaleDateString(),
-          content: postType === "text" ? textContent : undefined,
         };
+
+        if (postType === "text") {
+          // Send textContent as title to backend
+          postData.title = textContent;
+        } else if (postType === "image") {
+          postData.title = values.title;
+        } else if (postType === "video") {
+          postData.title = values.title;
+          postData.description = values.description || "";
+          // Keep duration as string to match backend validation
+          postData.duration =
+            values.duration !== undefined
+              ? String(values.duration)
+              : videoDuration
+              ? String(videoDuration)
+              : undefined;
+        }
 
         const formDataToSend = new FormData();
         formDataToSend.append("data", JSON.stringify(postData));
 
         if (postType === "image" && imageFile) {
-          formDataToSend.append("image", imageFile);
+          formDataToSend.append("thumbnail", imageFile);
         }
         if (postType === "video") {
           if (videoFile) formDataToSend.append("video", videoFile);
@@ -213,6 +265,7 @@ const PostFormModal = ({
       editingItem,
       onSubmit,
       isEditMode,
+      videoDuration,
     ]
   );
 
@@ -226,14 +279,6 @@ const PostFormModal = ({
       destroyOnClose
     >
       <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
-        <Form.Item
-          name="title"
-          label="Post Title"
-          rules={[{ required: true, message: "Please enter post title" }]}
-        >
-          <Input placeholder="Enter Your Post Title" className="h-12" />
-        </Form.Item>
-
         <Form.Item
           name="type"
           label="Post Type"
@@ -253,20 +298,33 @@ const PostFormModal = ({
           </Select>
         </Form.Item>
 
+        {/* Title field - only for image and video posts */}
+        {(postType === "image" || postType === "video") && (
+          <Form.Item
+            name="title"
+            label="Post Title"
+            rules={[{ required: true, message: "Please enter post title" }]}
+          >
+            <Input placeholder="Enter Your Post Title" className="h-12" />
+          </Form.Item>
+        )}
+
+        {/* Text content - only for text posts */}
         {postType === "text" && (
           <Form.Item label="Post Content" required>
-            {/* Replace JoditEditor with TextArea for now */}
-            <TextArea
-              rows={8}
+            <JoditTextEditor
+              ref={editor}
               value={textContent}
-              onChange={(e) => setTextContent(e.target.value)}
-              placeholder="Enter your post content here..."
+              tabIndex={1}
+              onBlur={(newContent) => setTextContent(newContent)}
+              onChange={(newContent) => setTextContent(newContent)}
             />
           </Form.Item>
         )}
 
+        {/* Image upload - only for image posts */}
         {postType === "image" && (
-          <Form.Item label="Image" required={!isEditMode}>
+          <Form.Item label="Image (Thumbnail)" required={!isEditMode}>
             <Dragger {...imageProps}>
               <InboxOutlined className="text-2xl mb-2" />
               <p>Click or drag image to upload</p>
@@ -304,86 +362,108 @@ const PostFormModal = ({
           </Form.Item>
         )}
 
+        {/* Video fields - only for video posts */}
         {postType === "video" && (
-          <div className="grid grid-cols-2 gap-4 mt-4">
-            <Form.Item label="Thumbnail" required={!isEditMode}>
-              <Dragger {...thumbnailProps}>
-                <InboxOutlined className="text-2xl mb-2" />
-                <p>Click or drag thumbnail to upload</p>
-                {isEditMode && (
-                  <p className="text-blue-500 text-xs">
-                    Leave empty to keep existing thumbnail
-                  </p>
-                )}
-              </Dragger>
-              {(thumbnailFile || editingItem?.thumbnailUrl) && (
-                <div className="mt-2 text-center relative">
-                  <Image
-                    src={
-                      thumbnailFile
-                        ? URL.createObjectURL(thumbnailFile)
-                        : getVideoAndThumbnail(editingItem.thumbnailUrl)
-                    }
-                    width={400}
-                    height={200}
-                    style={{ objectFit: "cover" }}
-                    className="rounded border"
-                  />
-                  {thumbnailFile && (
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<DeleteOutlined />}
-                      onClick={() => setThumbnailFile(null)}
-                      className="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600"
-                      style={{ borderRadius: "50%", width: 24, height: 24 }}
-                    />
-                  )}
-                </div>
-              )}
+          <>
+            <Form.Item
+              name="duration"
+              label="Duration "
+              rules={[
+                { required: true, message: "Please enter video duration" },
+              ]}
+            >
+              <InputNumber
+                placeholder="Enter video duration in seconds"
+                className="w-full h-12"
+                min={1}
+                value={videoDuration ? Number(videoDuration) : undefined}
+                onChange={(val) => setVideoDuration(val ? String(val) : "")}
+              />
             </Form.Item>
 
-            <Form.Item label="Video" required={!isEditMode}>
-              <Dragger {...videoProps}>
-                <InboxOutlined className="text-2xl mb-2" />
-                <p>Click or drag video to upload</p>
-                {isEditMode && (
-                  <p className="text-blue-500 text-xs">
-                    Leave empty to keep existing video
-                  </p>
-                )}
-              </Dragger>
-              {(videoFile || editingItem?.videoUrl) && (
-                <div className="mt-2 text-center relative">
-                  <video
-                    src={
-                      videoFile
-                        ? URL.createObjectURL(videoFile)
-                        : getVideoAndThumbnail(editingItem.videoUrl)
-                    }
-                    controls
-                    style={{ width: 400, height: 200, objectFit: "cover" }}
-                    className="rounded border"
-                  />
-                  {videoFile && (
-                    <Button
-                      type="text"
-                      size="small"
-                      icon={<DeleteOutlined />}
-                      onClick={() => setVideoFile(null)}
-                      className="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600"
-                      style={{ borderRadius: "50%", width: 24, height: 24 }}
-                    />
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <Form.Item label="Thumbnail" required={!isEditMode}>
+                <Dragger {...thumbnailProps}>
+                  <InboxOutlined className="text-2xl mb-2" />
+                  <p>Click or drag thumbnail to upload</p>
+                  {isEditMode && (
+                    <p className="text-blue-500 text-xs">
+                      Leave empty to keep existing thumbnail
+                    </p>
                   )}
-                </div>
-              )}
+                </Dragger>
+                {(thumbnailFile || editingItem?.thumbnailUrl) && (
+                  <div className="mt-2 text-center relative">
+                    <Image
+                      src={
+                        thumbnailFile
+                          ? URL.createObjectURL(thumbnailFile)
+                          : getVideoAndThumbnail(editingItem.thumbnailUrl)
+                      }
+                      width={400}
+                      height={200}
+                      style={{ objectFit: "cover" }}
+                      className="rounded border"
+                    />
+                    {thumbnailFile && (
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={() => setThumbnailFile(null)}
+                        className="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600"
+                        style={{ borderRadius: "50%", width: 24, height: 24 }}
+                      />
+                    )}
+                  </div>
+                )}
+              </Form.Item>
+
+              <Form.Item label="Video" required={!isEditMode}>
+                <Dragger {...videoProps}>
+                  <InboxOutlined className="text-2xl mb-2" />
+                  <p>Click or drag video to upload</p>
+                  {isEditMode && (
+                    <p className="text-blue-500 text-xs">
+                      Leave empty to keep existing video
+                    </p>
+                  )}
+                </Dragger>
+                {(videoFile || editingItem?.videoUrl) && (
+                  <div className="mt-2 text-center relative">
+                    <video
+                      src={
+                        videoFile
+                          ? URL.createObjectURL(videoFile)
+                          : getVideoAndThumbnail(editingItem.videoUrl)
+                      }
+                      controls
+                      style={{ width: 400, height: 200, objectFit: "cover" }}
+                      className="rounded border"
+                    />
+                    {videoFile && (
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={() => setVideoFile(null)}
+                        className="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600"
+                        style={{ borderRadius: "50%", width: 24, height: 24 }}
+                      />
+                    )}
+                  </div>
+                )}
+              </Form.Item>
+            </div>
+
+            <Form.Item name="description" label="Description">
+              <TextArea
+                rows={4}
+                placeholder="Add video description (optional)"
+              />
             </Form.Item>
-          </div>
+          </>
         )}
-
-        <Form.Item name="description" label="Description">
-          <TextArea rows={4} placeholder="Add post description (optional)" />
-        </Form.Item>
 
         <Form.Item>
           <div className="flex justify-end space-x-4">

@@ -1,36 +1,41 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  Table,
   Button,
   Modal,
-  Space,
   Switch,
-  Dropdown,
-  Menu,
+ 
   message,
   Tag,
+  Card,
+  Row,
+  Col,
+  Pagination,
 } from "antd";
 import {
   EditOutlined,
   EyeOutlined,
-  DownOutlined,
   PlusOutlined,
   DeleteOutlined,
   FileTextOutlined,
   FileImageOutlined,
   VideoCameraOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import GradientButton from "../common/GradiantButton";
-import { Filtering } from "../common/Svg";
 import moment from "moment/moment";
 import PostFormModal from "./PostFormModal";
 import { getVideoAndThumbnail } from "../common/imageUrl";
-import { useCreatePostMutation, useDeletePostMutation, useGetAllPostsQuery, useGetPostByIdQuery, useUpdatePostMutation, useUpdatePostStatusMutation } from "../../redux/apiSlices/createPostApi";
+import {
+  useCreatePostMutation,
+  useDeletePostMutation,
+  useGetAllPostsQuery,
+  useGetPostByIdQuery,
+  useUpdatePostMutation,
+  useUpdatePostStatusMutation,
+} from "../../redux/apiSlices/createPostApi";
 import Spinner from "../common/Spinner";
 
 const PostManagementSystem = () => {
-
-
   // State management
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
@@ -44,31 +49,18 @@ const PostManagementSystem = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Build query params
-  const queryParams = React.useMemo(() => {
-    const params = [];
-    if (statusFilter !== "all") {
-      params.push({ name: "status", value: statusFilter });
-    }
-    if (typeFilter !== "all") {
-      params.push({ name: "type", value: typeFilter });
-    }
-    params.push({ name: "page", value: currentPage });
-    params.push({ name: "limit", value: pageSize });
-    return params;
-  }, [statusFilter, typeFilter, currentPage, pageSize]);
+
 
   // API calls
   const {
     data: postsData,
     isLoading: isLoadingPosts,
     refetch,
-    } = useGetAllPostsQuery();
-    
-    console.log(postsData)
+  } = useGetAllPostsQuery();
 
   const { data: postDetails, isLoading: isLoadingDetails } =
     useGetPostByIdQuery(selectedItemId, { skip: !selectedItemId });
+  console.log("Post Details:", postDetails);
 
   const [deletePost] = useDeletePostMutation();
   const [updatePostStatus] = useUpdatePostStatusMutation();
@@ -76,10 +68,13 @@ const PostManagementSystem = () => {
   const [updatePost] = useUpdatePostMutation();
 
   // Handle edit button click
-  const handleEdit = (id) => {
+  const handleEdit = async (id) => {
     setSelectedItemId(id);
     setEditingId(id);
-    setIsFormModalVisible(true);
+    // Wait a moment to ensure the post details are fetched
+    setTimeout(() => {
+      setIsFormModalVisible(true);
+    }, 100);
   };
 
   // Handle add new button click
@@ -96,11 +91,19 @@ const PostManagementSystem = () => {
   };
 
   const posts = postsData?.data || [];
-  const paginationData = postsData?.pagination || {
-    total: 0,
-    current: 1,
-    pageSize: 10,
-  };
+ 
+  // Get current editing post data
+  const currentEditingPost = React.useMemo(() => {
+    if (!editingId) return null;
+
+    // First try to get from API response
+    if (postDetails?.data) {
+      return postDetails.data;
+    }
+
+    // Fallback to posts array
+    return posts.find((post) => post._id === editingId) || null;
+  }, [editingId, postDetails, posts]);
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -165,40 +168,7 @@ const PostManagementSystem = () => {
     [deletePost, refetch]
   );
 
-  // Status change handler
-  const handleStatusChange = useCallback(
-    (checked, record) => {
-      const newStatus = checked ? "active" : "inactive";
-      Modal.confirm({
-        title: `Are you sure you want to set the status to "${newStatus}"?`,
-        okText: "Yes",
-        cancelText: "No",
-        okButtonProps: {
-          style: { backgroundColor: "red", borderColor: "red" },
-        },
-        onOk: async () => {
-          try {
-            await updatePostStatus({
-              id: record._id,
-              status: newStatus,
-            });
-            message.success(`Status updated to ${newStatus}`);
-            refetch();
-          } catch (error) {
-            message.error("Failed to update status");
-            console.error("Error updating status:", error);
-          }
-        },
-      });
-    },
-    [updatePostStatus, refetch]
-  );
-
-  // Table change handler
-  const handleTableChange = useCallback((paginationConfig) => {
-    setCurrentPage(paginationConfig.current);
-    setPageSize(paginationConfig.pageSize);
-  }, []);
+ 
 
   // Modal close handlers
   const handleFormModalClose = () => {
@@ -212,70 +182,28 @@ const PostManagementSystem = () => {
     setSelectedItemId(null);
   };
 
-  // Filter handlers
-  const handleStatusFilterChange = useCallback((status) => {
-    setStatusFilter(status.toLowerCase());
-  }, []);
 
-  const handleTypeFilterChange = useCallback((type) => {
-    setTypeFilter(type.toLowerCase());
-  }, []);
 
-  // Dropdown menus
-  const statusMenu = React.useMemo(
-    () => (
-      <Menu>
-        <Menu.Item key="all" onClick={() => handleStatusFilterChange("all")}>
-          All Status
-        </Menu.Item>
-        <Menu.Item
-          key="active"
-          onClick={() => handleStatusFilterChange("active")}
-        >
-          Active
-        </Menu.Item>
-        <Menu.Item
-          key="inactive"
-          onClick={() => handleStatusFilterChange("inactive")}
-        >
-          Inactive
-        </Menu.Item>
-      </Menu>
-    ),
-    [handleStatusFilterChange]
-  );
-
-  const typeMenu = React.useMemo(
-    () => (
-      <Menu>
-        <Menu.Item key="all" onClick={() => handleTypeFilterChange("all")}>
-          All Types
-        </Menu.Item>
-        <Menu.Item key="text" onClick={() => handleTypeFilterChange("text")}>
-          Text Posts
-        </Menu.Item>
-        <Menu.Item key="image" onClick={() => handleTypeFilterChange("image")}>
-          Image Posts
-        </Menu.Item>
-        <Menu.Item key="video" onClick={() => handleTypeFilterChange("video")}>
-          Video Posts
-        </Menu.Item>
-      </Menu>
-    ),
-    [handleTypeFilterChange]
-  );
+  
+ 
 
   // Get post type icon
   const getPostTypeIcon = (type) => {
     switch (type) {
       case "text":
-        return <FileTextOutlined style={{ color: "#1890ff" }} />;
+        return (
+          <FileTextOutlined style={{ color: "#1890ff", fontSize: "18px" }} />
+        );
       case "image":
-        return <FileImageOutlined style={{ color: "#52c41a" }} />;
+        return (
+          <FileImageOutlined style={{ color: "#52c41a", fontSize: "18px" }} />
+        );
       case "video":
-        return <VideoCameraOutlined style={{ color: "#ff4d4f" }} />;
+        return (
+          <VideoCameraOutlined style={{ color: "#ff4d4f", fontSize: "18px" }} />
+        );
       default:
-        return <FileTextOutlined />;
+        return <FileTextOutlined style={{ fontSize: "18px" }} />;
     }
   };
 
@@ -293,159 +221,104 @@ const PostManagementSystem = () => {
     }
   };
 
-  // Table columns
-  const columns = React.useMemo(
-    () => [
-      {
-        title: "SL",
-        key: "id",
-        width: 70,
-        align: "center",
-        render: (text, record, index) => {
-          const actualIndex = (currentPage - 1) * pageSize + index + 1;
-          return `# ${actualIndex}`;
-        },
-      },
-      {
-        title: "Title",
-        dataIndex: "title",
-        key: "title",
-        align: "center",
-        ellipsis: true,
-      },
-      {
-        title: "Type",
-        dataIndex: "type",
-        key: "type",
-        align: "center",
-        render: (type) => (
-          <Tag icon={getPostTypeIcon(type)} color={getPostTypeColor(type)}>
-            {type?.toUpperCase()}
-          </Tag>
-        ),
-      },
-      {
-        title: "Preview",
-        key: "preview",
-        align: "center",
-        render: (_, record) => {
-          if (record.type === "text") {
-            return (
-              <div
-                style={{
-                  maxWidth: 200,
-                  maxHeight: 50,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: record.content
-                    ? record.content.substring(0, 50) + "..."
-                    : "No content",
-                }}
-              />
-            );
-          } else if (record.type === "image" && record.imageUrl) {
-            return (
-              <img
-                src={getVideoAndThumbnail(record.imageUrl)}
-                alt="preview"
-                style={{
-                  width: 100,
-                  height: 50,
-                  objectFit: "cover",
-                }}
-                className="rounded-lg"
-              />
-            );
-          } else if (record.type === "video" && record.thumbnailUrl) {
-            return (
-              <img
-                src={getVideoAndThumbnail(record.thumbnailUrl)}
-                alt="thumbnail"
-                style={{
-                  width: 100,
-                  height: 50,
-                  objectFit: "cover",
-                }}
-                className="rounded-lg"
-              />
-            );
-          }
-          return <span>No preview</span>;
-        },
-      },
-      {
-        title: "Created Date",
-        dataIndex: "createdAt",
-        key: "createdAt",
-        align: "center",
-        render: (text) => moment(text).format("L"),
-      },
-      {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        align: "center",
-        render: (status) => (
-          <Tag color={status === "active" ? "success" : "error"}>
-            {status === "active" ? "Active" : "Inactive"}
-          </Tag>
-        ),
-      },
-      {
-        title: "Action",
-        key: "action",
-        align: "center",
-        render: (_, record) => (
-          <Space size="small">
-            <Button
-              type="text"
-              icon={<EditOutlined style={{ color: "#f55" }} />}
-              onClick={() => handleEdit(record._id)}
-            />
-            <Button
-              type="text"
-              icon={<EyeOutlined style={{ color: "#55f" }} />}
-              onClick={() => showDetailsModal(record)}
-            />
-            <Switch
-              size="small"
-              checked={record.status === "active"}
-              onChange={(checked) => handleStatusChange(checked, record)}
-              style={{
-                backgroundColor: record.status === "active" ? "red" : "gray",
-              }}
-            />
-            <Button
-              type="text"
-              icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
-              onClick={() => handleDeletePost(record._id)}
-            />
-          </Space>
-        ),
-      },
-    ],
-    [
-      currentPage,
-      pageSize,
-      handleEdit,
-      showDetailsModal,
-      handleStatusChange,
-      handleDeletePost,
-    ]
-  );
+ 
 
-  const getStatusDisplayText = () => {
-    if (statusFilter === "all") return "All Status";
-    return statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1);
+  // Render post preview
+  const renderPostPreview = (record) => {
+    if (record.type === "text") {
+      return (
+        <div
+          style={{
+            height: "120px",
+            padding: "12px",
+            backgroundColor: "#f8f9fa",
+            borderRadius: "8px",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "14px",
+              color: "#666",
+              textAlign: "center",
+              lineHeight: "1.4",
+            }}
+            dangerouslySetInnerHTML={{
+              __html: record.content
+                ? record.content.substring(0, 100) + "..."
+                : record.title
+                ? record.title.substring(0, 100) + "..."
+                : "No content",
+            }}
+          />
+        </div>
+      );
+    } else if (record.type === "image" && record.thumbnailUrl) {
+      return (
+        <img
+          src={getVideoAndThumbnail(record.thumbnailUrl)}
+          alt="preview"
+          style={{
+            width: "100%",
+            height: "120px",
+            objectFit: "cover",
+            borderRadius: "8px",
+          }}
+        />
+      );
+    } else if (record.type === "video" && record.thumbnailUrl) {
+      return (
+        <div style={{ position: "relative" }}>
+          <img
+            src={getVideoAndThumbnail(record.thumbnailUrl)}
+            alt="thumbnail"
+            style={{
+              width: "100%",
+              height: "120px",
+              objectFit: "cover",
+              borderRadius: "8px",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              backgroundColor: "rgba(0,0,0,0.6)",
+              borderRadius: "50%",
+              width: "40px",
+              height: "40px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <VideoCameraOutlined style={{ color: "white", fontSize: "18px" }} />
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div
+        style={{
+          height: "120px",
+          backgroundColor: "#f0f0f0",
+          borderRadius: "8px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#999",
+        }}
+      >
+        No preview available
+      </div>
+    );
   };
 
-  const getTypeDisplayText = () => {
-    if (typeFilter === "all") return "All Types";
-    return typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1);
-  };
 
   if (isLoadingPosts) {
     return <Spinner />;
@@ -454,46 +327,8 @@ const PostManagementSystem = () => {
   return (
     <div>
       {/* Header with filters and add button */}
-      <div className="flex justify-end gap-6 mb-6">
-        <div>
-          <Space size="small" className="flex gap-4">
-            {/* Status Filter */}
-            <Dropdown
-              overlay={statusMenu}
-              trigger={["click"]}
-              placement="bottomLeft"
-            >
-              <Button
-                className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
-                style={{ border: "none" }}
-              >
-                <Space>
-                  <Filtering className="filtering-icon" />
-                  <span className="filter-text">{getStatusDisplayText()}</span>
-                  <DownOutlined />
-                </Space>
-              </Button>
-            </Dropdown>
-
-            {/* Type Filter */}
-            <Dropdown
-              overlay={typeMenu}
-              trigger={["click"]}
-              placement="bottomLeft"
-            >
-              <Button
-                className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
-                style={{ border: "none" }}
-              >
-                <Space>
-                  <Filtering className="filtering-icon" />
-                  <span className="filter-text">{getTypeDisplayText()}</span>
-                  <DownOutlined />
-                </Space>
-              </Button>
-            </Dropdown>
-          </Space>
-        </div>
+      <div className="flex justify-end items-center mb-6">
+     
 
         <GradientButton
           type="primary"
@@ -505,30 +340,186 @@ const PostManagementSystem = () => {
         </GradientButton>
       </div>
 
-      {/* Table */}
-      <Table
-        columns={columns}
-        dataSource={posts}
-        pagination={{
-          current: currentPage,
-          pageSize: pageSize,
-          total: paginationData.total || 0,
-        }}
-        onChange={handleTableChange}
-        rowKey="_id"
-        bordered
-        size="small"
-        className="custom-table"
-        scroll={{ x: "max-content" }}
-      />
+      {/* Cards Grid */}
+      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+        {posts.map((post, index) => {
+          const actualIndex = (currentPage - 1) * pageSize + index + 1;
+          return (
+            <Col xs={24} sm={12} md={8} lg={6} key={post._id}>
+              <Card
+                hoverable
+                style={{
+                  height: "100%",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                }}
+                bodyStyle={{ padding: "16px" }}
+                cover={renderPostPreview(post)}
+                actions={[
+                  <Button
+                    type="text"
+                    icon={<EditOutlined style={{ color: "#f55" }} />}
+                    onClick={() => handleEdit(post._id)}
+                    title="Edit"
+                  />,
+                  <Button
+                    type="text"
+                    icon={<EyeOutlined style={{ color: "#55f" }} />}
+                    onClick={() => showDetailsModal(post)}
+                    title="View Details"
+                  />,
+                  <Switch
+                    size="small"
+                    checked={post.status === "active"}
+                    onChange={(checked) => handleStatusChange(checked, post)}
+                    style={{
+                      backgroundColor:
+                        post.status === "active" ? "red" : "gray",
+                    }}
+                    title="Toggle Status"
+                  />,
+                  <Button
+                    type="text"
+                    icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
+                    onClick={() => handleDeletePost(post._id)}
+                    title="Delete"
+                  />,
+                ]}
+              >
+                {/* Card Header */}
+                <div style={{ marginBottom: "12px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#999",
+                        fontWeight: "500",
+                      }}
+                    >
+                      #{actualIndex}
+                    </span>
+                    <Tag
+                      icon={getPostTypeIcon(post.type)}
+                      color={getPostTypeColor(post.type)}
+                      style={{ margin: 0 }}
+                    >
+                      {post.type?.toUpperCase()}
+                    </Tag>
+                  </div>
+
+                  {/* Title */}
+                  <h4
+                    style={{
+                      margin: 0,
+                      fontSize: "16px",
+                      fontWeight: "600",
+                      color: "#333",
+                      lineHeight: "1.3",
+                      height: "40px",
+                      overflow: "hidden",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: post.title || "Untitled Post",
+                    }}
+                  />
+                </div>
+
+                {/* Card Footer */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    <CalendarOutlined
+                      style={{ color: "#999", fontSize: "12px" }}
+                    />
+                    <span style={{ fontSize: "12px", color: "#666" }}>
+                      {moment(post.createdAt).format("MMM DD, YYYY")}
+                    </span>
+                  </div>
+
+                  <Tag
+                    color={post.status === "active" ? "success" : "error"}
+                    style={{ margin: 0, fontSize: "11px" }}
+                  >
+                    {post.status === "active" ? "Active" : "Inactive"}
+                  </Tag>
+                </div>
+
+                {/* Duration for video posts */}
+                {post.type === "video" && post.duration && (
+                  <div style={{ marginTop: "8px", textAlign: "center" }}>
+                    <span
+                      style={{
+                        fontSize: "12px",
+                        color: "#666",
+                        backgroundColor: "#f0f0f0",
+                        padding: "2px 8px",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      Duration: {post.duration}s
+                    </span>
+                  </div>
+                )}
+              </Card>
+            </Col>
+          );
+        })}
+      </Row>
+
+      {/* Empty State */}
+      {posts.length === 0 && (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "60px 20px",
+            backgroundColor: "#fafafa",
+            borderRadius: "12px",
+            border: "1px dashed #d9d9d9",
+          }}
+        >
+          <FileTextOutlined
+            style={{ fontSize: "48px", color: "#d9d9d9", marginBottom: "16px" }}
+          />
+          <h3 style={{ color: "#999", margin: 0 }}>No posts found</h3>
+          <p style={{ color: "#999", marginTop: "8px" }}>
+            Create your first post to get started
+          </p>
+        </div>
+      )}
+
+
 
       {/* Post Form Modal */}
       <PostFormModal
         visible={isFormModalVisible}
         onClose={handleFormModalClose}
         onSubmit={handleFormSubmit}
-        editingItem={postDetails?.data}
+        editingItem={currentEditingPost}
         loading={isSubmitting}
+        postType={currentEditingPost?.type || null}
+        isEditing={!!editingId}
       />
 
       {/* Post Details Modal */}

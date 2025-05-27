@@ -25,7 +25,7 @@ const postApi = api.injectEndpoints({
     // GET: Retrieve single post by id
     getPostById: builder.query({
       query: (id) => ({
-        url: `/admin/post/${id}`,
+        url: `/admin/post/managment/${id}`,
         method: "GET",
       }),
     }),
@@ -33,7 +33,7 @@ const postApi = api.injectEndpoints({
     // PATCH: Update a post entry
     updatePost: builder.mutation({
       query: ({ id, postData }) => ({
-        url: `/admin/post/${id}`,
+        url: `/admin/post/managment/${id}`,
         method: "PATCH",
         body: postData,
       }),
@@ -42,7 +42,7 @@ const postApi = api.injectEndpoints({
     // DELETE: Delete a post entry
     deletePost: builder.mutation({
       query: (id) => ({
-        url: `/admin/post/${id}`,
+        url: `/admin/post/managment/${id}`,
         method: "DELETE",
       }),
     }),
