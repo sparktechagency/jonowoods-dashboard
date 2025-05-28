@@ -52,15 +52,7 @@ const SubCategoryTable = ({
       key: "createdDate",
       align: "center",
     },
-    {
-      title: "Category Type",
-      dataIndex: "categoryType",
-      key: "categoryType",
-      render: (type) => (
-        <Tag color={type === "Free" ? "green" : "blue"}>{type || "Free"}</Tag>
-      ),
-      align: "center",
-    },
+   
     {
       title: "Status",
       dataIndex: "status",

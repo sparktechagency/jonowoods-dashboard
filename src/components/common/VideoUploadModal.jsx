@@ -32,7 +32,7 @@ const VideoFormModal = ({
   const [equipmentInput, setEquipmentInput] = useState("");
 
   const isEditMode = !!editingItem;
-console.log(editingItem)
+
 
   // Categories based on page type
   const getCategories = () => {

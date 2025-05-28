@@ -46,7 +46,7 @@ const videoApi = api.injectEndpoints({
     getVideosBySubCategory: builder.query({
       query: ({ subCategoryId, page = 1, limit = 10 }) => {
         return {
-          url: `/admin/videos/managment/videos-by-subcategory/${subCategoryId}`,
+          url: `/admin/videos/managment/video-status/${subCategoryId}`,
           method: "GET",
           params: { page, limit },
         };

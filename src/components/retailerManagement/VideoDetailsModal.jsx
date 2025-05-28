@@ -4,7 +4,7 @@ import { CloseCircleOutlined } from "@ant-design/icons";
 import { getImageUrl, getVideoAndThumbnail } from "../common/imageUrl";
 
 const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
-  console.log("Current Video Details:", currentVideo);
+ 
  
   const [form] = Form.useForm();
 
@@ -29,20 +29,20 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
               <strong>Video Details</strong>
             </p>
             <p>
-              <strong>Title:</strong> {currentVideo.title}
+              <strong>Title:</strong> {currentVideo?.title}
             </p>
             <p>
-              <strong>Category:</strong> {currentVideo.category}
+              <strong>Category:</strong> {currentVideo?.category}
             </p>
             <p>
-              <strong>Sub Category:</strong> {currentVideo.subCategory}
+              <strong>Sub Category:</strong> {currentVideo?.subCategory}
             </p>
             <p>
-              <strong>Time:</strong> {currentVideo.duration}
+              <strong>Time:</strong> {currentVideo?.duration}
             </p>
             <p>
               <strong>Equipment:</strong>
-              {currentVideo.equipment?.map((eq) => (
+              {currentVideo?.equipment?.map((eq) => (
                 <Tag key={eq} color="error" style={{ marginLeft: 8 }}>
                   {eq}
                 </Tag>
@@ -64,9 +64,9 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
                   overflow: "hidden",
                 }}
               >
-                {currentVideo.thumbnailUrl ? (
+                {currentVideo?.thumbnailUrl ? (
                   <img
-                    src={getVideoAndThumbnail(currentVideo.thumbnailUrl)}
+                    src={getVideoAndThumbnail(currentVideo?.thumbnailUrl)}
                     alt="thumbnail"
                     style={{
                       width: "100%",
@@ -87,7 +87,7 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
               <div
             
               >
-                {currentVideo.videoUrl ? (
+                {currentVideo?.videoUrl ? (
                   <video
                     src={getVideoAndThumbnail(currentVideo.videoUrl)}
                     controls
@@ -103,12 +103,12 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
               </div>
             </div>
 
-            {currentVideo.description && (
+            {currentVideo?.description && (
               <div style={{ marginTop: 16 }}>
                 <p>
                   <strong>Description</strong>
                 </p>
-                <p>{currentVideo.description}</p>
+                <p>{currentVideo?.description}</p>
               </div>
             )}
           </div>

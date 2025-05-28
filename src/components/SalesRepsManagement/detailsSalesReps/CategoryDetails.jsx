@@ -44,12 +44,10 @@ const SubCategoryManagement = () => {
 
   useEffect(() => {
     if (singleCategoryData && categoryId) {
-      // Find the subcategories that belong to this category
       const categorySubCategories = subCategories.filter(
         (subCat) => subCat.categoryId === singleCategoryData.data._id
       );
 
-      // Enhance the selected category with its subcategories
       const enhancedCategory = {
         ...singleCategoryData.data,
         subCategory: categorySubCategories,
@@ -60,17 +58,17 @@ const SubCategoryManagement = () => {
   }, [singleCategoryData, subCategories, categoryId]);
 
   const showSubCategoryModal = (record = null) => {
+    if (record) {
+      if (!record.equipments) record.equipments = record.equipment || []; // fallback if needed
+    }
     setEditingSubCategory(record);
     setSubCategoryModalVisible(true);
   };
+  
 
   const handleSubCategoryFormSubmit = async (values, thumbnailFile) => {
     try {
-      console.log("Selected Category:", selectedCategory);
-      console.log("Form values:", values);
-      console.log("Thumbnail file:", thumbnailFile);
-
-      // First, ensure we have a selected category for new subcategories
+  
       if (!editingSubCategory && (!selectedCategory || !selectedCategory._id)) {
         message.error("No category selected. Please select a category first.");
         return;
@@ -78,49 +76,41 @@ const SubCategoryManagement = () => {
 
       const formData = new FormData();
 
-      // Prepare subcategory data
       const subCategoryData = {
         name: values.name,
-        // Add other fields as needed
+        description: values.description,
+        equipment: values.equipments || [],
       };
 
-      // IMPORTANT: Explicitly set categoryId for new subcategory
       if (!editingSubCategory) {
         subCategoryData.categoryId = selectedCategory._id;
         console.log("Adding categoryId:", selectedCategory._id);
       }
 
-      // Double-check that categoryId is set for new subcategories
       if (!editingSubCategory && !subCategoryData.categoryId) {
         console.error("Missing categoryId in payload:", subCategoryData);
         message.error("Category ID is required. Please try again.");
         return;
       }
 
-      // Log the final data being sent
       console.log("Final subCategoryData:", subCategoryData);
 
-      // Convert data to JSON string and append to formData
       formData.append("data", JSON.stringify(subCategoryData));
 
-      // Append thumbnail file if it exists
       if (thumbnailFile) {
         console.log("Appending thumbnail file:", thumbnailFile.name);
         formData.append("thumbnail", thumbnailFile);
       } else if (!editingSubCategory) {
-        // For new subcategories, thumbnail is required
         message.error("Please upload a thumbnail image.");
         return;
       }
 
-      // Log FormData contents (for debugging)
       console.log("FormData contents:");
       for (let [key, value] of formData.entries()) {
         console.log(key + ":", value);
       }
 
       if (editingSubCategory && editingSubCategory._id) {
-        // Update sub-category (PATCH)
         const response = await updateSubCategory({
           id: editingSubCategory._id,
           updatedData: formData,
@@ -129,7 +119,6 @@ const SubCategoryManagement = () => {
         console.log("Update subcategory response:", response);
         message.success("Sub-category updated successfully!");
       } else {
-        // Create new sub-category (POST)
         const response = await createSubCategory(formData).unwrap();
         console.log("Create subcategory response:", response);
         message.success("Sub-category created successfully!");
@@ -140,7 +129,6 @@ const SubCategoryManagement = () => {
     } catch (error) {
       console.error("Error saving subcategory:", error);
 
-      // Add more detailed error logging
       if (error.data) {
         console.error("Server error response:", error.data);
         console.error("Server error message:", error.data.message);
@@ -151,6 +139,7 @@ const SubCategoryManagement = () => {
       message.error(`Failed to save sub-category: ${errorMessage}`);
     }
   };
+  
 
   const handleSubCategoryCancel = () => {
     setSubCategoryModalVisible(false);
@@ -192,11 +181,9 @@ const SubCategoryManagement = () => {
   };
 
   const handleBackFromDetails = () => {
-    // Navigate back to the main category listing page
     navigate("/salesRepsManage");
   };
 
-  // Format subcategories for the details view
   const formattedSubCategories = subCategories
     .filter((subCat) => subCat.categoryId === categoryId)
     .map((subCategory) => ({
@@ -212,7 +199,7 @@ const SubCategoryManagement = () => {
         year: "numeric",
       }),
       status: subCategory.status || "active",
-      categoryType: subCategory.categoryType || "Free", // Adding this for consistency
+      categoryType: subCategory.categoryType || "Free", 
     }));
 
   if (singleCategoryLoading || subCategoryLoading) {

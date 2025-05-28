@@ -23,9 +23,9 @@ import VideoDetailsModal from "./VideoDetailsModal";
 import {
   useGetVideosBySubCategoryQuery,
   useDeleteVideoMutation,
-  useUpdateVideoStatusMutation,
   useGetVideoByIdQuery,
   useGetSubCategoryByIdQuery,
+  useUpdateVideoStatusMutation,
 
 } from "../../redux/apiSlices/videoApi";
 import { useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";

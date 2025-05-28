@@ -357,7 +357,7 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
 
   const getStatusDisplayText = () => {
     if (statusFilter === "all") return "All Status";
-    return statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1);
+    return statusFilter?.charAt(0)?.toUpperCase() + statusFilter?.slice(1);
   };
 
   const getPageTitle = () => {
@@ -420,7 +420,7 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
         pagination={{
           current: currentPage,
           pageSize: pageSize,
-          total: paginationData.total || 0,
+          total: paginationData?.total || 0,
         }}
         onChange={handleTableChange}
         rowKey="_id"

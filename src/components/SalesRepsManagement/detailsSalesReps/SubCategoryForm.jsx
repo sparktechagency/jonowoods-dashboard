@@ -1,36 +1,47 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Button, Upload } from "antd";
+import { Modal, Form, Input, Button, Upload, Tag } from "antd";
 import { UploadOutlined, ReloadOutlined } from "@ant-design/icons";
-import { useParams } from "react-router-dom";
+import { getImageUrl } from "../../common/imageUrl";
 
 const { TextArea } = Input;
 
-const SubCategoryForm = ({
-  visible,
-  onCancel,
-  onSubmit,
-  initialValues,
-  parentCategoryId,
-}) => {
+const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
   const [thumbnailFile, setThumbnailFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const { id } = useParams();
-  console.log(parentCategoryId);
+  const [previewUrl, setPreviewUrl] = useState("/api/placeholder/400/200");
+
+  // Equipment state
+  const [equipmentInput, setEquipmentInput] = useState("");
+  const [equipments, setEquipments] = useState([]);
 
   useEffect(() => {
     if (visible) {
       if (initialValues) {
+        // Set form fields including description
         form.setFieldsValue({
-          name: initialValues.name,
-          description: initialValues.description,
+          name: initialValues.name || "",
+          description: initialValues.description || "",
         });
-        setPreviewUrl(initialValues.thumbnail);
+
+        // Set equipments from initialValues (default empty array)
+        setEquipments(initialValues.equipment || []);
+
+        // Set thumbnail preview URL using getImageUrl helper if thumbnail exists
+        if (initialValues.thumbnail) {
+          setPreviewUrl(getImageUrl(initialValues.thumbnail));
+        } else {
+          setPreviewUrl("/api/placeholder/400/200");
+        }
+
+        // Clear thumbnail file because no new file selected yet
+        setThumbnailFile(null);
       } else {
         form.resetFields();
         setPreviewUrl("/api/placeholder/400/200");
         setThumbnailFile(null);
+        setEquipments([]);
       }
+      setEquipmentInput("");
     }
   }, [visible, initialValues, form]);
 
@@ -39,7 +50,6 @@ const SubCategoryForm = ({
       const file = info.file.originFileObj || info.file;
       setThumbnailFile(file);
 
-      // Create a preview URL
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewUrl(reader.result);
@@ -48,11 +58,32 @@ const SubCategoryForm = ({
     }
   };
 
+  const addEquipment = () => {
+    const trimmed = equipmentInput.trim();
+    if (trimmed && !equipments.includes(trimmed)) {
+      setEquipments([...equipments, trimmed]);
+      setEquipmentInput("");
+    }
+  };
+
+  const removeEquipment = (equipmentToRemove) => {
+    setEquipments(equipments.filter((eq) => eq !== equipmentToRemove));
+  };
+
+  const handleEquipmentKeyPress = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addEquipment();
+    }
+  };
+
   const handleFormSubmit = () => {
     form.validateFields().then((values) => {
-      onSubmit(values, thumbnailFile);
+      onSubmit({ ...values, equipments }, thumbnailFile);
       form.resetFields();
       setThumbnailFile(null);
+      setEquipments([]);
+      setEquipmentInput("");
     });
   };
 
@@ -97,6 +128,41 @@ const SubCategoryForm = ({
           ]}
         >
           <TextArea rows={4} placeholder="Write Sub Category Description" />
+        </Form.Item>
+
+        <Form.Item label="Equipment">
+          <div className="space-y-2">
+            <Input
+              placeholder="Add equipment and press Enter"
+              value={equipmentInput}
+              onChange={(e) => setEquipmentInput(e.target.value)}
+              onKeyPress={handleEquipmentKeyPress}
+              className="h-12"
+              suffix={
+                <Button
+                  type="text"
+                  onClick={addEquipment}
+                  disabled={!equipmentInput.trim()}
+                >
+                  Add
+                </Button>
+              }
+            />
+            {equipments.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {equipments.map((equipment, index) => (
+                  <Tag
+                    key={index}
+                    closable
+                    onClose={() => removeEquipment(equipment)}
+                    color="red"
+                  >
+                    {equipment}
+                  </Tag>
+                ))}
+              </div>
+            )}
+          </div>
         </Form.Item>
 
         <Form.Item name="thumbnail" label="Thumbnail">
