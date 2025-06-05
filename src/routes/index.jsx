@@ -37,6 +37,8 @@ import CourseDetailsVideoManagement from "../components/retailerManagement/Cours
 import DailyInspirationPage from "../components/comingSoon/DailyInspiration";
 import PostManagementSystem from "../components/createPost/CreatePostManagement";
 import PageManagement from "../Pages/Dashboard/LoginAndRegisterBG";
+import ContactManagementTable from "../components/contactus/ContactUsUser";
+import SubscriptionManagementTable from "../components/subscriptionUser/SubscriptionUser";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
@@ -82,27 +84,27 @@ const router = createBrowserRouter([
         element: <ViewSalesReps />,
       },
       {
-        path: "/loyaltyProgram",
+        path: "/loyalty-program",
         element: <SubscriptionManagements />,
       },
       {
-        path: "/comingSoon",
+        path: "/coming-soon",
         element: <CommingSoonVideoPage />,
       },
       {
-        path: "/todayVideo",
+        path: "/today-video",
         element: <TodayVideos />,
       },
       {
-        path: "/dailyInspiration",
+        path: "/daily-inspiration",
         element: <DailyInspirationPage />,
       },
       {
-        path: "/loginCredentials",
+        path: "/login-credentials",
         element: <LoginCredentials />,
       },
       {
-        path: "/createPost",
+        path: "/create-post",
         element: <PostManagementSystem />,
       },
       {
@@ -116,6 +118,14 @@ const router = createBrowserRouter([
       {
         path: "/login-register",
         element: <PageManagement />,
+      },
+      {
+        path: "/contactUs",
+        element: <ContactManagementTable />,
+      },
+      {
+        path: "/subcription-user",
+        element: <SubscriptionManagementTable />,
       },
       {
         path: "/banner",

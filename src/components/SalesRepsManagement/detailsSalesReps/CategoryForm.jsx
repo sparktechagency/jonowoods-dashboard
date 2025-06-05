@@ -90,7 +90,7 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
         >
           <Select placeholder="Free/Paid">
             <Select.Option value="class">Class</Select.Option>
-            <Select.Option value="Course">Course</Select.Option>
+            <Select.Option value="course">Course</Select.Option>
           </Select>
         </Form.Item>
         <Form.Item name="thumbnail" label="Thumbnail">

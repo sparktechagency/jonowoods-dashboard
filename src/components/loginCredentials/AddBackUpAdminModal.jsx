@@ -173,9 +173,6 @@ const AddBackUpAdminModal = ({
         >
           <Select placeholder="Select role" size="large">
             <Option value="ADMIN">Admin</Option>
-            <Option value="SUPER_ADMIN">Super Admin</Option>
-            <Option value="MODERATOR">Moderator</Option>
-            <Option value="HR">HR</Option>
           </Select>
         </Form.Item>
 

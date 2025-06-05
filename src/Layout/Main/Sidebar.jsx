@@ -1,5 +1,6 @@
 import { Menu, Modal } from "antd";
 import React, { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { IoIosLogOut } from "react-icons/io";
 import {
@@ -12,7 +13,7 @@ import {
   SubscriptionManagement,
   UserManagement,
   LoginCredentials,
-  ComingSoon
+  ComingSoon,
 } from "../../components/common/Svg";
 import image4 from "../../assets/image4.png"; // Logo image
 
@@ -23,6 +24,9 @@ const Sidebar = () => {
   const [openKeys, setOpenKeys] = useState([]);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const decoded = jwtDecode(token);
+  const role = decoded?.role;
 
   const showLogoutConfirm = () => {
     setIsLogoutModalOpen(true);
@@ -80,54 +84,68 @@ const Sidebar = () => {
       label: <Link to="/orderManagement">Users Management</Link>,
     },
     {
+      key: "/salesRepsManage",
+      icon: renderIcon(SalesRepsManagement, "/salesRepsManage"),
+      label: <Link to="/salesRepsManage">Category Management</Link>,
+    },
+    {
       key: "/retailer",
       icon: renderIcon(VideoManagement, "/retailer"),
       label: <Link to="/retailer">Video Management</Link>,
     },
     {
-      key: "/salesRepsManage",
-      icon: renderIcon(SalesRepsManagement, "/salesRepsManage"),
-      label: <Link to="/salesRepsManage">Category Management</Link>,
+      key: "/coming-soon",
+      icon: renderIcon(ComingSoon, "/coming-soon"),
+      label: <Link to="/coming-soon"> Coming Soon</Link>,
+    },
+    {
+      key: "/today-video",
+      icon: renderIcon(VideoManagement, "/today-video"),
+      label: <Link to="/today-video"> Daily Challange's</Link>,
+    },
+    {
+      key: "/daily-inspiration",
+      icon: renderIcon(VideoManagement, "/daily-inspiration"),
+      label: <Link to="/daily-inspiration"> Daily Inspiration's</Link>,
+    },
+    {
+      key: "/create-post",
+      icon: renderIcon(LoginCredentials, "/create-post"),
+      label: <Link to="/create-post">Create Post</Link>,
+    },
+    {
+      key: "/loyalty-program",
+      icon: renderIcon(SubscriptionManagement, "/loyalty-program"),
+      label: <Link to="/loyalty-program">Subscription package</Link>,
+    },
+    {
+      key: "/subcription-user",
+      icon: renderIcon(LoginCredentials, "/subcription-user"),
+      label: <Link to="/subcription-user">Subscription Users</Link>,
     },
     {
       key: "/inventory",
       icon: renderIcon(InventoryManagement, "/inventory"),
       label: <Link to="/inventory">Quotation Management</Link>,
     },
-    {
-      key: "/loyaltyProgram",
-      icon: renderIcon(SubscriptionManagement, "/loyaltyProgram"),
-      label: <Link to="/loyaltyProgram">Subscription Management</Link>,
-    },
+
     {
       key: "/subsciption",
       icon: renderIcon(LoyaltyProgram, "/subsciption"),
       label: <Link to="/subsciption">Push Notification</Link>,
     },
+
     {
-      key: "/comingSoon",
-      icon: renderIcon(ComingSoon, "/comingSoon"),
-      label: <Link to="/comingSoon"> Coming Soon</Link>,
+      key: "/login-credentials",
+      icon: renderIcon(LoginCredentials, "/login-credentials"),
+      label: <Link to="/login-credentials">Login Credentials</Link>,
+      roles: ["SUPER_ADMIN"],
     },
+
     {
-      key: "/todayVideo",
-      icon: renderIcon(VideoManagement, "/todayVideo"),
-      label: <Link to="/todayVideo"> Daily Challange's</Link>,
-    },
-    {
-      key: "/dailyInspiration",
-      icon: renderIcon(VideoManagement, "/dailyInspiration"),
-      label: <Link to="/dailyInspiration"> Daily Inspiration's</Link>,
-    },
-    {
-      key: "/loginCredentials",
-      icon: renderIcon(LoginCredentials, "/loginCredentials"),
-      label: <Link to="/loginCredentials">Login Credentials</Link>,
-    },
-    {
-      key: "/createPost",
-      icon: renderIcon(LoginCredentials, "/createPost"),
-      label: <Link to="/createPost">Create Post</Link>,
+      key: "/contactUs",
+      icon: renderIcon(LoginCredentials, "/contactUs"),
+      label: <Link to="/contactUs">Contact Us Users</Link>,
     },
     {
       key: "subMenuSetting",
@@ -146,10 +164,6 @@ const Sidebar = () => {
           key: "/privacy-policy",
           label: <Link to="/privacy-policy">Privacy Policy</Link>,
         },
-        {
-          key: "/login-register",
-          label: <Link to="/login-register">Login And Register Bg</Link>,
-        },
       ],
     },
     {
@@ -158,6 +172,26 @@ const Sidebar = () => {
       label: <p onClick={showLogoutConfirm}>Logout</p>,
     },
   ];
+
+  // Filter menu items based on user role
+  const getFilteredMenuItems = () => {
+    return menuItems.filter((item) => {
+      if (item.roles) {
+        return item.roles.includes(role);
+      }
+      if (item.children) {
+        const filteredChildren = item.children.filter((child) => {
+          if (child.roles) {
+            return child.roles.includes(role);
+          }
+          return true;
+        });
+        return filteredChildren.length > 0;
+      }
+
+      return true;
+    });
+  };
 
   useEffect(() => {
     const selectedItem = menuItems.find(
@@ -186,13 +220,11 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="mb-20  h-screen flex flex-col">
-      {/* Logo: fixed height, no scroll */}
+    <div className="mb-20 h-screen flex flex-col">
       <div className="flex-shrink-0 border-b-2 border-primary flex items-center justify-center h-36">
         <img src={image4} alt="logo" className="w-60" />
       </div>
 
-      {/* Menu: scrollable part */}
       <div className="flex-1 overflow-y-auto mt-2">
         <Menu
           mode="inline"
@@ -204,7 +236,7 @@ const Sidebar = () => {
             borderRightColor: "transparent",
             background: "transparent",
           }}
-          items={menuItems.map((item) => ({
+          items={getFilteredMenuItems().map((item) => ({
             ...item,
             label: <span>{item.label}</span>,
             children: item.children
@@ -217,7 +249,7 @@ const Sidebar = () => {
         />
       </div>
 
-      {/* Logout Modal (unchanged) */}
+      {/* Logout Modal */}
       <Modal
         centered
         title="Confirm Logout"

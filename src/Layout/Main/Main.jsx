@@ -12,7 +12,7 @@ const Main = () => {
       </div>
       <div className="flex flex-col flex-1 ml-[16.66%]">
        
-        <div className="h-[68px] fixed top-0 left-[16.66%] right-0 bg-baseBg z-10 flex items-center  border-primary">
+        <div className="h-[68px]  fixed top-0 left-[16.66%] right-0 bg-baseBg z-10 flex items-center  border-primary">
           <Header />
         </div>
         {/* Scrollable Outlet area */}

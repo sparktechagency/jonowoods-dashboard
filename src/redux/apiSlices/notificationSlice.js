@@ -1,33 +1,36 @@
 import { api } from "../api/baseApi";
 
 const notificationSlice = api.injectEndpoints({
-    endpoints: (builder)=>({
-        notification: builder.query({
-            query: ()=> {
-                return{
-                    url: `/notifications`,
-                    method: "GET",
-                    headers:{
-                        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
-                    }
-                }
-            }
-        }),
-        read: builder.mutation({
-            query: ()=> {
-                return{
-                    url: `/notifications`,
-                    method: "GET",
-                    headers:{
-                        Authorization: `Bearer ${JSON.parse(localStorage.getItem("token"))}`
-                    }
-                }
-            }
-        }),
-    })
-})
+  endpoints: (builder) => ({
+    getNotification: builder.query({
+      query: ({ page = 1, limit = 10 }) => {
+        return {
+          url: `/notifications/admin?page=${page}&limit=${limit}`,
+          method: "GET",
+        };
+      },
+    }),
+    readOneNotification: builder.mutation({
+      query: (id) => {
+        return {
+          url: `/notifications/admin/single/${id}`,
+          method: "PATCH",
+        };
+      },
+    }),
+    readAllNotification: builder.mutation({
+      query: () => {
+        return {
+          url: `/notifications`,
+          method: "PATCH",
+        };
+      },
+    }),
+  }),
+});
 
 export const {
-    useNotificationQuery,
-    useReadMutation
+  useGetNotificationQuery,
+  useReadOneNotificationMutation,
+  useReadAllNotificationMutation,
 } = notificationSlice;

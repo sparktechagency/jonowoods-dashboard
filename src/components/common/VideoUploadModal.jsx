@@ -23,16 +23,60 @@ const VideoFormModal = ({
   onSubmit,
   editingItem,
   pageType,
-  loading = false, // Helper function to get full URLs
+  loading = false,
 }) => {
   const [form] = Form.useForm();
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
   const [equipments, setEquipments] = useState([]);
   const [equipmentInput, setEquipmentInput] = useState("");
+  const [videoDuration, setVideoDuration] = useState("");
+
+  console.log(pageType);
+  console.log(editingItem);
 
   const isEditMode = !!editingItem;
 
+  // Function to get video duration
+  const getVideoDuration = (file) => {
+    return new Promise((resolve) => {
+      if (!file) {
+        resolve("");
+        return;
+      }
+
+      const video = document.createElement("video");
+      video.preload = "metadata";
+
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        const duration = video.duration;
+
+        // Convert seconds to minutes and format
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+
+        let formattedDuration;
+        if (minutes > 0) {
+          formattedDuration =
+            seconds > 0
+              ? `${minutes}.${seconds.toString().padStart(2, "0")} Min`
+              : `${minutes} Min`;
+        } else {
+          formattedDuration = `${seconds} Sec`;
+        }
+
+        resolve(formattedDuration);
+      };
+
+      video.onerror = () => {
+        window.URL.revokeObjectURL(video.src);
+        resolve("");
+      };
+
+      video.src = URL.createObjectURL(file);
+    });
+  };
 
   // Categories based on page type
   const getCategories = () => {
@@ -44,7 +88,7 @@ const VideoFormModal = ({
       case "daily-inspiration":
         return ["Daily Inspiration"];
       default:
-        return ["Video/Picture"];
+        return ["Video"];
     }
   };
 
@@ -87,6 +131,7 @@ const VideoFormModal = ({
       setVideoFile(null);
       setEquipments([]);
       setEquipmentInput("");
+      setVideoDuration("");
     }
   }, [visible, form]);
 
@@ -133,7 +178,7 @@ const VideoFormModal = ({
   };
 
   const videoProps = {
-    beforeUpload: (file) => {
+    beforeUpload: async (file) => {
       const isVideo = file.type.startsWith("video/");
       if (!isVideo) {
         message.error("You can only upload video files!");
@@ -144,11 +189,30 @@ const VideoFormModal = ({
         message.error("Video must be smaller than 2GB!");
         return false;
       }
+
       setVideoFile(file);
+
+      // Get video duration and set it to form
+      try {
+        const duration = await getVideoDuration(file);
+        if (duration) {
+          setVideoDuration(duration);
+          form.setFieldsValue({
+            timeDuration: duration,
+          });
+        }
+      } catch (error) {
+        console.error("Error getting video duration:", error);
+      }
+
       return false; // Prevent auto upload
     },
     onRemove: () => {
       setVideoFile(null);
+      setVideoDuration("");
+      form.setFieldsValue({
+        timeDuration: "",
+      });
     },
     fileList: videoFile ? [videoFile] : [],
     showUploadList: false,
@@ -184,10 +248,12 @@ const VideoFormModal = ({
           }
         }
 
-        // Format duration
-        const formattedDuration = values.timeDuration.includes(" Min")
-          ? values.timeDuration
-          : `${values.timeDuration} Min`;
+        // Format duration - use the auto-detected duration if available
+        const formattedDuration =
+          values.timeDuration.includes(" Min") ||
+          values.timeDuration.includes(" Sec")
+            ? values.timeDuration
+            : `${values.timeDuration} Min`;
 
         // Create video data object
         const videoData = {
@@ -274,7 +340,11 @@ const VideoFormModal = ({
             label="Time Duration"
             rules={[{ required: true, message: "Please enter time duration" }]}
           >
-            <Input placeholder="Enter Video Time Duration" className="h-12" />
+            <Input
+              placeholder="Duration will be auto-detected from video"
+              className="h-12"
+              readOnly={!!videoDuration}
+            />
           </Form.Item>
 
           {/* Equipment */}
@@ -408,10 +478,19 @@ const VideoFormModal = ({
         {/* Submit & Cancel Buttons */}
         <Form.Item>
           <div className="flex justify-end space-x-4">
-            <Button onClick={onClose} disabled={loading} className=" py-6 px-10">
+            <Button
+              onClick={onClose}
+              disabled={loading}
+              className=" py-6 px-10"
+            >
               Cancel
             </Button>
-            <Button type="primary" htmlType="submit" loading={loading} className="bg-primary py-6 px-8">
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              className="bg-primary py-6 px-8"
+            >
               {editingItem ? "Update This Video" : "Add New Video"}
             </Button>
           </div>

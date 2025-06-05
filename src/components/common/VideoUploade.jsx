@@ -437,6 +437,7 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
         onSubmit={handleFormSubmit}
         editingItem={itemDetails?.data}
         loading={isSubmitting}
+        pageType={pageType}
       />
 
       {/* Video Details Modal */}

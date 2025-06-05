@@ -6,6 +6,7 @@ export const getImageUrl = (path) => {
     return path;
   } else if (typeof path === "string" && path.trim() !== "") {
     const baseUrl = "http://10.0.60.126:7000";
+    // const baseUrl = "http://69.62.67.86:7000";
     return `${baseUrl}/${path}`;
   } else {
     return "";

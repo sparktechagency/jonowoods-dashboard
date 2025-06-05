@@ -23,7 +23,7 @@ const CommingSoonVideoPage = () => {
     useGetAllQuery: useGetAllComingSoonQuery,
     useGetByIdQuery: useGetComingSoonByIdQuery,
     deleteItem: deleteComingSoon,
-    updateItemStatus: updateComingSoon, // or null if you don't have a specific status update
+    updateItemStatus: updateComingSoon, 
     createItem: createComingSoon,
     updateItem: updateComingSoon,
     categories, // Pass categories array

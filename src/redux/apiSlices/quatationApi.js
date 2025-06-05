@@ -4,14 +4,11 @@ const quotationSlice = api.injectEndpoints({
   endpoints: (builder) => ({
     // Get all quotations
     getAllQuotations: builder.query({
-      query: () => {
-        return {
-          url: "/admin/quotation/managment",
-          method: "GET",
-        };
-      },
-      transformResponse: ({ data }) => {
-        return data;
+      query: ( page ) => {
+      return {
+        url: `/admin/quotation/managment/admin?page=${page}`,
+        method: "GET",
+      };
       },
     }),
 
