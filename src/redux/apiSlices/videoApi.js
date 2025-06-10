@@ -116,6 +116,14 @@ const videoApi = api.injectEndpoints({
         };
       },
     }),
+    updateVideoOrder: builder.mutation({
+      query: (orderData) => ({
+        url: "/videos/reorder",
+        method: "PUT",
+        body: { orderData },
+      }),
+      invalidatesTags: ["Video"],
+    }),
 
     // NEW: Get all categories
     // getCategory: builder.query({
@@ -159,6 +167,7 @@ export const {
   useGetCoursesAllVideosQuery,
   // NEW exports for missing endpoints
   useGetVideosBySubCategoryQuery,
+  useUpdateVideoOrderMutation,
   // useGetCategoryQuery,
   useGetSubCategoryByIdQuery,
 } = videoApi;
