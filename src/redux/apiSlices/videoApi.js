@@ -118,9 +118,9 @@ const videoApi = api.injectEndpoints({
     }),
     updateVideoOrder: builder.mutation({
       query: (orderData) => ({
-        url: "/videos/reorder",
-        method: "PUT",
-        body: { orderData },
+        url: "/admin/subcategory/safhale",
+        method: "POST",
+        body:  orderData ,
       }),
       invalidatesTags: ["Video"],
     }),

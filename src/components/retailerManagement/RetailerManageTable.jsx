@@ -22,6 +22,7 @@ import {
   DragOutlined,
   TableOutlined,
   AppstoreOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import VideoFormModal from "./VideoFormModal";
@@ -48,6 +49,7 @@ const VideoCard = ({
   onStatusChange,
   isDragging,
   dragHandleProps,
+  serialNumber,
 }) => {
   return (
     <Card
@@ -86,7 +88,20 @@ const VideoCard = ({
           </div>
         </Col>
 
-        <Col span={4}>
+        <Col span={1}>
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: "bold",
+              color: "#1890ff",
+              textAlign: "center",
+            }}
+          >
+            #{serialNumber}
+          </div>
+        </Col>
+
+        <Col span={3}>
           <img
             src={getVideoAndThumbnail(video.thumbnailUrl)}
             alt={video.title}
@@ -99,7 +114,7 @@ const VideoCard = ({
           />
         </Col>
 
-        <Col span={8}>
+        <Col span={7}>
           <div>
             <h4 style={{ margin: 0, fontSize: "16px", fontWeight: "600" }}>
               {video.title}
@@ -168,6 +183,8 @@ const DraggableVideoList = ({
   onView,
   onDelete,
   onStatusChange,
+  hasChanges,
+  onUpdateOrder,
 }) => {
   const [draggedItem, setDraggedItem] = useState(null);
   const [dragOverItem, setDragOverItem] = useState(null);
@@ -202,20 +219,37 @@ const DraggableVideoList = ({
     const [removed] = newVideos.splice(draggedIndex, 1);
     newVideos.splice(targetIndex, 0, removed);
 
-    // Update order numbers
+    // Update serial numbers based on new order
     const reorderedVideos = newVideos.map((video, index) => ({
       ...video,
-      order: index + 1,
+      serial: index + 1,
     }));
 
     onReorder(reorderedVideos);
-
-    message.success(`"${draggedItem.title}" has been successfully reordered!`);
   };
 
   return (
     <div className="draggable-video-list">
-      {videos.map((video) => (
+      {/* Update Order Button */}
+      {hasChanges && (
+        <div style={{ marginBottom: 16, textAlign: "right" }}>
+          <Button
+            type="primary"
+            icon={<SaveOutlined />}
+            onClick={onUpdateOrder}
+            style={{
+              backgroundColor: "#52c41a",
+              borderColor: "#52c41a",
+              borderRadius: "8px",
+              fontWeight: "600",
+            }}
+          >
+            Update Drag and Drop Order
+          </Button>
+        </div>
+      )}
+
+      {videos.map((video, index) => (
         <div
           key={video._id}
           draggable
@@ -237,6 +271,7 @@ const DraggableVideoList = ({
             onDelete={onDelete}
             onStatusChange={onStatusChange}
             isDragging={draggedItem?._id === video._id}
+            serialNumber={video.serial}
             dragHandleProps={{
               onMouseDown: (e) => e.preventDefault(),
             }}
@@ -292,6 +327,10 @@ const VideoManagementSystem = () => {
   // View mode state
   const [viewMode, setViewMode] = useState("card");
 
+  // Drag and drop state
+  const [localVideos, setLocalVideos] = useState([]);
+  const [hasOrderChanges, setHasOrderChanges] = useState(false);
+
   // Filters and pagination
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -336,6 +375,15 @@ const VideoManagementSystem = () => {
   const [updateVideoStatus] = useUpdateVideoStatusMutation();
   const [updateVideoOrder] = useUpdateVideoOrderMutation();
 
+  // Sort videos by serial number and update local state
+  useEffect(() => {
+    if (videos.length > 0) {
+      const sortedVideos = [...videos].sort((a, b) => a.serial - b.serial);
+      setLocalVideos(sortedVideos);
+      setHasOrderChanges(false);
+    }
+  }, [videos]);
+
   // Update currentVideo and equipmentTags whenever videoDetails or editingId changes
   useEffect(() => {
     if (editingId && videoDetails) {
@@ -355,23 +403,33 @@ const VideoManagementSystem = () => {
     setCurrentPage(1);
   }, [statusFilter, categoryFilter]);
 
-  // Handle video reordering
-  const handleReorder = async (reorderedVideos) => {
+  // Handle video reordering (local state only)
+  const handleReorder = (reorderedVideos) => {
+    setLocalVideos(reorderedVideos);
+    setHasOrderChanges(true);
+  };
+
+  // Handle actual order update to server
+  const handleUpdateOrder = async () => {
     try {
-      // API call to update order in database
-      const orderData = reorderedVideos.map((video, index) => ({
-        id: video._id,
-        order: index + 1,
+      // Create the update data array with _id and serial
+      const orderData = localVideos.map((video) => ({
+        _id: video._id,
+        serial: video.serial,
       }));
 
-      // Send this data to your API mutation
-      await updateVideoOrder(orderData).unwrap();
+      // Call the API to update order
+      const res = await updateVideoOrder(orderData).unwrap();
+      console.log(res)
 
-      // Refetch to get updated data
+      message.success("Video order updated successfully!");
+      setHasOrderChanges(false);
+
+      // Refetch to get updated data from server
       await refetch();
     } catch (error) {
       message.error("Failed to update video order");
-      console.error("Reorder error:", error);
+      console.error("Update order error:", error);
     }
   };
 
@@ -523,11 +581,14 @@ const VideoManagementSystem = () => {
   // Table columns
   const columns = [
     {
-      title: "SL",
-      key: "id",
-      width: 70,
+      title: "Serial",
+      dataIndex: "serial",
+      key: "serial",
+      width: 80,
       align: "center",
-      render: (_, __, index) => `# ${(currentPage - 1) * pageSize + index + 1}`,
+      render: (serial) => `#${serial}`,
+      sorter: (a, b) => a.serial - b.serial,
+      defaultSortOrder: "ascend",
     },
     {
       title: "Video Title",
@@ -775,17 +836,19 @@ const VideoManagementSystem = () => {
       >
         {viewMode === "card" ? (
           <DraggableVideoList
-            videos={videos}
+            videos={localVideos}
             onReorder={handleReorder}
             onEdit={showFormModal}
             onView={showDetailsModal}
             onDelete={handleDeleteVideo}
             onStatusChange={handleStatusChange}
+            hasChanges={hasOrderChanges}
+            onUpdateOrder={handleUpdateOrder}
           />
         ) : (
           <Table
             columns={columns}
-            dataSource={videos}
+            dataSource={localVideos}
             pagination={{
               current: currentPage,
               pageSize: pageSize,
@@ -800,7 +863,7 @@ const VideoManagementSystem = () => {
         )}
       </div>
 
-      {videos.length === 0 && (
+      {localVideos.length === 0 && (
         <div
           style={{
             textAlign: "center",
