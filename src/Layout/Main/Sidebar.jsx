@@ -24,9 +24,24 @@ const Sidebar = () => {
   const [openKeys, setOpenKeys] = useState([]);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  // ✅ Token decode safely
   const token = localStorage.getItem("token");
-  const decoded = jwtDecode(token);
-  const role = decoded?.role;
+  let decoded = {};
+  let role = null;
+
+  if (token && typeof token === "string") {
+    try {
+      decoded = jwtDecode(token);
+      role = decoded?.role;
+    } catch (error) {
+      console.error("Invalid token:", error);
+      localStorage.removeItem("token");
+      navigate("/auth/login"); // Redirect to login if token invalid
+    }
+  } else {
+    navigate("/auth/login"); // Redirect if token is missing
+  }
 
   const showLogoutConfirm = () => {
     setIsLogoutModalOpen(true);
@@ -42,7 +57,6 @@ const Sidebar = () => {
     setIsLogoutModalOpen(false);
   };
 
-  // Function to check if a menu item is active
   const isItemActive = (itemKey) => {
     return (
       selectedKey === itemKey ||
@@ -128,20 +142,17 @@ const Sidebar = () => {
       icon: renderIcon(InventoryManagement, "/inventory"),
       label: <Link to="/inventory">Quotation Management</Link>,
     },
-
     {
       key: "/subsciption",
       icon: renderIcon(LoyaltyProgram, "/subsciption"),
       label: <Link to="/subsciption">Push Notification</Link>,
     },
-
     {
       key: "/login-credentials",
       icon: renderIcon(LoginCredentials, "/login-credentials"),
       label: <Link to="/login-credentials">Login Credentials</Link>,
       roles: ["SUPER_ADMIN"],
     },
-
     {
       key: "/contactUs",
       icon: renderIcon(LoginCredentials, "/contactUs"),
@@ -173,7 +184,6 @@ const Sidebar = () => {
     },
   ];
 
-  // Filter menu items based on user role
   const getFilteredMenuItems = () => {
     return menuItems.filter((item) => {
       if (item.roles) {
@@ -188,7 +198,6 @@ const Sidebar = () => {
         });
         return filteredChildren.length > 0;
       }
-
       return true;
     });
   };
