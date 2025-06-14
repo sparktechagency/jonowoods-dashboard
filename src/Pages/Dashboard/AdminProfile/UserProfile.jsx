@@ -76,8 +76,8 @@ const UserProfile = () => {
     }
 
     // Check file size (optional)
-    const isLessThan2MB = file.size / 1024 / 1024 < 2;
-    if (!isLessThan2MB) {
+    const isLessThan20MB = file.size / 1024 / 1024 < 20;
+    if (!isLessThan20MB) {
       message.error("Image must be smaller than 2MB.");
     }
 

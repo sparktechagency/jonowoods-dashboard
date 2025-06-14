@@ -193,12 +193,12 @@ const Notifications = () => {
                   ${getTypeColor(notification.type)}
                   ${
                     !notification.read
-                      ? "border-2 border-blue-200"
+                      ? "border-2  border-blue-300 bg-red-100"
                       : "border border-gray-200"
                   }
                 `}
               >
-                <div className="p-4 flex items-start gap-4">
+                <div className="px-4 py-2 flex items-start gap-4">
                   {/* Icon */}
                   <div
                     className={`
@@ -229,7 +229,7 @@ const Notifications = () => {
                       )}
                     </div>
 
-                    <p className="text-gray-700 mb-2 leading-relaxed">
+                    <p className="text-gray-700 mb- leading-relaxed">
                       {notification.message || "New Notification"}
                     </p>
 
