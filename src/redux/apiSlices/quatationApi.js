@@ -57,7 +57,6 @@ const quotationSlice = api.injectEndpoints({
       },
     }),
 
-    // Toggle quotation status (active/inactive)
     toggleQuotationStatus: builder.mutation({
       query: ({ id, status }) => {
         return {

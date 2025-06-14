@@ -9,6 +9,7 @@ const notificationSlice = api.injectEndpoints({
           method: "GET",
         };
       },
+      providesTags: ["Notification"],
     }),
     readOneNotification: builder.mutation({
       query: (id) => {
@@ -17,6 +18,7 @@ const notificationSlice = api.injectEndpoints({
           method: "PATCH",
         };
       },
+      invalidatesTags: ["Notification"],
     }),
     readAllNotification: builder.mutation({
       query: () => {
@@ -25,6 +27,7 @@ const notificationSlice = api.injectEndpoints({
           method: "PATCH",
         };
       },
+      invalidatesTags: ["Notification"],
     }),
   }),
 });

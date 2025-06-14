@@ -9,6 +9,7 @@ const dailyInspirationApi = api.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["DailyInspiration"],
     }),
 
     // GET: Retrieve all Daily Inspiration entries
@@ -17,6 +18,7 @@ const dailyInspirationApi = api.injectEndpoints({
         url: "/admin/dailyInspiration",
         method: "GET",
       }),
+      providesTags: ["DailyInspiration"],
     }),
 
     // GET: Retrieve single Daily Inspiration by id
@@ -32,6 +34,7 @@ const dailyInspirationApi = api.injectEndpoints({
         method: "PATCH",
         body: dailyInspirationData,
       }),
+      invalidatesTags: ["DailyInspiration"],
     }),
 
     // DELETE: Delete a Daily Inspiration entry
@@ -40,6 +43,7 @@ const dailyInspirationApi = api.injectEndpoints({
         url: `/admin/dailyInspiration/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["DailyInspiration"],
     }),
 
     // Optionally update status only
@@ -49,6 +53,7 @@ const dailyInspirationApi = api.injectEndpoints({
         method: "PATCH",
         body: { status },
       }),
+      invalidatesTags: ["DailyInspiration"],
     }),
   }),
 });

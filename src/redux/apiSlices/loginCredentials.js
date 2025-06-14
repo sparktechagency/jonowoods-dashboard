@@ -20,7 +20,7 @@ const loginCredentialApi = api.injectEndpoints({
           body: updatedData,
         };
       },
-      invalidatesTags: ["SubCategories"],
+      invalidatesTags: ["Admin"],
     }),
     deleteBackUpAdmin: builder.mutation({
       query: (id) => {
@@ -29,7 +29,7 @@ const loginCredentialApi = api.injectEndpoints({
           method: "DELETE",
         };
       },
-      invalidatesTags: ["SubCategories"],
+      invalidatesTags: ["Admin"],
     }),
     getLoginCredentials: builder.query({
       query: () => {
@@ -38,7 +38,7 @@ const loginCredentialApi = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["SubCategories"],
+      providesTags: ["Admin"],
     }),
     getSingleSubCategory: builder.query({
       query: (selectedCategoryId) => {
@@ -47,7 +47,7 @@ const loginCredentialApi = api.injectEndpoints({
           method: "GET",
         };
       },
-      providesTags: ["SubCategories"],
+      providesTags: ["Admin"],
     }),
     toggleBackUpAdminStatus: builder.mutation({
       query: ({ id, status }) => {
@@ -57,7 +57,7 @@ const loginCredentialApi = api.injectEndpoints({
           body: { status },
         };
       },
-      invalidatesTags: ["SubCategories"],
+      invalidatesTags: ["Admin"],
     }),
   }),
 });
