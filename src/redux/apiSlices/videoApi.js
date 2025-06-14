@@ -120,7 +120,7 @@ const videoApi = api.injectEndpoints({
       query: (orderData) => ({
         url: "/admin/subcategory/safhale",
         method: "POST",
-        body:  orderData ,
+        body: orderData,
       }),
       invalidatesTags: ["Video"],
     }),
@@ -144,14 +144,19 @@ const videoApi = api.injectEndpoints({
     // NEW: Get subcategory by ID
     getSubCategoryById: builder.query({
       query: (id) => {
+        // const params = new URLSearchParams();
+        // if (args) {
+        //   args.forEach((arg) => {
+        //     params.append(arg.name, arg.value);
+        //   });
+        // }
         return {
           url: `/admin/videos/managment/get-all-videos-by-course/${id}`,
           method: "GET",
+          
         };
       },
-      transformResponse: (response) => {
-        return response.data || {};
-      },
+     
       providesTags: ["SubCategories"],
     }),
   }),

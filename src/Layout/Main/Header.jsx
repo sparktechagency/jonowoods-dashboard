@@ -16,6 +16,7 @@ let decodedToken = null;
 const tokenStr = localStorage.getItem("token");
 const token = tokenStr || null;
 
+
 if (token) {
   try {
     decodedToken = jwtDecode(token);
@@ -34,21 +35,19 @@ const Header = () => {
   const socketRef = useRef(null);
   const { data: getProfile } = useProfileQuery();
   useEffect(() => {
-
-    // if (!decodedToken) {
-    //   console.error("No valid decoded token, skipping socket connection.");
-    //   return;
-    // }
-
+    if (!decodedToken?.id || !getProfile?.data?._id) {
+      console.error("No valid token or profile data");
+      return;
+    }
     const connectSocket = async () => {
       try {
         if (socketRef.current) {
-          console.log(" Disconnecting previous socket connection");
+          // console.log(" Disconnecting previous socket connection");
           socketRef.current.disconnect();
           socketRef.current = null;
         }
 
-        console.log("🔌 Attempting to connect to socket server...");
+        // console.log("🔌 Attempting to connect to socket server...");
         socketRef.current = io("http://10.0.60.126:6002", {
           auth: { token },
           transports: ["websocket"],
@@ -60,12 +59,12 @@ const Header = () => {
         });
 
         socketRef.current.on("connect", () => {
-          console.log(" Socket connected:", socketRef.current.id);
+          // console.log(" Socket connected:", socketRef.current.id);
           setSocketConnected(true);
         });
 
         socketRef.current.on("disconnect", (reason) => {
-          console.log(" Socket disconnected:", reason);
+          // console.log(" Socket disconnected:", reason);
           setSocketConnected(false);
           if (reason === "io server disconnect") {
             setTimeout(() => {
@@ -76,7 +75,7 @@ const Header = () => {
         });
 
         socketRef.current.on("connect_error", (error) => {
-          console.error(" Socket connection error:", error.message);
+          // console.error(" Socket connection error:", error.message);
           setSocketConnected(false);
           setTimeout(() => {
             console.log(" Attempting reconnection after error");
@@ -85,7 +84,8 @@ const Header = () => {
         });
 
         let notificationChannel;
-        const event = getProfile?.data?._id;
+        const event = decodedToken?.id || getProfile?.data?._id;
+        // console.log(event)
         if (event) {
           notificationChannel = `notification::${event}`;
         } else {
@@ -93,7 +93,7 @@ const Header = () => {
           return;
         }
 
-        console.log("📡 Setting up listener on channel:", notificationChannel);
+        // console.log("📡 Setting up listener on channel:", notificationChannel);
 
         // Listen for all socket events for debugging
         socketRef.current.onAny((event, ...args) => {
@@ -122,25 +122,25 @@ const Header = () => {
             }
           }
 
-          console.log("📬 Processing notification:", notification);
+          // console.log("📬 Processing notification:", notification);
           setNotifications((prev) => {
             const newNotifications = [notification, ...prev];
-            console.log("📬 Updated notifications list:", newNotifications);
+            // console.log("📬 Updated notifications list:", newNotifications);
             return newNotifications;
           });
 
           setUnreadCount((prev) => {
             const newCount = prev + 1;
-            console.log("📬 Updated unread count:", newCount);
+            // console.log("📬 Updated unread count:", newCount);
             return newCount;
           });
 
           message.info("New notification received");
         });
 
-        console.log(
-          `👂 Listening for notifications on: ${notificationChannel}`
-        );
+        // console.log(
+        //   `👂 Listening for notifications on: ${notificationChannel}`
+        // );
       } catch (error) {
         console.error("Failed to initialize socket:", error);
         message.error("Failed to connect to notification service");
@@ -157,19 +157,19 @@ const Header = () => {
         setSocketConnected(false);
       }
     };
-  }, []); // Remove dependency on getProfile?.email to prevent constant reconnection
+  }, [decodedToken, getProfile?.data?._id]); 
 
   // Debug logs for state changes
   useEffect(() => {
-    console.log("🔔 Current notifications:", notifications);
-    console.log("🔢 Current unread count:", unreadCount);
+    // console.log("🔔 Current notifications:", notifications);
+    // console.log("🔢 Current unread count:", unreadCount);
   }, [notifications, unreadCount]);
 
   const handleNotificationRead = () => {
     console.log("📖 Marking all notifications as read");
     const readNotifications = notifications.map((n) => ({
       ...n,
-      isRead: true, // Changed from false to true
+      isRead: true, 
     }));
     setNotifications(readNotifications);
     setUnreadCount(0);
