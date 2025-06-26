@@ -28,8 +28,8 @@
 /* Hover effect - change text color to white and background gradient */
 .ant-menu-item:hover {
   background: linear-gradient(90deg, #ca3939 0%, #de5555 100%) !important;
-  color: white !important; /* Changed from black to white */
-  font-weight: normal !important; /* Ensure text isn't bold on hover */
+  color: white !important; 
+  font-weight: normal !important; 
 }
 
 /* Menu item text color when hovered */
@@ -48,7 +48,7 @@
 
 /* Icon color change on hover */
 .ant-menu-item:hover .ant-menu-item-icon {
-  color: white !important; /* Changed from black to white */
+  color: white !important;
 }
 
 /* Ant Design Badge */

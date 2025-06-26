@@ -70,7 +70,7 @@ const UserManagementTable = () => {
     Modal.confirm({
       title: "Are you sure?",
       content: `Do you want to change the user status to ${
-        currentStatus === "active" ? "block" : "active"
+        currentStatus === "active" ? "blocked" : "active"
       }?`,
       okText: "Yes",
       cancelText: "No",
@@ -78,11 +78,11 @@ const UserManagementTable = () => {
         try {
           await updateUserStatus({
             userId,
-            status: currentStatus === "active" ? "block" : "active",
+            status: currentStatus === "active" ? "blocked" : "active",
           }).unwrap();
           message.success(
             `User status updated successfully to ${
-              currentStatus === "active" ? "block" : "active"
+              currentStatus === "active" ? "blocked" : "active"
             }`
           );
           refetch();
@@ -184,7 +184,7 @@ const UserManagementTable = () => {
             {isUpdating
               ? "Updating..."
               : record.status === "active"
-              ? "block"
+              ? "blocked"
               : "active"}
           </button>
         </Space>
