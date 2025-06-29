@@ -1,6 +1,11 @@
 import React from "react";
 import { Table, Button, Space, Switch, Tag, Popconfirm } from "antd";
-import { EditOutlined, EyeOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  EyeOutlined,
+  DeleteOutlined,
+  PlayCircleOutlined,
+} from "@ant-design/icons";
 import moment from "moment/moment";
 import { getImageUrl } from "../common/imageUrl";
 
@@ -10,6 +15,7 @@ const CategoryTable = ({
   onView,
   onStatusChange,
   onDelete, // Make sure this is passed as a prop
+  onViewVideos, // New prop for viewing videos
 }) => {
   const columns = [
     {
@@ -42,7 +48,7 @@ const CategoryTable = ({
       ),
     },
     {
-      title: "Sub Category",
+      title: "Courses",
       dataIndex: "subCategory",
       key: "subCategory",
       align: "center",
@@ -69,9 +75,6 @@ const CategoryTable = ({
       dataIndex: "categoryType",
       key: "categoryType",
       align: "center",
-      render: (type) => (
-        <Tag color={type === "Free" ? "green" : "blue"}>{type}</Tag>
-      ),
     },
     {
       title: "Status",
@@ -95,6 +98,7 @@ const CategoryTable = ({
             icon={<EditOutlined />}
             onClick={() => onEdit(record)}
             className="text-blue-500"
+            title="Edit Category"
           />
           <Button
             type="text"
@@ -103,12 +107,18 @@ const CategoryTable = ({
             className="text-green-500"
             title="View Sub Categories"
           />
+          <Button
+            type="text"
+            icon={<PlayCircleOutlined />}
+            onClick={() => onViewVideos(record)}
+            className="text-primary"
+            title="View Videos"
+          />
           <Switch
             checked={record.status.toLowerCase() === "active"}
             size="small"
             onChange={(checked) => onStatusChange(checked, record)}
           />
-          {/* Delete button without confirmation */}
           <Button
             type="text"
             icon={<DeleteOutlined />}
@@ -120,7 +130,6 @@ const CategoryTable = ({
       ),
     },
   ];
-
 
   return (
     <Table

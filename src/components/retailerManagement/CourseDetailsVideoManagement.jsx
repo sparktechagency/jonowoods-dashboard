@@ -338,6 +338,7 @@ const CourseDetails = () => {
   // API calls
   const { data: categoryData } = useGetCategoryQuery();
   const categories = categoryData?.data || [];
+  console.log(categories)
 
   const {
     data: videosData,
@@ -372,6 +373,7 @@ const CourseDetails = () => {
     current: 1,
     pageSize: 10,
   };
+  // console.log(videos)
 
   // Sort videos by serial number and update local state
   useEffect(() => {

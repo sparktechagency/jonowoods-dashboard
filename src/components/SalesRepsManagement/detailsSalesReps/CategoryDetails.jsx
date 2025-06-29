@@ -17,8 +17,8 @@ import { useGetSingleCategoryQuery } from "../../../redux/apiSlices/categoryApi"
 const SubCategoryManagement = () => {
   const navigate = useNavigate();
   const { categoryId } = useParams();
-  console.log("Category ID:", categoryId);
-  console.log("subcategory");
+  // console.log("Category ID:", categoryId);
+  // console.log("subcategory");
 
   const [subCategoryModalVisible, setSubCategoryModalVisible] = useState(false);
   const [editingSubCategory, setEditingSubCategory] = useState(null);
@@ -138,6 +138,10 @@ const SubCategoryManagement = () => {
         error.data?.message || error.message || "Unknown error";
       message.error(`Failed to save sub-category: ${errorMessage}`);
     }
+  };
+
+  const showCategoryDetails = (record) => {
+    navigate(`/video-management/${record._id}`);
   };
   
 
@@ -268,6 +272,7 @@ const SubCategoryManagement = () => {
       <SubCategoryTable
         subCategories={formattedSubCategories}
         onEdit={showSubCategoryModal}
+        onView={showCategoryDetails}
         onStatusChange={handleSubCategoryStatusChange}
         onDelete={handleSubCategoryDelete}
       />

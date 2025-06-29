@@ -39,7 +39,7 @@ const VideoFormModal = ({
   const [tagInput, setTagInput] = useState("");
 
   const isEditMode = !!currentVideo?._id;
-  console.log(categories)
+  // console.log(categories)
 
   const [addVideo, { isLoading: isAdding }] = useAddVideoMutation();
   const [updateVideo, { isLoading: isUpdating }] = useUpdateVideoMutation();

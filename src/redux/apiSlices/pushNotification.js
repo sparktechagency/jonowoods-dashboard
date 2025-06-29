@@ -14,6 +14,17 @@ const comingSoonApi = api.injectEndpoints({
     }),
 
 
+    // pushNotificationSend: builder.mutation({
+    //   query: (data) => {
+    //     return {
+    //       url: "/admin/notifications/get-notification",
+    //       method: "GET",
+    //       body: data,
+    //     };
+    //   },
+    // }),
+
+
 
 
     

@@ -1,11 +1,12 @@
 import React from "react";
 import { Table, Button, Space, Switch, Tag, Popconfirm } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../../common/imageUrl";
 
 const SubCategoryTable = ({
   subCategories,
   onEdit,
+  onView,
   onStatusChange,
   onDelete,
 }) => {
@@ -52,7 +53,7 @@ const SubCategoryTable = ({
       key: "createdDate",
       align: "center",
     },
-   
+
     {
       title: "Status",
       dataIndex: "status",
@@ -75,6 +76,13 @@ const SubCategoryTable = ({
             icon={<EditOutlined />}
             onClick={() => onEdit(record)}
             className="text-blue-500"
+          />
+          <Button
+            type="text"
+            icon={<EyeOutlined />}
+            onClick={() => onView(record)}
+            className="text-green-500"
+            title="View Sub Categories"
           />
           <Switch
             checked={record.status.toLowerCase() === "active"}

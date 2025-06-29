@@ -97,6 +97,9 @@ const CategoryManagement = () => {
   const showCategoryDetails = (record) => {
     navigate(`/subcategory-management/${record._id}`);
   };
+  const showAllVideos = (record) => {
+    navigate(`/category-management/${record._id}`);
+  };
 
   const handleDelete = (id) => {
     Modal.confirm({
@@ -161,11 +164,11 @@ const handleStatusChange = (checked, record) => {
       <Menu.Item key="all" onClick={() => setFilterType("all")}>
         All
       </Menu.Item>
-      <Menu.Item key="free" onClick={() => setFilterType("Free")}>
-        Free
+      <Menu.Item key="class" onClick={() => setFilterType("class")}>
+        Class
       </Menu.Item>
-      <Menu.Item key="paid" onClick={() => setFilterType("Paid")}>
-        Paid
+      <Menu.Item key="course" onClick={() => setFilterType("course")}>
+        Course
       </Menu.Item>
     </Menu>
   );
@@ -236,6 +239,7 @@ const handleStatusChange = (checked, record) => {
           onView={showCategoryDetails}
           onStatusChange={handleStatusChange}
           onDelete={handleDelete}
+          onViewVideos={showAllVideos}
         />
       </div>
 

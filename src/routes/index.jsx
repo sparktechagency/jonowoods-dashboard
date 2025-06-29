@@ -39,6 +39,7 @@ import PostManagementSystem from "../components/createPost/CreatePostManagement"
 import PageManagement from "../Pages/Dashboard/LoginAndRegisterBG";
 import ContactManagementTable from "../components/contactus/ContactUsUser";
 import SubscriptionManagementTable from "../components/subscriptionUser/SubscriptionUser";
+import AllVideos from "../components/SalesRepsManagement/AllVideos";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
@@ -52,7 +53,7 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/orderManagement",
+        path: "/user-management",
         element: <OrderManagementContainer />,
       },
       {
@@ -60,20 +61,24 @@ const router = createBrowserRouter([
         element: <VideoManagementSystem />,
       },
       {
-        path: "/retailer",
+        path: "/video-management",
         element: <Retailer />,
       },
       {
-        path: "/retailer/:subCategoryId",
+        path: "/video-management/:subCategoryId",
         element: <CourseDetailsVideoManagement />,
       },
       {
-        path: "/salesRepsManage",
+        path: "/category-management",
         element: <CategoryManagement />,
       },
       {
         path: "/subcategory-management/:categoryId",
         element: <SubCategoryManagement />,
+      },
+      {
+        path: "/category-management/:categoryId",
+        element: <AllVideos />,
       },
       {
         path: "/inventory",

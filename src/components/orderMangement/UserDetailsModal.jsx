@@ -20,6 +20,7 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
+import { FaLocationDot } from "react-icons/fa6";
 
 const { Title, Text } = Typography;
 
@@ -121,7 +122,7 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
       open={visible}
       onCancel={onClose}
       footer={null}
-      width={700}
+      width={900}
       bodyStyle={{ padding: "0" }}
       style={{ top: 20 }}
     >
@@ -209,11 +210,13 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
             </Col>
             <Col span={12}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <CalendarOutlined style={{ color: "#CA3939" }} />
+                <FaLocationDot style={{ color: "#CA3939" }} />
                 <div>
-                  <Text style={labelStyle}>Login Count:</Text>
+                  <Text style={labelStyle}>Address:</Text>
                   <br />
-                  <Text style={valueStyle}>{userDetails.loginCount} times</Text>
+                  <Text style={valueStyle}>
+                    {userDetails?.address || "Not provided"}
+                  </Text>
                 </div>
               </div>
             </Col>
@@ -224,7 +227,7 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
         <Card title="Activity & Progress" style={cardStyle}>
           <Row gutter={[24, 16]}>
             <Col span={8}>
-              <div style={{ textAlign: "center", padding: "16px 0" }}>
+              <div style={{ textAlign: "center" }}>
                 <div
                   style={{
                     fontSize: "24px",
@@ -238,7 +241,7 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
               </div>
             </Col>
             <Col span={8}>
-              <div style={{ textAlign: "center", padding: "16px 0" }}>
+              <div style={{ textAlign: "center" }}>
                 <div
                   style={{
                     fontSize: "24px",
@@ -252,7 +255,7 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
               </div>
             </Col>
             <Col span={8}>
-              <div style={{ textAlign: "center", padding: "16px 0" }}>
+              <div style={{ textAlign: "center" }}>
                 <div
                   style={{
                     fontSize: "24px",
@@ -260,9 +263,9 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
                     color: "#CA3939",
                   }}
                 >
-                  {userDetails.hasAccess ? "Yes" : "No"}
+                  {userDetails.loginCount}
                 </div>
-                <Text style={{ color: "#8c8c8c" }}>Has Access</Text>
+                <Text style={{ color: "#8c8c8c" }}>Login Count</Text>
               </div>
             </Col>
           </Row>
@@ -298,7 +301,7 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
                 {userDetails.subscriptionTitle || "N/A"}
               </Text>
             </Col>
-            <Col span={12}>
+            {/* <Col span={12}>
               <Text style={labelStyle}>Stripe Customer ID:</Text>
               <br />
               <Text
@@ -307,7 +310,7 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
               >
                 {userDetails.stripeCustomerId || "N/A"}
               </Text>
-            </Col>
+            </Col> */}
           </Row>
 
           {userDetails.isFreeTrial && (
@@ -341,7 +344,7 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
         </Card>
 
         {/* System Information */}
-        <Card
+        {/* <Card
           title="System Information"
           style={{ ...cardStyle, marginBottom: 0 }}
         >
@@ -373,7 +376,7 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
               <Text style={valueStyle}>{userDetails.tokenVersion}</Text>
             </Col>
           </Row>
-        </Card>
+        </Card> */}
       </div>
     </Modal>
   );

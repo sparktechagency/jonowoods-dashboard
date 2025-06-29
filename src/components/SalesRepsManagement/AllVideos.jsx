@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import {
   Table,
   Button,
@@ -13,28 +14,29 @@ import {
 import {
   EditOutlined,
   EyeOutlined,
+  DeleteOutlined,
   DownOutlined,
   PlusOutlined,
-  DeleteOutlined,
 } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import VideoFormModal from "./VideoFormModal";
-import VideoDetailsModal from "./VideoDetailsModal";
-import GradientButton from "../common/GradiantButton";
-import {
-  useGetAllVideosQuery,
-  useDeleteVideoMutation,
-  useUpdateVideoStatusMutation,
-  useGetVideoByIdQuery,
-} from "../../redux/apiSlices/videoApi";
-import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment/moment";
+import { useGetByCategoryAllVideosQuery, useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
+import { useDeleteVideoMutation, useGetVideoByIdQuery, useUpdateVideoStatusMutation } from "../../redux/apiSlices/videoApi";
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
-import { useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
+import GradientButton from "../common/GradiantButton";
+import VideoFormModal from "../retailerManagement/VideoFormModal";
+import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
+import { getVideoAndThumbnail } from "../common/imageUrl";
 
-const VideoManagementSystem = () => {
-  const navigate = useNavigate();
+// import VideoFormModal from "./VideoFormModal";
+// import VideoDetailsModal from "./VideoDetailsModal";
+// import GradientButton from "../common/GradiantButton";
+// import { Filtering } from "../common/Svg";
+// import Spinner from "../common/Spinner";
+// import { getVideoAndThumbnail } from "../common/imageUrl";
+
+const AllVideos = () => {
+  const { categoryId } = useParams();
 
   // Modal and editing states
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
@@ -46,39 +48,39 @@ const VideoManagementSystem = () => {
   // Filters and pagination
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Build query params
-  const queryParams = [];
-  if (statusFilter !== "all")
-    queryParams.push({ name: "status", value: statusFilter });
-  if (typeFilter !== "all")
-    queryParams.push({ name: "type", value: typeFilter });
-  if (categoryFilter !== "all")
-    queryParams.push({ name: "category", value: categoryFilter });
-  queryParams.push({ name: "page", value: currentPage });
-  queryParams.push({ name: "limit", value: pageSize });
+//   console.log("Category ID:", categoryId);
 
   // API calls
-  const { data: categoryData } = useGetCategoryQuery();
-  const categories = categoryData?.data || [];
-  console.log(categories)
-
   const {
-    data: videosData,
+    data,
     isLoading: isLoadingVideos,
     refetch,
-  } = useGetAllVideosQuery(queryParams);
-  console.log(videosData)
+    } = useGetByCategoryAllVideosQuery(categoryId);
+    const { data: categoryData } = useGetCategoryQuery();
+    const categories = categoryData?.data || [];
 
-  const videos = videosData?.data || [];
-  const paginationData = videosData?.pagination || {
+  const allVideos = data?.data?.videos || [];
+  const paginationData = data?.data?.meta || {
     total: 0,
-    current: 1,
-    pageSize: 10,
+    page: 1,
+    limit: 10,
+    totalPage: 1,
   };
+
+  // Filter videos based on filters
+  const filteredVideos = allVideos.filter((video) => {
+    const statusMatch = statusFilter === "all" || video.status === statusFilter;
+    const typeMatch = typeFilter === "all" || video.type === typeFilter;
+    return statusMatch && typeMatch;
+  });
+
+  // Paginate filtered videos
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedVideos = filteredVideos.slice(startIndex, endIndex);
 
   // Fetch single video data when editingId is set
   const { data: videoDetails } = useGetVideoByIdQuery(editingId, {
@@ -105,7 +107,9 @@ const VideoManagementSystem = () => {
   // Reset page on filter change
   useEffect(() => {
     setCurrentPage(1);
-  }, [statusFilter, categoryFilter]);
+  }, [statusFilter, typeFilter]);
+
+  console.log("Filtered Videos:", paginatedVideos);
 
   // Show form modal for add or edit
   const showFormModal = (record = null) => {
@@ -120,17 +124,8 @@ const VideoManagementSystem = () => {
 
   // Show details modal and set editingId to fetch video details
   const showDetailsModal = (record) => {
-    if (record.type === "class") {
-      setEditingId(record._id);
-      setIsDetailsModalVisible(true);
-    } else if (record.type === "course") {
-      const subCategoryId = record.subCategoryId?._id || record.subCategoryId;
-      if (subCategoryId) {
-        navigate(`/video-management/${subCategoryId}`);
-      } else {
-        message.error("Subcategory ID not found");
-      }
-    }
+    setEditingId(record._id);
+    setIsDetailsModalVisible(true);
   };
 
   // Close form modal and reset states
@@ -206,24 +201,10 @@ const VideoManagementSystem = () => {
   };
 
   // Filter handlers
-  const handleCategoryFilter = (category) => setCategoryFilter(category);
   const handleStatusFilter = (status) => setStatusFilter(status.toLowerCase());
   const handleTypeFilter = (type) => setTypeFilter(type.toLowerCase());
 
   // Filter menus
-  const categoryMenu = (
-    <Menu>
-      <Menu.Item key="all" onClick={() => handleCategoryFilter("all")}>
-        All Categories
-      </Menu.Item>
-      {categories.map((cat) => (
-        <Menu.Item key={cat._id} onClick={() => handleCategoryFilter(cat.name)}>
-          {cat?.name}
-        </Menu.Item>
-      ))}
-    </Menu>
-  );
-
   const statusMenu = (
     <Menu>
       <Menu.Item key="all" onClick={() => handleStatusFilter("all")}>
@@ -262,53 +243,27 @@ const VideoManagementSystem = () => {
       render: (_, __, index) => `# ${(currentPage - 1) * pageSize + index + 1}`,
     },
     {
-      title: "Video Title",
-      dataIndex: "title",
-      key: "title",
-      align: "center",
-    },
-    {
       title: "Thumbnail",
       dataIndex: "thumbnailUrl",
-      key: "thumbnailUrl",
+      key: "thumbnail",
       align: "center",
-      render: (_, record) => (
+      width: 120,
+      render: (thumbnailUrl) => (
         <div style={{ display: "flex", justifyContent: "center" }}>
           <img
-            src={getVideoAndThumbnail(record.thumbnailUrl)}
+            src={getVideoAndThumbnail(thumbnailUrl)}
             alt="thumbnail"
-            style={{ width: 100, height: 50, objectFit: "cover" }}
-            className="rounded-lg"
+            className="object-cover rounded-xl"
+            style={{ width: 100, height: 60 }}
           />
         </div>
       ),
     },
     {
-      title: "Category",
-      dataIndex: ["categoryId", "name"],
-      key: "category",
+      title: "Video Title",
+      dataIndex: "title",
+      key: "title",
       align: "center",
-    },
-    {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-      align: "center",
-    },
-    {
-      title: "Name",
-      dataIndex: "subCategory",
-      key: "subCategory",
-      align: "center",
-      render: (text) => (text ? text : "N/A"), 
-    },
-    
-    {
-      title: "Upload Date",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      align: "center",
-      render: (text) => moment(text).format("L"),
     },
     {
       title: "Duration",
@@ -317,36 +272,66 @@ const VideoManagementSystem = () => {
       align: "center",
     },
     {
+      title: "Category",
+      dataIndex: "category",
+      key: "category",
+      align: "center",
+    },
+    {
+      title: "Sub Category",
+      dataIndex: "subCategory",
+      key: "subCategory",
+      align: "center",
+      render: (subCategory) => subCategory || "N/A",
+    },
+    {
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+      align: "center",
+      render: (type) => (
+        <Tag color={type === "course" ? "blue" : "orange"}>
+          {type.toUpperCase()}
+        </Tag>
+      ),
+    },
+   
+    {
+      title: "Created Date",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      align: "center",
+      render: (createdAt) => moment(createdAt).format("L"),
+    },
+    {
       title: "Status",
       dataIndex: "status",
       key: "status",
       align: "center",
-      // render: (status) => (
-      //   <Tag color={status === "active" ? "success" : "error"}>
-      //     {status === "active" ? "Active" : "Inactive"}
-      //   </Tag>
-      // ),
+      render: (status) => (
+        <Tag color={status.toLowerCase() === "active" ? "green" : "red"}>
+          {status.toUpperCase()}
+        </Tag>
+      ),
     },
     {
       title: "Action",
       key: "action",
       align: "center",
+      width: 200,
       render: (_, record) => (
         <Space size="small">
           <Button
             type="text"
             icon={<EditOutlined style={{ color: "#f55" }} />}
             onClick={() => showFormModal(record)}
+            title="Edit Video"
           />
           <Button
             type="text"
             icon={<EyeOutlined style={{ color: "#55f" }} />}
             onClick={() => showDetailsModal(record)}
-            title={
-              record.type === "class"
-                ? "View Details"
-                : "View Subcategory Videos"
-            }
+            title="View Video Details"
           />
           <Switch
             size="small"
@@ -360,6 +345,7 @@ const VideoManagementSystem = () => {
             type="text"
             icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
             onClick={() => handleDeleteVideo(record._id)}
+            title="Delete Video"
           />
         </Space>
       ),
@@ -367,12 +353,6 @@ const VideoManagementSystem = () => {
   ];
 
   // Display text helpers
-  const getCategoryDisplayText = () => {
-    if (categoryFilter === "all") return "All Categories";
-    const category = categories.find((cat) => cat.name === categoryFilter);
-    return category ? category.name : "All Categories";
-  };
-
   const getTypeDisplayText = () => {
     if (typeFilter === "all") return "All Type";
     return typeFilter.charAt(0).toUpperCase() + typeFilter.slice(1);
@@ -388,26 +368,9 @@ const VideoManagementSystem = () => {
   }
 
   return (
-    <div>
+    <div style={{ padding: 24 }}>
       <div className="flex justify-end gap-6 mb-6">
         <Space size="small" className="flex gap-4">
-          <Dropdown
-            overlay={categoryMenu}
-            trigger={["click"]}
-            placement="bottomLeft"
-          >
-            <Button
-              className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
-              style={{ border: "none" }}
-            >
-              <Space>
-                <Filtering className="filtering-icon" />
-                <span className="filter-text">{getCategoryDisplayText()}</span>
-                <DownOutlined />
-              </Space>
-            </Button>
-          </Dropdown>
-
           <Dropdown
             overlay={statusMenu}
             trigger={["click"]}
@@ -453,16 +416,23 @@ const VideoManagementSystem = () => {
         </GradientButton>
       </div>
 
+      <h2 style={{ marginBottom: 16 }}>All Videos</h2>
+
       <Table
         columns={columns}
-        dataSource={videos}
+        dataSource={paginatedVideos}
+        rowKey="_id"
+        loading={isLoadingVideos}
         pagination={{
           current: currentPage,
           pageSize: pageSize,
-          total: paginationData.total || 0,
+          //   total: filteredVideos.length,
+          //   showSizeChanger: true,
+          //   showQuickJumper: true,
+          //   showTotal: (total, range) =>
+          //     `${range[0]}-${range[1]} of ${total} videos`,
         }}
         onChange={handleTableChange}
-        rowKey="_id"
         bordered
         size="small"
         className="custom-table"
@@ -476,7 +446,7 @@ const VideoManagementSystem = () => {
         onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
         editingId={editingId}
-        categories={categories}
+        categories={categories} // You may need to pass categories if required
         equipmentTags={equipmentTags}
         setEquipmentTags={setEquipmentTags}
       />
@@ -491,4 +461,4 @@ const VideoManagementSystem = () => {
   );
 };
 
-export default VideoManagementSystem;
+export default AllVideos;

@@ -137,8 +137,8 @@ const UserManagementTable = () => {
     },
     {
       title: "Plan Running",
-      dataIndex: "packagename",
-      key: "packagename",
+      dataIndex: "packageName",
+      key: "packageName",
       align: "center",
       render: (text) => <span>{text || "N/A"}</span>,
     },
@@ -262,7 +262,7 @@ const UserManagementTable = () => {
               </Button>
             </Dropdown>
 
-            <Dropdown overlay={planMenu}>
+            {/* <Dropdown overlay={planMenu}>
               <Button
                 className="mr-2 bg-red-600 py-5 text-white hover:text-black hover:icon-black"
                 style={{ border: "none" }}
@@ -275,7 +275,7 @@ const UserManagementTable = () => {
                   <DownOutlined />
                 </Space>
               </Button>
-            </Dropdown>
+            </Dropdown> */}
           </Space>
         </div>
       </div>

@@ -93,19 +93,19 @@ const Sidebar = () => {
       label: <Link to="/">Overview</Link>,
     },
     {
-      key: "/orderManagement",
-      icon: renderIcon(UserManagement, "/orderManagement"),
-      label: <Link to="/orderManagement">Users Management</Link>,
+      key: "/user-management",
+      icon: renderIcon(UserManagement, "/user-management"),
+      label: <Link to="/user-management">Users Management</Link>,
     },
     {
-      key: "/salesRepsManage",
-      icon: renderIcon(SalesRepsManagement, "/salesRepsManage"),
-      label: <Link to="/salesRepsManage">Category Management</Link>,
+      key: "/category-management",
+      icon: renderIcon(SalesRepsManagement, "/category-management"),
+      label: <Link to="/category-management">Category Management</Link>,
     },
     {
-      key: "/retailer",
-      icon: renderIcon(VideoManagement, "/retailer"),
-      label: <Link to="/retailer">Video Management</Link>,
+      key: "/video-management",
+      icon: renderIcon(VideoManagement, "/video-management"),
+      label: <Link to="/video-management">Video Management</Link>,
     },
     {
       key: "/coming-soon",

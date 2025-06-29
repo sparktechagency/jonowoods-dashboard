@@ -21,11 +21,15 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
         if (initialValues.thumbnail) {
           setPreviewUrl(getImageUrl(initialValues.thumbnail));
         } else {
-          setPreviewUrl("/api/placeholder/400/200");
+          setPreviewUrl(
+            "https://static.vecteezy.com/system/resources/thumbnails/006/408/741/small/meditate-yoga-person-sitting-in-lotus-position-line-icon-relaxation-tranquility-rest-keep-calm-illustration-free-vector.jpg"
+          );
         }
       } else {
         form.resetFields();
-        setPreviewUrl("/api/placeholder/400/200");
+        setPreviewUrl(
+          "https://static.vecteezy.com/system/resources/thumbnails/006/408/741/small/meditate-yoga-person-sitting-in-lotus-position-line-icon-relaxation-tranquility-rest-keep-calm-illustration-free-vector.jpg"
+        );
         setThumbnailFile(null);
       }
     }
@@ -88,21 +92,24 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
           label="Category Type"
           rules={[{ required: true, message: "Please select category type!" }]}
         >
-          <Select placeholder="Free/Paid">
+          <Select placeholder="Class/Course">
             <Select.Option value="class">Class</Select.Option>
             <Select.Option value="course">Course</Select.Option>
           </Select>
         </Form.Item>
         <Form.Item name="thumbnail" label="Thumbnail">
           <div className="bg-gray-100 p-1 rounded">
-            {previewUrl && (
-              <img
-                src={previewUrl}
-                alt="Thumbnail preview"
-                className="w-full rounded mb-2"
-                style={{ maxHeight: "200px", objectFit: "contain" }}
-              />
-            )}
+            <img
+              src={
+                previewUrl
+                  ? previewUrl
+                  : "https://static.vecteezy.com/system/resources/thumbnails/001/892/283/small/woman-meditating-concept-for-yoga-meditation-relax-healthy-lifestyle-in-landscape-free-vector.jpg"
+              }
+              alt="Thumbnail preview"
+              className="w-full rounded-3xl mb-2"
+              style={{ maxHeight: "200px", objectFit: "contain" }}
+            />
+
             <div className="flex justify-between">
               <Upload
                 beforeUpload={() => false}
@@ -117,7 +124,9 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
                 size="small"
                 shape="circle"
                 onClick={() => {
-                  setPreviewUrl("/api/placeholder/400/200");
+                  setPreviewUrl(
+                    "https://static.vecteezy.com/system/resources/thumbnails/001/892/283/small/woman-meditating-concept-for-yoga-meditation-relax-healthy-lifestyle-in-landscape-free-vector.jpg"
+                  );
                   setThumbnailFile(null);
                 }}
               />

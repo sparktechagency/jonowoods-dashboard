@@ -64,6 +64,16 @@ const categorySlice = api.injectEndpoints({
       },
     }),
 
+    getByCategoryAllVideos: (builder).query({
+      query: (id) => {
+        return {
+          url: `/admin/category/category-all-videos/${id}`,
+          method:"GET"
+        };
+      }  ,
+      providesTags: (result, error, id) => [{ type: "Category", id }],
+    }),
+
     // Single category endpoint
     getSingleCategory: builder.query({
       query: (id) => {
@@ -98,5 +108,6 @@ export const {
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
   useGetSingleCategoryQuery,
+  useGetByCategoryAllVideosQuery,
   useToggleCategoryStatusMutation,
 } = categorySlice;
