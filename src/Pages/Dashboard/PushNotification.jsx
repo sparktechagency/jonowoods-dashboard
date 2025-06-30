@@ -7,6 +7,7 @@ import {
   MdSend,
   MdClose,
 } from "react-icons/md";
+import { useGetSendPushNotificationQuery } from "../../redux/apiSlices/pushNotification";
 
 // Mock notification data
 const notificationData = Array.from({ length: 25 }, (_, i) => ({
@@ -23,6 +24,10 @@ const NotificationModal = ({ isOpen, onClose }) => {
   const [communicationType, setCommunicationType] = useState("");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
+
+  const { data } = useGetSendPushNotificationQuery()
+  console.log(data)
+  console.log("push notification page")
 
   if (!isOpen) return null;
 

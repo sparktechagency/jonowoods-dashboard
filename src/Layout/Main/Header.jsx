@@ -27,7 +27,7 @@ if (token) {
   }
 }
 
-console.log(decodedToken);
+// console.log(decodedToken);
 
 const Header = () => {
   const [unreadCount, setUnreadCount] = useState(0);
@@ -35,8 +35,8 @@ const Header = () => {
   const [socketConnected, setSocketConnected] = useState(false);
   const socketRef = useRef(null);
   const { data: getProfile } = useProfileQuery();
-  console.log(getProfile)
-  console.log(getProfile?.data?._id)
+  // console.log(getProfile)
+  // console.log(getProfile?.data?._id)
   
   useEffect(() => {
     if (!decodedToken?.id || !getProfile?.data?._id) {

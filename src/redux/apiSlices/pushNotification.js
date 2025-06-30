@@ -1,8 +1,8 @@
 import { api } from "../api/baseApi";
 
-const comingSoonApi = api.injectEndpoints({
+const pushNotificationApi = api.injectEndpoints({
   endpoints: (builder) => ({
-    // POST: Create a new Coming Soon entry
+    // POST: Send push notification
     pushNotificationSend: builder.mutation({
       query: (data) => {
         return {
@@ -11,26 +11,37 @@ const comingSoonApi = api.injectEndpoints({
           body: data,
         };
       },
+      invalidatesTags: ["PushNotification"],
     }),
 
-
-    // pushNotificationSend: builder.mutation({
-    //   query: (data) => {
-    //     return {
-    //       url: "/admin/notifications/get-notification",
-    //       method: "GET",
-    //       body: data,
-    //     };
-    //   },
-    // }),
-
-
-
-
-    
+    // GET: Get all push notifications with filtering and pagination
+    getSendPushNotification: builder.query({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args && args.length > 0) {
+          args.forEach((arg) => {
+            params.append(arg.name, arg.value);
+          });
+        }
+        return {
+          url: `/admin/notifications/get-notification`,
+          method: "GET",
+          params,
+        };
+        
+      },
+      // transformResponse: (response) => {
+      //   const parsed = response;
+      //   return {
+      //     data: parsed.data,
+      //     pagination: parsed.pagination,
+      //   };
+      // },
+    }),
   }),
 });
 
 export const {
   usePushNotificationSendMutation,
-} = comingSoonApi;
+  useGetSendPushNotificationQuery,
+} = pushNotificationApi;
