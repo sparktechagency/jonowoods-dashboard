@@ -5,7 +5,8 @@ import { Navigate, useLocation } from "react-router-dom";
 const PrivateRoute = ({ children }) => {
   const location = useLocation();
 
-  const token = localStorage.getItem("accessToken");
+  const token = localStorage.getItem("token");
+  console.log(token);
 
   if (!token) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
@@ -16,11 +17,11 @@ const PrivateRoute = ({ children }) => {
     const currentTime = Date.now() / 1000; // seconds
 
     if (decoded.exp < currentTime) {
-      localStorage.removeItem("accessToken");
+      localStorage.removeItem("token");
       return <Navigate to="/auth/login" state={{ from: location }} replace />;
     }
 
-    if (profile?.role === "ADMIN" || profile?.role === "SUPER_ADMIN") {
+    if (decoded.role === "ADMIN" || decoded.role === "SUPER_ADMIN") {
       return children;
     } else {
       return <Navigate to="/auth/login" state={{ from: location }} replace />;

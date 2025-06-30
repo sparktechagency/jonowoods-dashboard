@@ -40,13 +40,14 @@ import PageManagement from "../Pages/Dashboard/LoginAndRegisterBG";
 import ContactManagementTable from "../components/contactus/ContactUsUser";
 import SubscriptionManagementTable from "../components/subscriptionUser/SubscriptionUser";
 import AllVideos from "../components/SalesRepsManagement/AllVideos";
+import PrivateRoute from "./ProtectedRoute";
 // import SalesRepsManagementTable from "../components/SalesRepsManagement/SalesRepsManagement";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    // element: <ProtectedRoute><Main /></ProtectedRoute> ,
-    element: <Main />,
+    element: <PrivateRoute><Main /></PrivateRoute> ,
+    // element: <Main />,
     children: [
       {
         path: "/",
