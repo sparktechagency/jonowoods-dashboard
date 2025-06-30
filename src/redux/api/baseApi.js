@@ -26,6 +26,7 @@ export const api = createApi({
     "DailyInspiration",
     "Admin",
     "Notification",
+    "PushNotification",
   ],
   endpoints: () => ({}),
 });

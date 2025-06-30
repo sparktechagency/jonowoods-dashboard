@@ -191,7 +191,7 @@ const PushNotification = () => {
       align: "center",
       render: (status) => {
         const color =
-          status === "PENDING" ? "orange" : status === "SENT" ? "green" : "red";
+          status === "PENDING" ? "orange" : status === "SEND" ? "green" : "red";
         return <Tag color={color}>{status}</Tag>;
       },
     },
@@ -244,7 +244,7 @@ const PushNotification = () => {
           )}!`
         );
       } else {
-        message.success("Notification sent successfully!");
+        message.success("Notification send successfully!");
       }
 
       form.resetFields();
@@ -347,12 +347,10 @@ const PushNotification = () => {
       <Menu.Item key="PENDING" onClick={() => setStatusFilter("PENDING")}>
         Pending
       </Menu.Item>
-      <Menu.Item key="SENT" onClick={() => setStatusFilter("SENT")}>
-        Sent
+      <Menu.Item key="SEND" onClick={() => setStatusFilter("SEND")}>
+        Send
       </Menu.Item>
-      <Menu.Item key="FAILED" onClick={() => setStatusFilter("FAILED")}>
-        Failed
-      </Menu.Item>
+      
     </Menu>
   );
 

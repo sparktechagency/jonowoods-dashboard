@@ -6,7 +6,7 @@ const pushNotificationApi = api.injectEndpoints({
     pushNotificationSend: builder.mutation({
       query: (data) => {
         return {
-          url: "/admin/notifications/send-notification",
+          url: "/admin/push-notifications/send",
           method: "POST",
           body: data,
         };
@@ -24,7 +24,7 @@ const pushNotificationApi = api.injectEndpoints({
           });
         }
         return {
-          url: `/admin/notifications/get-notification`,
+          url: `/admin/push-notifications`,
           method: "GET",
           params,
         };
