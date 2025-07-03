@@ -1,60 +1,77 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import JoditEditor from "jodit-react";
 import GradientButton from "../../components/common/GradiantButton";
 import { Button, message, Modal } from "antd";
+import {
+  useGetSettingQuery,
+  useUpdateSettingMutation,
+} from "../../redux/apiSlices/setting";
 
-const TermsAndCondition = () => {
+const TermsAndConditions = () => {
   const editor = useRef(null);
+  const { data, isLoading: isLoadingSetting, isError } = useGetSettingQuery();
+  const [updateSetting, { isLoading: isUpdating }] = useUpdateSettingMutation();
 
- const [termsContent, setTermsContent] = useState(`
-    <h2 style="font-size: 24px; font-weight: bold; color: #333;">Terms & Conditions</h2>
-    <p style="font-size: 16px; color: #555;">Welcome to our website. If you continue to browse and use this website, you are agreeing to comply with and be bound by the following terms and conditions of use.</p>
-    <h3 style="font-size: 20px; font-weight: bold; color: #444;">1. General Terms</h3>
-    <p style="font-size: 16px; color: #555;">The content of the pages of this website is for your general information and use only. It is subject to change without notice.</p>
-    <h3 style="font-size: 20px; font-weight: bold; color: #444;">2. Privacy Policy</h3>
-    <p style="font-size: 16px; color: #555;">Your use of this website is also subject to our Privacy Policy, which is incorporated by reference.</p>
-    <h3 style="font-size: 20px; font-weight: bold; color: #444;">3. Disclaimer</h3>
-    <p style="font-size: 16px; color: #555;">The information contained in this website is for general information purposes only. We endeavor to keep the information up to date and correct.</p>
-`);
+  const [termsContent, setTermsContent] = useState("");
 
-
+  // Modal open state
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (data?.termsOfService) {
+      setTermsContent(data.termsOfService);
+    }
+  }, [data]);
+
+  // Show modal handler
   const showModal = () => {
     setIsModalOpen(true);
   };
 
-  const handleOk = () => {
-    // When saving, just set the content to the saved state
+  // Handle modal cancel
+  const handleCancel = () => {
+    // Reset content to original on cancel to discard changes
+    setTermsContent(data?.termsOfService || "");
     setIsModalOpen(false);
-    message.success("Terms & Conditions updated successfully!");
   };
 
-  const handleCancel = () => {
-    setIsModalOpen(false);
+  // Handle modal OK (save)
+  const handleOk = async () => {
+    try {
+      await updateSetting({ termsOfService: termsContent }).unwrap();
+      message.success("Terms and conditions updated successfully!");
+      setIsModalOpen(false);
+    } catch (error) {
+      message.error("Failed to update Terms and conditions.");
+    }
   };
+
+  if (isLoadingSetting) return <p>Loading Terms and conditions...</p>;
+  if (isError) return <p>Failed to load Terms and conditions.</p>;
 
   return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">Terms & Conditions</h2>
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">Terms and conditions</h2>
         <GradientButton
           onClick={showModal}
-          className="w-60 bg-secondary text-white h-10"
+          className="h-10 text-white w-60 bg-secondary"
         >
-          Edit Terms & Conditions
+          Edit Terms and Conditions
         </GradientButton>
       </div>
 
-      <div className="saved-content mt-6 border p-6 rounded-lg bg-white">
-        <div
-          dangerouslySetInnerHTML={{ __html: termsContent }}
-          className="prose max-w-none"
-        />
+      <div className="p-6 rounded-lg bg-primary">
+        <div className="p-6 mt-6 bg-white border rounded-lg saved-content">
+          <div
+            dangerouslySetInnerHTML={{ __html: termsContent }}
+            className="prose max-w-none"
+          />
+        </div>
       </div>
 
       <Modal
-        title="Update Terms & Conditions"
+        title="Update Terms and conditions"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -63,16 +80,18 @@ const TermsAndCondition = () => {
           <Button
             key="cancel"
             onClick={handleCancel}
-            className="bg-red-500 text-white mr-2 py-5"
+            className="py-5 mr-2 text-white bg-red-500"
+            disabled={isUpdating}
           >
             Cancel
           </Button>,
           <GradientButton
             key="submit"
             onClick={handleOk}
-            className="bg-secondary text-white"
+            className="text-white bg-secondary"
+            disabled={isUpdating}
           >
-            Update Terms & Conditions
+            {isUpdating ? "Updating..." : "Update Terms and conditions"}
           </GradientButton>,
         ]}
       >
@@ -81,9 +100,7 @@ const TermsAndCondition = () => {
             <JoditEditor
               ref={editor}
               value={termsContent}
-              onChange={(newContent) => {
-                setTermsContent(newContent);
-              }}
+              onChange={setTermsContent}
             />
           </div>
         )}
@@ -92,4 +109,4 @@ const TermsAndCondition = () => {
   );
 };
 
-export default TermsAndCondition;
+export default TermsAndConditions;

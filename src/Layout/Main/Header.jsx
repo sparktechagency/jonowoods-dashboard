@@ -52,8 +52,8 @@ const Header = () => {
         }
 
         console.log("🔌 Attempting to connect to socket server...");
-        // socketRef.current = io("http://10.0.60.126:7000", {
-        socketRef.current = io("http://69.62.67.86:7000", {
+        socketRef.current = io("http://10.0.60.126:7000", {
+        // socketRef.current = io("http://69.62.67.86:7000", {
           auth: { token },
           transports: ["websocket"],
           reconnection: true,

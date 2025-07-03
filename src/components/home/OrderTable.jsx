@@ -38,8 +38,8 @@ const OrderTable = () => {
     },
     {
       title: "Plan Running",
-      dataIndex: "packagename",
-      key: "packagename",
+      dataIndex: "packageName",
+      key: "packageName",
       align: "center",
       render: (text) => <span>{text || "N/A"}</span>,
     },
