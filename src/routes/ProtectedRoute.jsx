@@ -6,7 +6,7 @@ const PrivateRoute = ({ children }) => {
   const location = useLocation();
 
   const token = localStorage.getItem("token");
-  console.log(token);
+  // console.log(token);
 
   if (!token) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;

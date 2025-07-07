@@ -14,6 +14,7 @@ import {
   useUpdateDailyChallengeMutation,
 } from "../../redux/apiSlices/dailyChallangeApi";
 import VideoUploadSystem from "../common/VideoUploade";
+import { useGetAllVideosQuery } from "../../redux/apiSlices/videoApi";
 
 const TodayVideos = () => {
   // Initialize all the hooks at the component level
@@ -21,6 +22,9 @@ const TodayVideos = () => {
   const [updateDailyChallenge] = useUpdateDailyChallengeMutation();
   const [deleteDailyChallenge] = useDeleteDailyChallegeMutation();
   const [updateComingSoon] = useUpdateComingSoonMutation();
+  const {data}=useGetAllVideosQuery()
+ const allVideo=data?.data 
+ console.log(allVideo)
 
   // Define categories for today's videos
   const categories = [
@@ -44,6 +48,7 @@ const TodayVideos = () => {
 
   return (
     <div>
+
       <VideoUploadSystem pageType="daily-challenge" apiHooks={apiHooks} />
     </div>
   );
