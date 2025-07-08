@@ -87,7 +87,7 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
         >
           <Input placeholder="Write Category Title" />
         </Form.Item>
-        <Form.Item
+        {/* <Form.Item
           name="categoryType"
           label="Category Type"
           rules={[{ required: true, message: "Please select category type!" }]}
@@ -96,7 +96,7 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
             <Select.Option value="class">Class</Select.Option>
             <Select.Option value="course">Course</Select.Option>
           </Select>
-        </Form.Item>
+        </Form.Item> */}
         <Form.Item name="thumbnail" label="Thumbnail">
           <div className="bg-gray-100 p-1 rounded">
             <img

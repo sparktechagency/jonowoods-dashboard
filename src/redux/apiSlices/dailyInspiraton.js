@@ -55,6 +55,56 @@ const dailyInspirationApi = api.injectEndpoints({
       }),
       invalidatesTags: ["DailyInspiration"],
     }),
+    
+    // NEW: Schedule Daily Inspiration
+    scheduleDailyInspiration: builder.mutation({
+      query: (scheduleData) => ({
+        url: "/admin/dailyInspiration/schedule",
+        method: "POST",
+        body: scheduleData,
+      }),
+      invalidatesTags: ["DailyInspiration"],
+    }),
+    
+    // NEW: Get Daily Inspiration Library
+    getDailyInspirationLibrary: builder.query({
+      query: (params) => ({
+        url: "/admin/dailyInspiration/library",
+        method: "GET",
+        params,
+      }),
+      transformResponse: (response) => {
+        return {
+          data: response.data || [],
+          pagination: response.pagination || {
+            total: 0,
+            current: 1,
+            pageSize: 10,
+          },
+        };
+      },
+      providesTags: ["DailyInspirationLibrary"],
+    }),
+    
+    // NEW: Get scheduled Daily Inspiration
+    getScheduledDailyInspiration: builder.query({
+      query: (params) => ({
+        url: "/admin/dailyInspiration/scheduled",
+        method: "GET",
+        params,
+      }),
+      transformResponse: (response) => {
+        return {
+          data: response.data || [],
+          pagination: response.pagination || {
+            total: 0,
+            current: 1,
+            pageSize: 10,
+          },
+        };
+      },
+      providesTags: ["DailyInspirationScheduled"],
+    }),
   }),
 });
 
@@ -65,4 +115,8 @@ export const {
   useUpdateDailyInspirationMutation,
   useDeleteDailyInspirationMutation,
   useUpdateDailyInspirationStatusMutation,
+  // New exports
+  useScheduleDailyInspirationMutation,
+  useGetDailyInspirationLibraryQuery,
+  useGetScheduledDailyInspirationQuery,
 } = dailyInspirationApi;

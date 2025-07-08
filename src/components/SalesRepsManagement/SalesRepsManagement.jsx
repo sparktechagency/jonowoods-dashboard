@@ -42,7 +42,7 @@ const CategoryManagement = () => {
     name: category.name,
     description: category.description || "",
     thumbnail: category.thumbnail,
-    categoryType: category.categoryType,
+    // categoryType: category.categoryType,
     subCategory: category.subCategory || [],
     videoCount: category.videoCount || 0,
     createdAt: category.createdAt,

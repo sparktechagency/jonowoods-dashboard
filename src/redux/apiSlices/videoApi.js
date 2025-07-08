@@ -159,6 +159,81 @@ const videoApi = api.injectEndpoints({
      
       providesTags: ["SubCategories"],
     }),
+    
+    // NEW: Get all videos in the library
+    getLibraryVideos: builder.query({
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args) {
+          args.forEach((arg) => {
+            params.append(arg.name, arg.value);
+          });
+        }
+        
+        return {
+          url: "/admin/videos/library",
+          method: "GET",
+          params,
+        };
+      },
+      transformResponse: (response) => {
+        return {
+          data: response.data || [],
+          pagination: response.pagination || {
+            total: 0,
+            current: 1,
+            pageSize: 10,
+          },
+        };
+      },
+      providesTags: ["VideoLibrary"],
+    }),
+    
+    // NEW: Schedule a video for daily challenge or inspiration
+    scheduleVideo: builder.mutation({
+      query: (data) => {
+        return {
+          url: "/admin/videos/schedule",
+          method: "POST",
+          body: data,
+        };
+      },
+      invalidatesTags: ["Videos", "VideoLibrary", "DailyChallenge", "DailyInspiration"],
+    }),
+    
+    // NEW: Create a challenge with multiple videos
+    createChallenge: builder.mutation({
+      query: (data) => {
+        return {
+          url: "/admin/challenge/create-with-videos",
+          method: "POST",
+          body: data,
+        };
+      },
+      invalidatesTags: ["DailyChallenge", "VideoLibrary"],
+    }),
+    
+    // NEW: Get scheduled videos
+    getScheduledVideos: builder.query({
+      query: ({ type, page = 1, limit = 10 }) => {
+        return {
+          url: `/admin/videos/scheduled/${type}`,
+          method: "GET",
+          params: { page, limit },
+        };
+      },
+      transformResponse: (response) => {
+        return {
+          data: response.data || [],
+          pagination: response.pagination || {
+            total: 0,
+            current: 1,
+            pageSize: 10,
+          },
+        };
+      },
+      providesTags: (result, error, { type }) => [type === "challenge" ? "DailyChallenge" : "DailyInspiration"],
+    }),
   }),
 });
 
@@ -175,4 +250,9 @@ export const {
   useUpdateVideoOrderMutation,
   // useGetCategoryQuery,
   useGetSubCategoryByIdQuery,
+  // NEW exports for library management
+  useGetLibraryVideosQuery,
+  useScheduleVideoMutation,
+  useCreateChallengeMutation,
+  useGetScheduledVideosQuery,
 } = videoApi;
