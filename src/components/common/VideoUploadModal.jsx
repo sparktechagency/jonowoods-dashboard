@@ -9,9 +9,11 @@ import {
   message,
   Tag,
   Image,
+  DatePicker,
 } from "antd";
-import { InboxOutlined, DeleteOutlined } from "@ant-design/icons";
+import { InboxOutlined, DeleteOutlined, CalendarOutlined } from "@ant-design/icons";
 import { getVideoAndThumbnail } from "./imageUrl";
+import moment from "moment";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -24,6 +26,7 @@ const VideoFormModal = ({
   editingItem,
   pageType,
   loading = false,
+  apiHooks,
 }) => {
   const [form] = Form.useForm();
   const [thumbnailFile, setThumbnailFile] = useState(null);
@@ -111,6 +114,8 @@ const VideoFormModal = ({
         category: editingItem.category,
         timeDuration: editingItem.timeDuration || editingItem.duration,
         description: editingItem.description,
+        // Parse publishAt as ISO string if it exists
+        publishAt: editingItem.publishAt ? moment(editingItem.publishAt) : null,
       });
 
       // Set equipments
@@ -255,7 +260,30 @@ const VideoFormModal = ({
             ? values.timeDuration
             : `${values.timeDuration} Min`;
 
-        // Create video data object
+        // Check if we're only scheduling an existing video
+        if (isEditMode && editingItem?._id && values.publishAt && !thumbnailFile && !videoFile) {
+          // If only updating the schedule for an existing video
+          const scheduleData = {
+            videoId: editingItem._id,
+            publishAt: values.publishAt.toISOString()
+          };
+          
+          // Call the scheduling API directly
+          try {
+            if (apiHooks && apiHooks.scheduleVideo) {
+              await apiHooks.scheduleVideo(scheduleData);
+              message.success("Video scheduled successfully!");
+              onClose();
+              return;
+            }
+          } catch (error) {
+            console.error("Error scheduling video:", error);
+            message.error("Failed to schedule video");
+            return;
+          }
+        }
+
+        // For normal uploads with or without scheduling
         const videoData = {
           title: values.title,
           category: values.category,
@@ -264,9 +292,13 @@ const VideoFormModal = ({
           description: values.description || "",
           equipment: equipments,
           equipments: equipments,
-          uploadDate:
-            editingItem?.uploadDate || new Date().toLocaleDateString(),
+          uploadDate: editingItem?.uploadDate || new Date().toLocaleDateString(),
         };
+
+        // Add publishAt if provided
+        if (values.publishAt) {
+          videoData.publishAt = values.publishAt.toISOString();
+        }
 
         // Create FormData
         const formDataToSend = new FormData();
@@ -290,7 +322,7 @@ const VideoFormModal = ({
         );
       }
     },
-    [thumbnailFile, videoFile, editingItem, equipments, onSubmit, isEditMode]
+    [thumbnailFile, videoFile, editingItem, equipments, onSubmit, isEditMode, apiHooks]
   );
 
   return (
@@ -344,6 +376,20 @@ const VideoFormModal = ({
               placeholder="Duration will be auto-detected from video"
               className="h-12"
               readOnly={!!videoDuration}
+            />
+          </Form.Item>
+
+          {/* Publish At (Schedule) - Added new field */}
+          <Form.Item
+            name="publishAt"
+            label="Publish At (Schedule)"
+            help="Leave empty for immediate publishing"
+          >
+            <DatePicker 
+              showTime 
+              placeholder="Select date and time to publish" 
+              className="h-12 w-full" 
+              format="YYYY-MM-DDTHH:mm:ss.SSS[Z]"
             />
           </Form.Item>
 
@@ -475,13 +521,13 @@ const VideoFormModal = ({
           <TextArea rows={4} placeholder="Add video description (optional)" />
         </Form.Item>
 
-        {/* Submit & Cancel Buttons */}
+        {/* Submit & Cancel Buttons - Keep on right side */}
         <Form.Item>
           <div className="flex justify-end space-x-4">
             <Button
               onClick={onClose}
               disabled={loading}
-              className=" py-6 px-10"
+              className="py-6 px-10"
             >
               Cancel
             </Button>

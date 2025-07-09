@@ -57,9 +57,18 @@ const dailyInspirationApi = api.injectEndpoints({
     }),
     
     // NEW: Schedule Daily Inspiration
+    // scheduleDailyInspiration: builder.mutation({
+    //   query: (scheduleData) => ({
+    //     url: "/admin/dailyInspiration/schedule",
+    //     method: "POST",
+    //     body: scheduleData,
+    //   }),
+    //   invalidatesTags: ["DailyInspiration"],
+    // }),
+
     scheduleDailyInspiration: builder.mutation({
       query: (scheduleData) => ({
-        url: "/admin/dailyInspiration/schedule",
+        url: "/admin/dailyInspiration/schedule-create",
         method: "POST",
         body: scheduleData,
       }),

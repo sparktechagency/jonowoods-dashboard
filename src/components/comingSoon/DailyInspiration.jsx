@@ -39,6 +39,7 @@ const DailyInspirationPage = () => {
   // Get all videos and scheduled videos - using the all videos API
   const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
   const { data: scheduledData, isLoading: scheduledLoading, refetch: refetchScheduled } = useGetScheduledDailyInspirationQuery();
+  console.log(scheduledData)
   
   const allVideos = allVideosData?.data || [];
   const scheduledVideos = scheduledData?.data || [];
@@ -68,10 +69,7 @@ const DailyInspirationPage = () => {
 
       const scheduleData = {
         videoId: videoId,
-        scheduleDate: scheduleDate.format("YYYY-MM-DD"),
-        scheduleTime: scheduleDate.format("HH:mm:ss"),
-        isRandom: false,
-        category: "Daily Inspiration"
+        publishAt: scheduleDate.toISOString()
       };
 
       // Call API to schedule video using the endpoint
@@ -123,7 +121,7 @@ const DailyInspirationPage = () => {
           return <Tag color="red">Not Scheduled</Tag>;
         }
         
-        const scheduleDate = new Date(`${scheduleInfo.scheduleDate} ${scheduleInfo.scheduleTime}`);
+        const scheduleDate = new Date(scheduleInfo.publishAt);
         const isScheduled = scheduleDate > new Date();
         
         return (
@@ -132,7 +130,7 @@ const DailyInspirationPage = () => {
               {isScheduled ? "Scheduled" : "Published"}
             </Tag>
             <p className="text-xs mt-1">
-              {moment(scheduleInfo.scheduleDate).format("MMM DD, YYYY")} at {scheduleInfo.scheduleTime}
+              {moment(scheduleInfo.publishAt).format("MMM DD, YYYY")}
             </p>
           </div>
         );
@@ -166,6 +164,7 @@ const DailyInspirationPage = () => {
                 setSchedulingDate(date);
               }}
               className="mr-2"
+              format="YYYY-MM-DDTHH:mm:ss.SSS[Z]"
             />
             <Button 
               type="primary"

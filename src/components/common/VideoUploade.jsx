@@ -66,7 +66,7 @@ const VideoUploadSystem = ({ pageType, apiHooks, additionalButtons = <></> }) =>
     isLoading: isLoadingItems,
     refetch,
   } = useGetAllQuery(queryParams);
-
+console.log(itemsData)
   // Fetch single item for details and edit form
   const { data: itemDetails, isLoading: isLoadingDetails } = useGetByIdQuery(
     selectedItemId,
@@ -296,9 +296,9 @@ const VideoUploadSystem = ({ pageType, apiHooks, additionalButtons = <></> }) =>
         ),
       },
       {
-        title: "Created Date",
-        dataIndex: "createdAt",
-        key: "createdAt",
+        title: "Publish Date",
+        dataIndex: "publishAt",
+        key: "publishAt",
         align: "center",
         render: (text) => moment(text).format("L"),
       },
@@ -329,14 +329,14 @@ const VideoUploadSystem = ({ pageType, apiHooks, additionalButtons = <></> }) =>
               icon={<EyeOutlined style={{ color: "#55f" }} />}
               onClick={() => showDetailsModal(record)}
             />
-            <Switch
+            {/* <Switch
               size="small"
               checked={record.status === "active"}
               onChange={(checked) => handleStatusChange(checked, record)}
               style={{
                 backgroundColor: record.status === "active" ? "red" : "gray",
               }}
-            />
+            /> */}
             <Button
               type="text"
               icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
@@ -443,6 +443,7 @@ const VideoUploadSystem = ({ pageType, apiHooks, additionalButtons = <></> }) =>
         editingItem={itemDetails?.data}
         loading={isSubmitting}
         pageType={pageType}
+        apiHooks={apiHooks}
       />
 
       {/* Video Details Modal */}
