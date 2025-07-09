@@ -7,42 +7,40 @@ import {
   useUpdateDailyInspirationMutation, 
   useUpdateDailyInspirationStatusMutation,
   useScheduleDailyInspirationMutation,
-  useGetDailyInspirationLibraryQuery,
   useGetScheduledDailyInspirationQuery
 } from "../../redux/apiSlices/dailyInspiraton";
 import VideoUploadSystem from "../common/VideoUploade";
 import { 
-  useGetLibraryVideosQuery,
-  useScheduleVideoMutation,
-  useGetScheduledVideosQuery
+  useGetAllVideosQuery,
+  useScheduleVideoMutation
 } from "../../redux/apiSlices/videoApi";
-import { Button, Tabs, Modal, Form, Input, Select, DatePicker, Space, Table, message, Tag } from "antd";
-import { PlusOutlined, CalendarOutlined, UploadOutlined } from "@ant-design/icons";
+import { Button, Modal, Form, Input, Select, DatePicker, Space, Table, message, Tag, Card, Popover } from "antd";
+import { PlusOutlined, CalendarOutlined, UploadOutlined, DeleteOutlined } from "@ant-design/icons";
 import GradientButton from "../common/GradiantButton";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
 
 const { Option } = Select;
-const { TabPane } = Tabs;
 
 const DailyInspirationPage = () => {
   const [createDailyInspiration] = useCreateDailyInspirationMutation();
   const [updateDailyInspiration] = useUpdateDailyInspirationMutation();
   const [deleteDailyInspiration] = useDeleteDailyInspirationMutation();
+  const [updateDailyInspirationStatus] = useUpdateDailyInspirationStatusMutation();
 
-  // New API hooks
+  // Schedule API hooks
   const [scheduleDailyInspiration] = useScheduleDailyInspirationMutation();
   
-  // State for inspiration scheduling and video selection
+  // State for scheduling
   const [schedulingModalVisible, setSchedulingModalVisible] = useState(false);
-  const [schedulingForm] = Form.useForm();
-  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [schedulingVideo, setSchedulingVideo] = useState(null);
+  const [schedulingDate, setSchedulingDate] = useState(null);
   
-  // Get Daily Inspiration library and scheduled videos
-  const { data: libraryData, isLoading: libraryLoading } = useGetDailyInspirationLibraryQuery({ category: "Daily Inspiration" });
-  const { data: scheduledData, isLoading: scheduledLoading } = useGetScheduledDailyInspirationQuery();
+  // Get all videos and scheduled videos - using the all videos API
+  const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
+  const { data: scheduledData, isLoading: scheduledLoading, refetch: refetchScheduled } = useGetScheduledDailyInspirationQuery();
   
-  const allVideos = libraryData?.data || [];
+  const allVideos = allVideosData?.data || [];
   const scheduledVideos = scheduledData?.data || [];
 
   const categories = ["Daily Inspiration"];
@@ -51,29 +49,37 @@ const DailyInspirationPage = () => {
     useGetAllQuery: useGetAllDailyInspirationQuery,
     useGetByIdQuery: useGetDailyInspirationByIdQuery,
     deleteItem: deleteDailyInspiration,
-    updateItemStatus: updateDailyInspiration,
+    updateItemStatus: updateDailyInspirationStatus,
     createItem: createDailyInspiration,
-    updateItem: useUpdateDailyInspirationStatusMutation,
+    updateItem: updateDailyInspiration,
     categories,
+    // Add scheduling capability to the VideoUploadSystem component
+    scheduleVideo: scheduleDailyInspiration,
+    refetchScheduled: refetchScheduled
   };
 
   // Handle scheduling Daily Inspiration videos
-  const handleScheduleVideo = async (values) => {
+  const handleScheduleVideo = async (videoId, scheduleDate) => {
     try {
+      if (!videoId || !scheduleDate) {
+        message.error("Please select a video and schedule date");
+        return;
+      }
+
       const scheduleData = {
-        videoId: values.videoId,
-        scheduleDate: values.scheduleDate.format("YYYY-MM-DD"),
-        scheduleTime: values.scheduleDate.format("HH:mm:ss"),
-        isRandom: values.isRandom === "yes",
+        videoId: videoId,
+        scheduleDate: scheduleDate.format("YYYY-MM-DD"),
+        scheduleTime: scheduleDate.format("HH:mm:ss"),
+        isRandom: false,
         category: "Daily Inspiration"
       };
 
-      // Call API to schedule video using the new endpoint
+      // Call API to schedule video using the endpoint
       await scheduleDailyInspiration(scheduleData);
       message.success("Daily Inspiration video scheduled successfully!");
-      schedulingForm.resetFields();
-      setSchedulingModalVisible(false);
-      setSelectedVideo(null);
+      setSchedulingVideo(null);
+      setSchedulingDate(null);
+      refetchScheduled();
     } catch (error) {
       console.error("Failed to schedule Daily Inspiration:", error);
       message.error("Failed to schedule Daily Inspiration video");
@@ -84,121 +90,135 @@ const DailyInspirationPage = () => {
   const availableVideos = allVideos.filter(video => 
     !scheduledVideos.some(scheduled => scheduled.videoId === video._id)
   );
-
-  // Preview selected video
-  const VideoPreview = () => {
-    if (!selectedVideo) return null;
-    
-    return (
-      <div className="mt-4 p-4 border rounded-lg">
-        <h3 className="mb-2 font-bold">Selected Video Preview</h3>
-        <div className="flex items-start">
-          <img 
-            src={getVideoAndThumbnail(selectedVideo.thumbnailUrl)} 
-            alt={selectedVideo.title} 
-            style={{ width: 120, height: 68, objectFit: "cover" }}
-            className="mr-4 rounded"
-          />
+  
+  // Videos Table Columns for the modal
+  const videoColumns = [
+    {
+      title: "Video",
+      dataIndex: "title",
+      key: "video",
+      render: (_, record) => (
+        <div className="flex items-center">
+          {record.thumbnailUrl && (
+            <img 
+              src={getVideoAndThumbnail(record.thumbnailUrl)} 
+              alt={record.title || "Thumbnail"} 
+              style={{ width: 80, height: 45, objectFit: "cover" }}
+              className="mr-3 rounded"
+            />
+          )}
           <div>
-            <p className="font-medium">{selectedVideo.title}</p>
-            <p className="text-sm text-gray-600">Duration: {selectedVideo.duration}</p>
-            <Tag color="blue">{selectedVideo.category}</Tag>
+            <p className="font-medium">{record.title || "Untitled Video"}</p>
+            {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>}
           </div>
         </div>
-      </div>
-    );
-  };
+      )
+    },
+    {
+      title: "Schedule Status",
+      key: "scheduleStatus",
+      render: (_, record) => {
+        const scheduleInfo = scheduledVideos.find(sv => sv.videoId === record._id);
+        if (!scheduleInfo) {
+          return <Tag color="red">Not Scheduled</Tag>;
+        }
+        
+        const scheduleDate = new Date(`${scheduleInfo.scheduleDate} ${scheduleInfo.scheduleTime}`);
+        const isScheduled = scheduleDate > new Date();
+        
+        return (
+          <div>
+            <Tag color={isScheduled ? "orange" : "green"}>
+              {isScheduled ? "Scheduled" : "Published"}
+            </Tag>
+            <p className="text-xs mt-1">
+              {moment(scheduleInfo.scheduleDate).format("MMM DD, YYYY")} at {scheduleInfo.scheduleTime}
+            </p>
+          </div>
+        );
+      }
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => {
+        const isScheduled = scheduledVideos.some(sv => sv.videoId === record._id);
+        
+        if (isScheduled) {
+          return (
+            <Button 
+              type="default"
+              size="small"
+              disabled
+            >
+              Scheduled
+            </Button>
+          );
+        }
+        
+        return (
+          <div className="flex items-center space-x-2">
+            <DatePicker 
+              showTime 
+              size="small"
+              onChange={(date) => {
+                setSchedulingVideo(record._id);
+                setSchedulingDate(date);
+              }}
+              className="mr-2"
+            />
+            <Button 
+              type="primary"
+              size="small"
+              icon={<CalendarOutlined />}
+              onClick={() => handleScheduleVideo(record._id, schedulingDate)}
+              disabled={!schedulingDate || schedulingVideo !== record._id}
+            >
+              Schedule
+            </Button>
+          </div>
+        );
+      }
+    }
+  ];
 
   return (
     <div>
-      <div className="flex justify-end mb-4">
-        <GradientButton 
-          onClick={() => setSchedulingModalVisible(true)}
-          icon={<CalendarOutlined />}
-        >
-          Schedule Inspiration Video
-        </GradientButton>
-      </div>
+      {/* Add New Content button with Schedule Video button next to it */}
+      <VideoUploadSystem 
+        pageType="daily-inspiration" 
+        apiHooks={apiHooks}
+        additionalButtons={
+          <GradientButton 
+            onClick={() => setSchedulingModalVisible(true)}
+            icon={<CalendarOutlined />}
+            className="ml-2"
+          >
+            Schedule Video
+          </GradientButton>
+        }
+      />
       
-      <VideoUploadSystem pageType="daily-inspiration" apiHooks={apiHooks} />
-
-      {/* Video Scheduling Modal */}
+      {/* Schedule Videos Modal */}
       <Modal
-        title="Schedule Daily Inspiration"
-        visible={schedulingModalVisible}
+        title="Schedule Daily Inspiration Videos"
+        open={schedulingModalVisible}
         onCancel={() => {
           setSchedulingModalVisible(false);
-          setSelectedVideo(null);
-          schedulingForm.resetFields();
+          setSchedulingVideo(null);
+          setSchedulingDate(null);
         }}
         footer={null}
-        width={700}
+        width={900}
       >
-        <Form
-          form={schedulingForm}
-          layout="vertical"
-          onFinish={handleScheduleVideo}
-        >
-          <Form.Item
-            name="videoId"
-            label="Select Video"
-            rules={[{ required: true, message: "Please select a Daily Inspiration video" }]}
-          >
-            <Select 
-              placeholder="Select a video for Daily Inspiration" 
-              onChange={(value) => {
-                const video = availableVideos.find(v => v._id === value);
-                setSelectedVideo(video);
-              }}
-              optionFilterProp="children"
-              showSearch
-              loading={libraryLoading}
-            >
-              {availableVideos.map(video => (
-                <Option key={video._id} value={video._id}>
-                  {video.title}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-
-          <VideoPreview />
-
-          <Form.Item
-            name="scheduleDate"
-            label="Schedule Date & Time"
-            rules={[{ required: true, message: "Please select schedule date and time" }]}
-          >
-            <DatePicker showTime style={{ width: "100%" }} />
-          </Form.Item>
-
-          <Form.Item
-            name="isRandom"
-            label="Rotation Mode"
-            rules={[{ required: true, message: "Please select rotation mode" }]}
-            help="Random rotation will shuffle through all videos before repeating"
-          >
-            <Select placeholder="Select rotation mode">
-              <Option value="yes">Random Rotation</Option>
-              <Option value="no">Sequential Rotation</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item className="text-right">
-            <Space>
-              <Button onClick={() => {
-                setSchedulingModalVisible(false);
-                setSelectedVideo(null);
-                schedulingForm.resetFields();
-              }}>
-                Cancel
-              </Button>
-              <Button type="primary" htmlType="submit" loading={scheduledLoading}>
-                Schedule Video
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
+        <Table 
+          columns={videoColumns}
+          dataSource={allVideos}
+          rowKey="_id"
+          loading={allVideosLoading || scheduledLoading}
+          pagination={{ pageSize: 8 }}
+          locale={{ emptyText: "No videos found" }}
+        />
       </Modal>
     </div>
   );

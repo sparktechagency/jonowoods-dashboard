@@ -70,12 +70,12 @@ const CategoryTable = ({
       align: "center",
       render: (createdAt) => moment(createdAt).format("L"),
     },
-    {
-      title: "Category Type",
-      dataIndex: "categoryType",
-      key: "categoryType",
-      align: "center",
-    },
+    // {
+    //   title: "Category Type",
+    //   dataIndex: "categoryType",
+    //   key: "categoryType",
+    //   align: "center",
+    // },
     {
       title: "Status",
       dataIndex: "status",

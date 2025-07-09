@@ -25,7 +25,8 @@ import Spinner from "./Spinner";
 import { getVideoAndThumbnail } from "./imageUrl";
 import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
 
-const VideoUploadSystem = ({ pageType, apiHooks }) => {
+// Added additionalButtons prop with default empty fragment
+const VideoUploadSystem = ({ pageType, apiHooks, additionalButtons = <></> }) => {
   const {
     useGetAllQuery,
     useGetByIdQuery,
@@ -403,14 +404,18 @@ const VideoUploadSystem = ({ pageType, apiHooks }) => {
           </Space>
         </div>
 
-        <GradientButton
-          type="primary"
-          onClick={showFormModal}
-          className="py-5"
-          icon={<PlusOutlined />}
-        >
-          Add New {getPageTitle()} Content
-        </GradientButton>
+        <div className="flex items-center">
+          <GradientButton
+            type="primary"
+            onClick={showFormModal}
+            className="py-5"
+            icon={<PlusOutlined />}
+          >
+            Add New {getPageTitle()} Content
+          </GradientButton>
+          {/* Render additionalButtons next to the Add New button */}
+          {additionalButtons}
+        </div>
       </div>
 
       {/* Table */}

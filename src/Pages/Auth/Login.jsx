@@ -5,6 +5,7 @@ import FormItem from "../../components/common/FormItem";
 import image4 from "../../assets/image4.png";
 import { useLoginMutation } from "../../redux/apiSlices/authSlice";
 import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -17,10 +18,20 @@ const Login = () => {
         email: values.email,
         password: values.password,
       }).unwrap();
-      // console.log(response.data.accessToken);
+      
       if (response.success) {
-        localStorage.setItem("token", response.data.accessToken);
-        navigate("/");
+        const token = response.data.accessToken;
+        localStorage.setItem("token", token);
+        
+        // Decode token to get user role
+        const decoded = jwtDecode(token);
+        
+        // Navigate based on role
+        if (decoded.role === "ADMIN") {
+          navigate("/category-management");
+        } else if (decoded.role === "SUPER_ADMIN") {
+          navigate("/");
+        }
       }
     } catch (err) {
       console.error("Login failed:", err);
@@ -28,10 +39,11 @@ const Login = () => {
     }
   };
 
-  // Optional: Handle success case with useEffect
+  // Optional: Handle success case with useEffect (no longer needed as we handle navigation in onFinish)
   useEffect(() => {
     if (isSuccess && data?.token) {
-      navigate("/");
+      // This effect is no longer needed as we handle navigation in onFinish
+      // Keeping it for backward compatibility
     }
   }, [isSuccess, data, navigate]);
 

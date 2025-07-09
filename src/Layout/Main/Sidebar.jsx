@@ -91,11 +91,13 @@ const Sidebar = () => {
       key: "/",
       icon: renderIcon(Dashboard, "/"),
       label: <Link to="/">Overview</Link>,
+      roles: ["SUPER_ADMIN"],
     },
     {
       key: "/user-management",
       icon: renderIcon(UserManagement, "/user-management"),
       label: <Link to="/user-management">Users Management</Link>,
+      roles: ["SUPER_ADMIN"],
     },
     {
       key: "/category-management",
@@ -136,6 +138,7 @@ const Sidebar = () => {
       key: "/subcription-user",
       icon: renderIcon(LoginCredentials, "/subcription-user"),
       label: <Link to="/subcription-user">Subscription Users</Link>,
+      roles: ["SUPER_ADMIN"],
     },
     {
       key: "/inventory",
