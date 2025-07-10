@@ -2,24 +2,24 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   Modal,
-  Switch,
- 
   message,
   Tag,
   Card,
   Row,
   Col,
   Pagination,
+  Tooltip,
 } from "antd";
 import {
   EditOutlined,
-  EyeOutlined,
   PlusOutlined,
   DeleteOutlined,
   FileTextOutlined,
   FileImageOutlined,
   VideoCameraOutlined,
   CalendarOutlined,
+  ClockCircleOutlined,
+  PlayCircleOutlined,
 } from "@ant-design/icons";
 import GradientButton from "../common/GradiantButton";
 import moment from "moment/moment";
@@ -38,40 +38,52 @@ import Spinner from "../common/Spinner";
 const PostManagementSystem = () => {
   // State management
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
-  const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [selectedItemId, setSelectedItemId] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Filtering and pagination
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState("all");
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-
+  const [pageSize, setPageSize] = useState(12);
+  const [total, setTotal] = useState(0);
 
   // API calls
   const {
     data: postsData,
     isLoading: isLoadingPosts,
     refetch,
-  } = useGetAllPostsQuery();
+  } = useGetAllPostsQuery({
+    page: currentPage,
+    limit: pageSize,
+  });
 
-  const { data: postDetails, isLoading: isLoadingDetails } =
-    useGetPostByIdQuery(selectedItemId, { skip: !selectedItemId });
-  console.log("Post Details:", postDetails);
+  const { data: postDetails } = useGetPostByIdQuery(selectedItemId, { 
+    skip: !selectedItemId 
+  });
 
   const [deletePost] = useDeletePostMutation();
-  const [updatePostStatus] = useUpdatePostStatusMutation();
   const [createPost] = useCreatePostMutation();
   const [updatePost] = useUpdatePostMutation();
+
+  const posts = postsData?.data || [];
+  
+  // Update total count when data changes
+  useEffect(() => {
+    if (postsData?.pagination) {
+      setTotal(postsData.pagination.total || 0);
+    }
+  }, [postsData]);
+
+  // Get current editing post data
+  const currentEditingPost = React.useMemo(() => {
+    if (!editingId) return null;
+    return postDetails?.data || posts.find((post) => post._id === editingId) || null;
+  }, [editingId, postDetails, posts]);
 
   // Handle edit button click
   const handleEdit = async (id) => {
     setSelectedItemId(id);
     setEditingId(id);
-    // Wait a moment to ensure the post details are fetched
     setTimeout(() => {
       setIsFormModalVisible(true);
     }, 100);
@@ -84,31 +96,11 @@ const PostManagementSystem = () => {
     setIsFormModalVisible(true);
   };
 
-  // Show details modal
-  const showDetailsModal = (record) => {
-    setSelectedItemId(record._id);
-    setIsDetailsModalVisible(true);
+  // Handle pagination change
+  const handlePaginationChange = (page, size) => {
+    setCurrentPage(page);
+    setPageSize(size);
   };
-
-  const posts = postsData?.data || [];
- 
-  // Get current editing post data
-  const currentEditingPost = React.useMemo(() => {
-    if (!editingId) return null;
-
-    // First try to get from API response
-    if (postDetails?.data) {
-      return postDetails.data;
-    }
-
-    // Fallback to posts array
-    return posts.find((post) => post._id === editingId) || null;
-  }, [editingId, postDetails, posts]);
-
-  // Reset to first page when filters change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [statusFilter, typeFilter]);
 
   // Form submit handler
   const handleFormSubmit = useCallback(
@@ -148,11 +140,11 @@ const PostManagementSystem = () => {
   const handleDeletePost = useCallback(
     (id) => {
       Modal.confirm({
-        title: "Are you sure you want to delete this post?",
-        content: "This action cannot be undone.",
-        okText: "Yes",
+        title: "Delete Post",
+        content: "Are you sure you want to delete this post? This action cannot be undone.",
+        okText: "Delete",
         okType: "danger",
-        cancelText: "No",
+        cancelText: "Cancel",
         onOk: async () => {
           try {
             await deletePost(id);
@@ -168,8 +160,6 @@ const PostManagementSystem = () => {
     [deletePost, refetch]
   );
 
- 
-
   // Modal close handlers
   const handleFormModalClose = () => {
     setIsFormModalVisible(false);
@@ -177,311 +167,219 @@ const PostManagementSystem = () => {
     setSelectedItemId(null);
   };
 
-  const handleDetailsModalClose = () => {
-    setIsDetailsModalVisible(false);
-    setSelectedItemId(null);
+  // Get post type configuration
+  const getPostTypeConfig = (type) => {
+    const configs = {
+      text: {
+        icon: <FileTextOutlined />,
+        color: "#1890ff",
+        tagColor: "blue",
+        label: "TEXT"
+      },
+      image: {
+        icon: <FileImageOutlined />,
+        color: "#52c41a",
+        tagColor: "green",
+        label: "IMAGE"
+      },
+      video: {
+        icon: <VideoCameraOutlined />,
+        color: "#ff4d4f",
+        tagColor: "red",
+        label: "VIDEO"
+      }
+    };
+    return configs[type] || configs.text;
   };
 
-
-
-  
- 
-
-  // Get post type icon
-  const getPostTypeIcon = (type) => {
-    switch (type) {
-      case "text":
-        return (
-          <FileTextOutlined style={{ color: "#1890ff", fontSize: "18px" }} />
-        );
-      case "image":
-        return (
-          <FileImageOutlined style={{ color: "#52c41a", fontSize: "18px" }} />
-        );
-      case "video":
-        return (
-          <VideoCameraOutlined style={{ color: "#ff4d4f", fontSize: "18px" }} />
-        );
-      default:
-        return <FileTextOutlined style={{ fontSize: "18px" }} />;
-    }
+  // Strip HTML tags from content
+  const stripHtmlTags = (html) => {
+    if (!html) return "";
+    const tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
   };
-
-  // Get post type color
-  const getPostTypeColor = (type) => {
-    switch (type) {
-      case "text":
-        return "blue";
-      case "image":
-        return "green";
-      case "video":
-        return "red";
-      default:
-        return "default";
-    }
-  };
-
- 
 
   // Render post preview
-  const renderPostPreview = (record) => {
-    if (record.type === "text") {
+  const renderPostPreview = (post) => {
+    if (post.type === "text") {
+      const content = stripHtmlTags(post.title || post.content || "");
       return (
-        <div
-          style={{
-            height: "120px",
-            padding: "12px",
-            backgroundColor: "#f8f9fa",
-            borderRadius: "8px",
-            overflow: "hidden",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "14px",
-              color: "#666",
-              textAlign: "center",
-              lineHeight: "1.4",
-            }}
-            dangerouslySetInnerHTML={{
-              __html: record.content
-                ? record.content.substring(0, 100) + "..."
-                : record.title
-                ? record.title.substring(0, 100) + "..."
-                : "No content",
-            }}
-          />
-        </div>
-      );
-    } else if (record.type === "image" && record.thumbnailUrl) {
-      return (
-        <img
-          src={getVideoAndThumbnail(record.thumbnailUrl)}
-          alt="preview"
-          style={{
-            width: "100%",
-            height: "120px",
-            objectFit: "cover",
-            borderRadius: "8px",
-          }}
-        />
-      );
-    } else if (record.type === "video" && record.thumbnailUrl) {
-      return (
-        <div style={{ position: "relative" }}>
-          <img
-            src={getVideoAndThumbnail(record.thumbnailUrl)}
-            alt="thumbnail"
-            style={{
-              width: "100%",
-              height: "120px",
-              objectFit: "cover",
-              borderRadius: "8px",
-            }}
-          />
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              backgroundColor: "rgba(0,0,0,0.6)",
-              borderRadius: "50%",
-              width: "40px",
-              height: "40px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <VideoCameraOutlined style={{ color: "white", fontSize: "18px" }} />
+        <div className="h-32 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg p-4 flex items-center justify-center">
+          <div className="text-center">
+            <FileTextOutlined className="text-2xl text-blue-500 mb-2" />
+            <p className="text-sm text-gray-600 line-clamp-2">
+              {content.substring(0, 80)}...
+            </p>
           </div>
         </div>
       );
+    } 
+    
+    if (post.type === "image" && post.thumbnailUrl) {
+      return (
+        <div className="relative h-32 overflow-hidden rounded-lg">
+          <img
+            src={getVideoAndThumbnail(post.thumbnailUrl)}
+            alt="preview"
+            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          />
+          <div className="absolute top-2 right-2 bg-white bg-opacity-90 rounded-full p-1">
+            <FileImageOutlined className="text-green-500 text-sm" />
+          </div>
+        </div>
+      );
+    } 
+    
+    if (post.type === "video" && post.thumbnailUrl) {
+      return (
+        <div className="relative h-32 overflow-hidden rounded-lg">
+          <img
+            src={getVideoAndThumbnail(post.thumbnailUrl)}
+            alt="thumbnail"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
+            <div className="bg-white bg-opacity-90 rounded-full p-2">
+              <PlayCircleOutlined className="text-red-500 text-xl" />
+            </div>
+          </div>
+          {post.duration && (
+            <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+              {post.duration}s
+            </div>
+          )}
+        </div>
+      );
     }
+    
     return (
-      <div
-        style={{
-          height: "120px",
-          backgroundColor: "#f0f0f0",
-          borderRadius: "8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#999",
-        }}
-      >
-        No preview available
+      <div className="h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+        <div className="text-center text-gray-400">
+          <FileTextOutlined className="text-2xl mb-2" />
+          <p className="text-sm">No preview</p>
+        </div>
       </div>
     );
   };
-
 
   if (isLoadingPosts) {
     return <Spinner />;
   }
 
   return (
-    <div>
-      {/* Header with filters and add button */}
-      <div className="flex justify-end items-center mb-6">
-     
-
+    <div className="p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Post Management</h1>
+          <p className="text-gray-600 mt-1">
+            Manage your posts and content
+          </p>
+        </div>
         <GradientButton
           type="primary"
           onClick={showFormModal}
-          className="py-5"
+          className="px-6 py-2 h-10"
           icon={<PlusOutlined />}
         >
           Add New Post
         </GradientButton>
       </div>
 
-      {/* Cards Grid */}
-      <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
+      {/* Posts Grid */}
+      <Row gutter={[24, 24]} className="mb-8">
         {posts.map((post, index) => {
           const actualIndex = (currentPage - 1) * pageSize + index + 1;
+          const typeConfig = getPostTypeConfig(post.type);
+          const title = stripHtmlTags(post.title || "Untitled Post");
+          
           return (
             <Col xs={24} sm={12} md={8} lg={6} key={post._id}>
               <Card
                 hoverable
-                style={{
-                  height: "100%",
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-                bodyStyle={{ padding: "16px" }}
-                cover={renderPostPreview(post)}
+                className="h-full  shadow-md hover:shadow-lg transition-all duration-300 border-0"
+                style={{ borderRadius: "16px" }}
+                bodyStyle={{ padding: "20px" }}
+                cover={
+                  <div className="p-4 pb-0">
+                    {renderPostPreview(post)}
+                  </div>
+                }
                 actions={[
-                  <Button
-                    type="text"
-                    icon={<EditOutlined style={{ color: "#f55" }} />}
-                    onClick={() => handleEdit(post._id)}
-                    title="Edit"
-                  />,
-                  <Button
-                    type="text"
-                    icon={<EyeOutlined style={{ color: "#55f" }} />}
-                    onClick={() => showDetailsModal(post)}
-                    title="View Details"
-                  />,
-                  <Switch
-                    size="small"
-                    checked={post.status === "active"}
-                    onChange={(checked) => handleStatusChange(checked, post)}
-                    style={{
-                      backgroundColor:
-                        post.status === "active" ? "red" : "gray",
-                    }}
-                    title="Toggle Status"
-                  />,
-                  <Button
-                    type="text"
-                    icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
-                    onClick={() => handleDeletePost(post._id)}
-                    title="Delete"
-                  />,
+                  <Tooltip title="Edit Post">
+                    <Button
+                      type="text"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEdit(post._id)}
+                      className="text-black hover:text-blue-600 hover:bg-blue-50"
+                    />
+                  </Tooltip>,
+                  <Tooltip title="Delete Post">
+                    <Button
+                      type="text"
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDeletePost(post._id)}
+                      className="text-red-600 hover:text-red-600 hover:bg-red-50"
+                    />
+                  </Tooltip>
                 ]}
               >
                 {/* Card Header */}
-                <div style={{ marginBottom: "12px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        color: "#999",
-                        fontWeight: "500",
-                      }}
-                    >
-                      #{actualIndex}
-                    </span>
-                    <Tag
-                      icon={getPostTypeIcon(post.type)}
-                      color={getPostTypeColor(post.type)}
-                      style={{ margin: 0 }}
-                    >
-                      {post.type?.toUpperCase()}
-                    </Tag>
-                  </div>
-
-                  {/* Title */}
-                  <h4
-                    style={{
-                      margin: 0,
-                      fontSize: "16px",
-                      fontWeight: "600",
-                      color: "#333",
-                      lineHeight: "1.3",
-                      height: "40px",
-                      overflow: "hidden",
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                    }}
-                    dangerouslySetInnerHTML={{
-                      __html: post.title || "Untitled Post",
-                    }}
-                  />
-                </div>
-
-                {/* Card Footer */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                    }}
-                  >
-                    <CalendarOutlined
-                      style={{ color: "#999", fontSize: "12px" }}
-                    />
-                    <span style={{ fontSize: "12px", color: "#666" }}>
-                      {moment(post.createdAt).format("MMM DD, YYYY")}
-                    </span>
-                  </div>
-
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+                    #{actualIndex}
+                  </span>
                   <Tag
-                    color={post.status === "active" ? "success" : "error"}
-                    style={{ margin: 0, fontSize: "11px" }}
+                    icon={typeConfig.icon}
+                    color={typeConfig.tagColor}
+                    className="m-0 font-medium"
                   >
-                    {post.status === "active" ? "Active" : "Inactive"}
+                    {typeConfig.label}
                   </Tag>
                 </div>
 
-                {/* Duration for video posts */}
-                {post.type === "video" && post.duration && (
-                  <div style={{ marginTop: "8px", textAlign: "center" }}>
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        color: "#666",
-                        backgroundColor: "#f0f0f0",
-                        padding: "2px 8px",
-                        borderRadius: "12px",
-                      }}
-                    >
-                      Duration: {post.duration}s
-                    </span>
+                {/* Title */}
+                <h3 className="text-lg font-semibold text-gray-800 mb-4 line-clamp-2 min-h-[3.5rem]">
+                  {title}
+                </h3>
+
+                {/* Post Info */}
+                <div className="space-y-2">
+                  {/* Created Date */}
+                  <div className="flex items-center text-sm text-gray-500">
+                    <CalendarOutlined className="mr-2" />
+                    <span>Created {moment(post.createdAt).format("MMM DD, YYYY")}</span>
                   </div>
-                )}
+
+                  {/* Publish Date */}
+                  {post.publishAt && (
+                    <div className="flex items-center text-sm text-blue-600">
+                      <ClockCircleOutlined className="mr-2" />
+                      <span>
+                        Publish {moment(post.publishAt).format("MMM DD, YYYY")}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Status */}
+                  <div className="flex justify-between items-center pt-2">
+                    <Tag
+                      color={post.status === "active" ? "success" : "default"}
+                      className="font-medium"
+                    >
+                      {post.status === "active" ? "Active" : "Inactive"}
+                    </Tag>
+                    
+                    {post.description && (
+                      <Tooltip title={post.description}>
+                        <Button type="text" size="small" className="text-gray-400">
+                          <FileTextOutlined />
+                        </Button>
+                      </Tooltip>
+                    )}
+                  </div>
+                </div>
               </Card>
             </Col>
           );
@@ -490,26 +388,44 @@ const PostManagementSystem = () => {
 
       {/* Empty State */}
       {posts.length === 0 && (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "60px 20px",
-            backgroundColor: "#fafafa",
-            borderRadius: "12px",
-            border: "1px dashed #d9d9d9",
-          }}
-        >
-          <FileTextOutlined
-            style={{ fontSize: "48px", color: "#d9d9d9", marginBottom: "16px" }}
-          />
-          <h3 style={{ color: "#999", margin: 0 }}>No posts found</h3>
-          <p style={{ color: "#999", marginTop: "8px" }}>
-            Create your first post to get started
-          </p>
+        <div className="text-center py-16">
+          <div className="bg-gray-50 rounded-2xl p-12 max-w-md mx-auto">
+            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileTextOutlined className="text-2xl text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No posts yet</h3>
+            <p className="text-gray-600 mb-6">
+              Create your first post to get started with content management
+            </p>
+            <GradientButton
+              type="primary"
+              onClick={showFormModal}
+              icon={<PlusOutlined />}
+              className="px-6 py-2"
+            >
+              Create First Post
+            </GradientButton>
+          </div>
         </div>
       )}
 
-
+      {/* Pagination */}
+      {posts.length > 0 && total > pageSize && (
+        <div className="flex justify-center mt-8">
+          <Pagination
+            current={currentPage}
+            pageSize={pageSize}
+            total={total}
+            onChange={handlePaginationChange}
+            showSizeChanger
+            showQuickJumper
+            showTotal={(total, range) => 
+              `${range[0]}-${range[1]} of ${total} posts`
+            }
+            className="bg-white px-4 py-2 rounded-lg shadow-sm"
+          />
+        </div>
+      )}
 
       {/* Post Form Modal */}
       <PostFormModal
@@ -521,14 +437,6 @@ const PostManagementSystem = () => {
         postType={currentEditingPost?.type || null}
         isEditing={!!editingId}
       />
-
-      {/* Post Details Modal */}
-      {/* <PostDetailsModal
-        visible={isDetailsModalVisible}
-        onCancel={handleDetailsModalClose}
-        currentPost={postDetails?.data}
-        loading={isLoadingDetails}
-      /> */}
     </div>
   );
 };

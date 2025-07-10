@@ -115,7 +115,7 @@ const challengeApi = api.injectEndpoints({
     // POST: Schedule video rotation
     scheduleVideoRotation: builder.mutation({
       query: (scheduleData) => ({
-        url: `/admin/challenge/schedule`,
+        url: `/admin/challenge/schedule-create`,
         method: "POST",
         body: scheduleData,
       }),

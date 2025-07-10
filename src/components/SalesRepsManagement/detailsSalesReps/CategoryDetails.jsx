@@ -185,7 +185,7 @@ const SubCategoryManagement = () => {
   };
 
   const handleBackFromDetails = () => {
-    navigate("/salesRepsManage");
+    navigate("/category-management");
   };
 
   const formattedSubCategories = subCategories
@@ -231,7 +231,7 @@ const SubCategoryManagement = () => {
             Back
           </Button>
           <div>
-            <h2>Category Management</h2>
+            <h2>Course Management</h2>
           </div>
         </div>
       </div>
@@ -247,9 +247,9 @@ const SubCategoryManagement = () => {
         </div>
         <div className="ml-6">
           <h3 className="text-xl mb-2">
-            Category Name: {selectedCategory.name}
+            Course Name: {selectedCategory.name}
           </h3>
-          <p>Category Type: {selectedCategory.categoryType}</p>
+          {/* <p>Category Type: {selectedCategory.categoryType}</p> */}
           <p>Total Video: {selectedCategory.videoCount}</p>
         </div>
       </div>
@@ -264,7 +264,7 @@ const SubCategoryManagement = () => {
           onClick={() => showSubCategoryModal()}
           className="bg-red-500 py-5"
         >
-          Add New Sub Category
+          Add New Course
         </Button>
       </div>
 

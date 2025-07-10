@@ -39,10 +39,44 @@ const DailyInspirationPage = () => {
   // Get all videos and scheduled videos - using the all videos API
   const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
   const { data: scheduledData, isLoading: scheduledLoading, refetch: refetchScheduled } = useGetScheduledDailyInspirationQuery();
-  console.log(scheduledData)
+  // console.log(scheduledData)
   
   const allVideos = allVideosData?.data || [];
   const scheduledVideos = scheduledData?.data || [];
+
+  // Sort videos by publishAt date (chronologically, earliest first)
+  const sortedVideos = React.useMemo(() => {
+    // Create a map for quick lookup of scheduled video info
+    const scheduledMap = new Map();
+    scheduledVideos.forEach(sv => {
+      scheduledMap.set(sv.videoId, sv);
+    });
+
+    // Map all videos with their schedule info
+    const videosWithScheduleInfo = allVideos.map(video => {
+      return {
+        ...video,
+        isScheduled: video.publishAt ? true : false,
+      };
+    });
+
+    // Sort videos by publishAt date (chronologically, earliest first)
+    return videosWithScheduleInfo.sort((a, b) => {
+      // If both have publishAt dates, compare them
+      if (a.publishAt && b.publishAt) {
+        const dateA = new Date(a.publishAt);
+        const dateB = new Date(b.publishAt);
+        return dateA - dateB; // ascending order (earliest first)
+      }
+      
+      // If only one has a publishAt date, the one with date comes first
+      if (a.publishAt && !b.publishAt) return -1;
+      if (!a.publishAt && b.publishAt) return 1;
+      
+      // If neither has a publishAt date, keep original order
+      return 0;
+    });
+  }, [allVideos]);
 
   const categories = ["Daily Inspiration"];
 
@@ -116,21 +150,20 @@ const DailyInspirationPage = () => {
       title: "Schedule Status",
       key: "scheduleStatus",
       render: (_, record) => {
-        const scheduleInfo = scheduledVideos.find(sv => sv.videoId === record._id);
-        if (!scheduleInfo) {
+        if (!record.publishAt) {
           return <Tag color="red">Not Scheduled</Tag>;
         }
         
-        const scheduleDate = new Date(scheduleInfo.publishAt);
-        const isScheduled = scheduleDate > new Date();
+        const scheduleDate = new Date(record.publishAt);
+        const isUpcoming = scheduleDate > new Date();
         
         return (
           <div>
-            <Tag color={isScheduled ? "orange" : "green"}>
-              {isScheduled ? "Scheduled" : "Published"}
+            <Tag color={isUpcoming ? "orange" : "green"}>
+              {isUpcoming ? "Scheduled" : "Published"}
             </Tag>
             <p className="text-xs mt-1">
-              {moment(scheduleInfo.publishAt).format("MMM DD, YYYY")}
+              {moment(record.publishAt).format("MMM DD, YYYY HH:mm")}
             </p>
           </div>
         );
@@ -140,9 +173,8 @@ const DailyInspirationPage = () => {
       title: "Actions",
       key: "actions",
       render: (_, record) => {
-        const isScheduled = scheduledVideos.some(sv => sv.videoId === record._id);
-        
-        if (isScheduled) {
+        // Check if video already has a publishAt date
+        if (record.publishAt) {
           return (
             <Button 
               type="default"
@@ -212,7 +244,7 @@ const DailyInspirationPage = () => {
       >
         <Table 
           columns={videoColumns}
-          dataSource={allVideos}
+          dataSource={sortedVideos}
           rowKey="_id"
           loading={allVideosLoading || scheduledLoading}
           pagination={{ pageSize: 8 }}

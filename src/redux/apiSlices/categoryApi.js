@@ -99,6 +99,18 @@ const categorySlice = api.injectEndpoints({
         { type: "Category", id: arg.id },
       ],
     }),
+
+    // Update category order endpoint
+    updateCategoryOrder: builder.mutation({
+      query: (categoryOrder) => {
+        return {
+          url: `/admin/category/shuffle`,
+          method: "POST",
+          body: categoryOrder ,
+        };
+      },
+    
+    }),
   }),
 });
 
@@ -110,4 +122,5 @@ export const {
   useGetSingleCategoryQuery,
   useGetByCategoryAllVideosQuery,
   useToggleCategoryStatusMutation,
+  useUpdateCategoryOrderMutation,
 } = categorySlice;

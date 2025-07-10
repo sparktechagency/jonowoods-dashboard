@@ -47,12 +47,12 @@ const SubCategoryTable = ({
       align: "center",
       render: (videoCount) => videoCount || 0,
     },
-    {
-      title: "Created Date",
-      dataIndex: "createdDate",
-      key: "createdDate",
-      align: "center",
-    },
+    // {
+    //   title: "Created Date",
+    //   dataIndex: "createdDate",
+    //   key: "createdDate",
+    //   align: "center",
+    // },
 
     {
       title: "Status",

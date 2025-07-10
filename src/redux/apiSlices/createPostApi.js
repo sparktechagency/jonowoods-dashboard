@@ -14,9 +14,15 @@ const postApi = api.injectEndpoints({
 
     // GET: Retrieve all posts with pagination and filtering
     getAllPosts: builder.query({
-      query: () => {
+      query: ({ page = 1, limit = 10 } = {}) => {
+        let queryParams = new URLSearchParams();
+        
+        // Add pagination parameters
+        queryParams.append('page', page);
+        queryParams.append('limit', limit);
+        
         return {
-          url: `/admin/post/managment`,
+          url: `/admin/post/managment?${queryParams.toString()}`,
           method: "GET",
         };
       },

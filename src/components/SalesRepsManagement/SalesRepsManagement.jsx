@@ -11,9 +11,12 @@ import {
   useUpdateCategoryMutation,
   useDeleteCategoryMutation,
   useToggleCategoryStatusMutation,
+  useUpdateCategoryOrderMutation,
 } from "../../redux/apiSlices/categoryApi";
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
+import DraggableCategoryList from "./DraggableCategoryList";
+import { SaveOutlined, TableOutlined, AppstoreOutlined } from "@ant-design/icons";
 
 const CategoryManagement = () => {
   const navigate = useNavigate();
@@ -22,6 +25,9 @@ const CategoryManagement = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [filterType, setFilterType] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [viewMode, setViewMode] = useState("table"); // "table" or "grid"
+  const [orderedCategories, setOrderedCategories] = useState([]);
+  const [hasOrderChanges, setHasOrderChanges] = useState(false);
 
   // Fetch data using RTK Query
   const { data: categoryData, isLoading: categoryLoading } =
@@ -32,6 +38,7 @@ const CategoryManagement = () => {
   const [updateCategory] = useUpdateCategoryMutation();
   const [deleteCategory] = useDeleteCategoryMutation();
   const [toggleCategoryStatus] = useToggleCategoryStatusMutation();
+  const [updateCategoryOrder] = useUpdateCategoryOrderMutation();
 
   // Extract the actual data from the API responses
   const categories = categoryData?.data || [];
@@ -48,6 +55,13 @@ const CategoryManagement = () => {
     createdAt: category.createdAt,
     status: category.status,
   }));
+
+  // Initialize orderedCategories when categories are loaded
+  React.useEffect(() => {
+    if (formattedCategories.length > 0 && orderedCategories.length === 0) {
+      setOrderedCategories(formattedCategories);
+    }
+  }, [formattedCategories]);
 
   const showModal = (record = null) => {
     setEditingCategory(record);
@@ -97,6 +111,7 @@ const CategoryManagement = () => {
   const showCategoryDetails = (record) => {
     navigate(`/subcategory-management/${record._id}`);
   };
+  
   const showAllVideos = (record) => {
     navigate(`/category-management/${record._id}`);
   };
@@ -120,34 +135,56 @@ const CategoryManagement = () => {
     });
   };
 
+  const handleStatusChange = (checked, record) => {
+    Modal.confirm({
+      title: `Are you sure you want to ${
+        checked ? "activate" : "deactivate"
+      } this category?`,
+      okText: "Yes",
+      okType: "danger", // this makes the OK button red
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await toggleCategoryStatus({
+            id: record._id,
+            status: checked ? "active" : "inactive",
+          }).unwrap();
+          message.success(
+            `Category ${checked ? "activated" : "deactivated"} successfully!`
+          );
+        } catch (error) {
+          console.error("Error updating category status:", error);
+          message.error("Failed to update category status. Please try again.");
+        }
+      },
+    });
+  };
 
+  const handleReorder = (reorderedCategories) => {
+    setOrderedCategories(reorderedCategories);
+    setHasOrderChanges(true);
+  };
 
-const handleStatusChange = (checked, record) => {
-  Modal.confirm({
-    title: `Are you sure you want to ${
-      checked ? "activate" : "deactivate"
-    } this category?`,
-    okText: "Yes",
-    okType: "danger", // this makes the OK button red
-    cancelText: "No",
-    onOk: async () => {
-      try {
-        await toggleCategoryStatus({
-          id: record._id,
-          status: checked ? "active" : "inactive",
-        }).unwrap();
-        message.success(
-          `Category ${checked ? "activated" : "deactivated"} successfully!`
-        );
-      } catch (error) {
-        console.error("Error updating category status:", error);
-        message.error("Failed to update category status. Please try again.");
-      }
-    },
-  });
-};
+  const handleUpdateOrder = async () => {
+    try {
+      // Create an array of category IDs in the new order
+      const categoryOrder = orderedCategories.map((category, index) => ({
+        _id: category._id,
+        serial:category.serial,
+      }));
+console.log(categoryOrder)
+      await updateCategoryOrder(categoryOrder).unwrap();
+      message.success("Category order updated successfully!");
+      setHasOrderChanges(false);
+    } catch (error) {
+      console.error("Error updating category order:", error);
+      message.error("Failed to update category order. Please try again.");
+    }
+  };
 
-
+  const toggleViewMode = () => {
+    setViewMode(viewMode === "table" ? "grid" : "table");
+  };
 
   const getFilteredCategories = () => {
     return formattedCategories.filter((cat) => {
@@ -195,10 +232,26 @@ const handleStatusChange = (checked, record) => {
     );
   }
 
+  const filteredCategories = getFilteredCategories();
+
   return (
     <div className="p-4">
       <div>
         <div className="flex justify-end mb-4 items-center">
+          <div>
+            <Button
+              type="default"
+              icon={viewMode === "table" ? <AppstoreOutlined /> : <TableOutlined />}
+              onClick={toggleViewMode}
+              style={{
+                borderRadius: "4px",
+                marginRight: "10px",
+              }}
+              className="bg-red-600 text-white h-10 border-none"
+            >
+              {viewMode === "table" ? "Do Shuffle" : "Table View"}
+            </Button>
+          </div>
           <div className="flex items-center">
             <Dropdown overlay={filterMenu} trigger={["click"]}>
               <Button
@@ -233,14 +286,28 @@ const handleStatusChange = (checked, record) => {
           </div>
         </div>
 
-        <CategoryTable
-          categories={getFilteredCategories()}
-          onEdit={showModal}
-          onView={showCategoryDetails}
-          onStatusChange={handleStatusChange}
-          onDelete={handleDelete}
-          onViewVideos={showAllVideos}
-        />
+        {viewMode === "table" ? (
+          <CategoryTable
+            categories={filteredCategories}
+            onEdit={showModal}
+            onView={showCategoryDetails}
+            onStatusChange={handleStatusChange}
+            onDelete={handleDelete}
+            onViewVideos={showAllVideos}
+          />
+        ) : (
+          <DraggableCategoryList
+            categories={orderedCategories}
+            onReorder={handleReorder}
+            onEdit={showModal}
+            onView={showCategoryDetails}
+            onStatusChange={handleStatusChange}
+            onDelete={handleDelete}
+            onViewVideos={showAllVideos}
+            hasChanges={hasOrderChanges}
+            onUpdateOrder={handleUpdateOrder}
+          />
+        )}
       </div>
 
       {/* Add/Edit Category Modal */}

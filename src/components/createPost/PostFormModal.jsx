@@ -9,10 +9,12 @@ import {
   message,
   Image,
   InputNumber,
+  DatePicker,
 } from "antd";
 import { InboxOutlined, DeleteOutlined } from "@ant-design/icons";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import JoditTextEditor from "./JoditEditor";
+import moment from "moment";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -34,6 +36,7 @@ const PostFormModal = ({
   const [postType, setPostType] = useState("text");
   const [textContent, setTextContent] = useState("");
   const [videoDuration, setVideoDuration] = useState("");
+  const [publishDate, setPublishDate] = useState(null);
 
   const isEditMode = !!editingItem;
 
@@ -69,6 +72,17 @@ const PostFormModal = ({
         setVideoDuration("");
       }
 
+      // Set publish date if available
+      if (editingItem.publishAt) {
+        fieldsToSet.publishAt = moment(editingItem.publishAt);
+        setPublishDate(moment(editingItem.publishAt));
+      } else {
+        // Default to tomorrow
+        const tomorrow = moment().add(1, 'days');
+        fieldsToSet.publishAt = tomorrow;
+        setPublishDate(tomorrow);
+      }
+
       form.setFieldsValue(fieldsToSet);
 
       setPostType(editingItem.type || "text");
@@ -84,6 +98,10 @@ const PostFormModal = ({
       setPostType("text");
       setTextContent("");
       setVideoDuration("");
+      // Default to tomorrow for new posts
+      const tomorrow = moment().add(1, 'days');
+      setPublishDate(tomorrow);
+      form.setFieldsValue({ publishAt: tomorrow });
     }
   }, [editingItem, visible, form]);
 
@@ -183,7 +201,7 @@ const PostFormModal = ({
         message.error("Please select an image");
         return false;
       }
-      if (isEditMode && !imageFile && !editingItem?.imageUrl) {
+      if (isEditMode && !imageFile && !editingItem?.imageUrl && !editingItem?.thumbnailUrl) {
         message.error("Please select an image");
         return false;
       }
@@ -220,6 +238,7 @@ const PostFormModal = ({
           type: postType,
           uploadDate:
             editingItem?.uploadDate || new Date().toLocaleDateString(),
+          publishAt: values.publishAt ? values.publishAt.toISOString() : null,
         };
 
         if (postType === "text") {
@@ -269,6 +288,23 @@ const PostFormModal = ({
     ]
   );
 
+  // Helper function to get the correct image URL
+  const getImageSource = (item) => {
+    if (!item) return "";
+    
+    // For image posts
+    if (item.imageUrl) {
+      return getVideoAndThumbnail(item.imageUrl);
+    }
+    
+    // For video posts or any post with thumbnailUrl
+    if (item.thumbnailUrl) {
+      return getVideoAndThumbnail(item.thumbnailUrl);
+    }
+    
+    return "";
+  };
+
   return (
     <Modal
       title={getFormTitle()}
@@ -279,14 +315,16 @@ const PostFormModal = ({
       destroyOnClose
     >
       <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
-        <Form.Item
+       <div className="flex justify-between gap-10 items-center">
+       <Form.Item
           name="type"
           label="Post Type"
           rules={[{ required: true, message: "Please select post type" }]}
+          className="w-full"
         >
           <Select
             placeholder="Select Post Type"
-            className="h-12"
+            className="h-12 w-full"
             onChange={handlePostTypeChange}
             value={postType}
           >
@@ -297,6 +335,23 @@ const PostFormModal = ({
             ))}
           </Select>
         </Form.Item>
+
+        {/* Publish Date field - for all post types */}
+        <Form.Item
+          name="publishAt"
+          label="Publish Date & Time"
+          rules={[{ required: true, message: "Please select publish date" }]} 
+          className="w-full"
+        >
+          <DatePicker 
+            showTime 
+            format="YYYY-MM-DD HH:mm:ss"
+            placeholder="Select Date and Time"
+            className="h-12 w-full"
+            onChange={(date) => setPublishDate(date)}
+          />
+        </Form.Item>
+       </div>
 
         {/* Title field - only for image and video posts */}
         {(postType === "image" || postType === "video") && (
@@ -311,14 +366,16 @@ const PostFormModal = ({
 
         {/* Text content - only for text posts */}
         {postType === "text" && (
-          <Form.Item label="Post Content" required>
-            <JoditTextEditor
-              ref={editor}
-              value={textContent}
-              tabIndex={1}
-              onBlur={(newContent) => setTextContent(newContent)}
-              onChange={(newContent) => setTextContent(newContent)}
-            />
+          <Form.Item label="Post Content" required className="mb-6">
+            <div className="editor-wrapper custom-height-editor">
+              <JoditTextEditor
+                ref={editor}
+                value={textContent}
+                tabIndex={1}
+                onBlur={(newContent) => setTextContent(newContent)}
+                onChange={(newContent) => setTextContent(newContent)}
+              />
+            </div>
           </Form.Item>
         )}
 
@@ -334,13 +391,13 @@ const PostFormModal = ({
                 </p>
               )}
             </Dragger>
-            {(imageFile || editingItem?.imageUrl) && (
+            {(imageFile || (editingItem && (editingItem.imageUrl || editingItem.thumbnailUrl))) && (
               <div className="mt-2 text-center relative">
                 <Image
                   src={
                     imageFile
                       ? URL.createObjectURL(imageFile)
-                      : getVideoAndThumbnail(editingItem.imageUrl)
+                      : getImageSource(editingItem)
                   }
                   width={400}
                   height={200}

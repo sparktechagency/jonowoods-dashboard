@@ -117,12 +117,12 @@ const Sidebar = () => {
     {
       key: "/today-video",
       icon: renderIcon(VideoManagement, "/today-video"),
-      label: <Link to="/today-video"> Daily Challange's</Link>,
+      label: <Link to="/today-video">Challenge Management</Link>,
     },
     {
       key: "/daily-inspiration",
       icon: renderIcon(VideoManagement, "/daily-inspiration"),
-      label: <Link to="/daily-inspiration"> Daily Inspiration's</Link>,
+      label: <Link to="/daily-inspiration"> Daily Inspiration</Link>,
     },
     {
       key: "/create-post",
@@ -133,6 +133,7 @@ const Sidebar = () => {
       key: "/loyalty-program",
       icon: renderIcon(SubscriptionManagement, "/loyalty-program"),
       label: <Link to="/loyalty-program">Subscription package</Link>,
+      roles: ["SUPER_ADMIN"],
     },
     {
       key: "/subcription-user",
@@ -159,7 +160,7 @@ const Sidebar = () => {
     {
       key: "/contactUs",
       icon: renderIcon(LoginCredentials, "/contactUs"),
-      label: <Link to="/contactUs">Contact Us Users</Link>,
+      label: <Link to="/contactUs">Contact Us</Link>,
     },
     {
       key: "subMenuSetting",
@@ -169,6 +170,7 @@ const Sidebar = () => {
         {
           key: "/profile",
           label: <Link to="/profile">Update Profile</Link>,
+          roles: ["SUPER_ADMIN"],
         },
         {
           key: "/terms-and-conditions",

@@ -55,8 +55,8 @@ const VideoCard = ({
   serialNumber,
 }) => {
   return (
-    <Card
-      className={`video-card ${isDragging ? "dragging" : ""}`}
+    <div
+      className={`video-card ${isDragging ? "dragging" : ""} py-2`}
       style={{
         marginBottom: 10,
         borderRadius: 12,
@@ -169,7 +169,7 @@ const VideoCard = ({
           </Space>
         </Col>
       </Row>
-    </Card>
+    </div>
   );
 };
 
@@ -664,7 +664,7 @@ const CourseDetails = () => {
               }}
               className="h-10"
             >
-              Card View
+              Do Shuffle
             </Button>
             <Button
               type="default"
