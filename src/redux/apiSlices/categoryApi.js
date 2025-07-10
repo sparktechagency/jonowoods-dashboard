@@ -71,7 +71,7 @@ const categorySlice = api.injectEndpoints({
           method:"GET"
         };
       }  ,
-      providesTags: (result, error, id) => [{ type: "Category", id }],
+      providesTags:["Categories"],
     }),
 
     // Single category endpoint
@@ -109,7 +109,19 @@ const categorySlice = api.injectEndpoints({
           body: categoryOrder ,
         };
       },
-    
+    invalidatesTags: ["Categories"],
+    }),
+
+
+    videoCopyOthersCategory: builder.mutation({
+      query: (scheduleData) => {
+        return {
+          url: `/videos/copy-video`,
+          method: "POST",
+          body: scheduleData ,
+        };
+      },
+      invalidatesTags: ["Categories"],
     }),
   }),
 });
@@ -123,4 +135,5 @@ export const {
   useGetByCategoryAllVideosQuery,
   useToggleCategoryStatusMutation,
   useUpdateCategoryOrderMutation,
+  useVideoCopyOthersCategoryMutation,
 } = categorySlice;

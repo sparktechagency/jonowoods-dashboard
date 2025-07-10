@@ -17,10 +17,12 @@ import {
   DeleteOutlined,
   DownOutlined,
   PlusOutlined,
+  CalendarOutlined,
 } from "@ant-design/icons";
 import moment from "moment/moment";
-import { useGetByCategoryAllVideosQuery, useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
-import { useDeleteVideoMutation, useGetVideoByIdQuery, useUpdateVideoStatusMutation } from "../../redux/apiSlices/videoApi";
+import { useGetByCategoryAllVideosQuery, useGetCategoryQuery, useVideoCopyOthersCategoryMutation } from "../../redux/apiSlices/categoryApi";
+import { useDeleteVideoMutation, useGetAllVideosQuery, useGetVideoByIdQuery, useUpdateVideoStatusMutation } from "../../redux/apiSlices/videoApi";
+import { useScheduleDailyInspirationMutation } from "../../redux/apiSlices/dailyInspiraton";
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
 import GradientButton from "../common/GradiantButton";
@@ -28,19 +30,14 @@ import VideoFormModal from "../retailerManagement/VideoFormModal";
 import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 
-// import VideoFormModal from "./VideoFormModal";
-// import VideoDetailsModal from "./VideoDetailsModal";
-// import GradientButton from "../common/GradiantButton";
-// import { Filtering } from "../common/Svg";
-// import Spinner from "../common/Spinner";
-// import { getVideoAndThumbnail } from "../common/imageUrl";
-
 const AllVideos = () => {
   const { categoryId } = useParams();
+  console.log(categoryId)
 
   // Modal and editing states
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
+  const [isScheduleModalVisible, setIsScheduleModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
   const [equipmentTags, setEquipmentTags] = useState([]);
@@ -51,8 +48,6 @@ const AllVideos = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-//   console.log("Category ID:", categoryId);
-
   // API calls
   const {
     data,
@@ -61,6 +56,10 @@ const AllVideos = () => {
     } = useGetByCategoryAllVideosQuery(categoryId);
     const { data: categoryData } = useGetCategoryQuery();
     const categories = categoryData?.data || [];
+    const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
+    const TotalVideo = allVideosData?.data || [];
+  // Schedule API
+  const [videoCopyOthersCategory] = useVideoCopyOthersCategoryMutation();
 
   const allVideos = data?.data?.videos || [];
   const paginationData = data?.data?.meta || {
@@ -144,6 +143,11 @@ const AllVideos = () => {
     setEquipmentTags([]);
   };
 
+  // Close schedule modal
+  const closeScheduleModal = () => {
+    setIsScheduleModalVisible(false);
+  };
+
   // After form submission, close modal and refresh list
   const handleFormSubmit = async () => {
     closeFormModal();
@@ -194,6 +198,28 @@ const AllVideos = () => {
     });
   };
 
+  // Handle adding video to Daily Inspiration
+  const handleAddToSchedule = async (video) => {
+    try {
+      if (!video || !categoryId) {
+        message.error("Video or category ID is missing");
+        return;
+      }
+
+      const scheduleData = {
+        videoId: video._id,
+        categoryId: categoryId,
+      };
+console.log(scheduleData)
+      await videoCopyOthersCategory(scheduleData);
+      message.success("Video added to Daily Inspiration successfully!");
+      setIsScheduleModalVisible(false);
+    } catch (error) {
+      console.error("Failed to add video to Daily Inspiration:", error);
+      message.error("Failed to add video to Daily Inspiration");
+    }
+  };
+
   // Pagination handler
   const handleTableChange = (paginationConfig) => {
     setCurrentPage(paginationConfig.current);
@@ -232,6 +258,46 @@ const AllVideos = () => {
       </Menu.Item>
     </Menu>
   );
+
+  // Schedule Modal Video Columns
+  const scheduleVideoColumns = [
+    {
+      title: "Video",
+      dataIndex: "title",
+      key: "video",
+      render: (_, record) => (
+        <div className="flex items-center">
+          {record.thumbnailUrl && (
+            <img 
+              src={getVideoAndThumbnail(record.thumbnailUrl)} 
+              alt={record.title || "Thumbnail"} 
+              style={{ width: 80, height: 45, objectFit: "cover" }}
+              className="mr-3 rounded"
+            />
+          )}
+          <div>
+            <p className="font-medium">{record.title || "Untitled Video"}</p>
+            {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>}
+            {record.category && <p className="text-xs text-gray-500">Category: {record.category}</p>}
+          </div>
+        </div>
+      )
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <Button 
+          type="primary"
+          size="small"
+          icon={<PlusOutlined />}
+          onClick={() => handleAddToSchedule(record)}
+        >
+          Add Video
+        </Button>
+      )
+    }
+  ];
 
   // Table columns
   const columns = [
@@ -278,7 +344,7 @@ const AllVideos = () => {
       align: "center",
     },
     {
-      title: "Sub Category",
+      title: "Course Name",
       dataIndex: "subCategory",
       key: "subCategory",
       align: "center",
@@ -406,14 +472,25 @@ const AllVideos = () => {
           </Dropdown>
         </Space>
 
-        <GradientButton
-          type="primary"
-          onClick={() => showFormModal()}
-          className="py-5"
-          icon={<PlusOutlined />}
-        >
-          Upload New Video
-        </GradientButton>
+        <Space>
+          <GradientButton
+            type="primary"
+            onClick={() => setIsScheduleModalVisible(true)}
+            className="py-5"
+            icon={<CalendarOutlined />}
+          >
+            Schedule Video
+          </GradientButton>
+          
+          <GradientButton
+            type="primary"
+            onClick={() => showFormModal()}
+            className="py-5"
+            icon={<PlusOutlined />}
+          >
+            Upload New Video
+          </GradientButton>
+        </Space>
       </div>
 
       <h2 style={{ marginBottom: 16 }}>All Videos</h2>
@@ -446,7 +523,7 @@ const AllVideos = () => {
         onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
         editingId={editingId}
-        categories={categories} // You may need to pass categories if required
+        categories={categories}
         equipmentTags={equipmentTags}
         setEquipmentTags={setEquipmentTags}
       />
@@ -457,6 +534,24 @@ const AllVideos = () => {
         onCancel={closeDetailsModal}
         currentVideo={currentVideo}
       />
+
+      {/* Schedule Videos Modal */}
+      <Modal
+        title="Add Videos to Daily Inspiration"
+        open={isScheduleModalVisible}
+        onCancel={closeScheduleModal}
+        footer={null}
+        width={900}
+      >
+        <Table 
+          columns={scheduleVideoColumns}
+          dataSource={TotalVideo}
+          rowKey="_id"
+          loading={isLoadingVideos}
+          pagination={{ pageSize: 8 }}
+          locale={{ emptyText: "No videos found" }}
+        />
+      </Modal>
     </div>
   );
 };

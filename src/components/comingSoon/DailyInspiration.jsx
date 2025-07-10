@@ -39,7 +39,8 @@ const DailyInspirationPage = () => {
   // Get all videos and scheduled videos - using the all videos API
   const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
   const { data: scheduledData, isLoading: scheduledLoading, refetch: refetchScheduled } = useGetScheduledDailyInspirationQuery();
-  // console.log(scheduledData)
+  console.log(scheduledData)
+  console.log(allVideosData)
   
   const allVideos = allVideosData?.data || [];
   const scheduledVideos = scheduledData?.data || [];
