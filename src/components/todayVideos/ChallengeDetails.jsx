@@ -6,7 +6,8 @@ import {
   useUpdateDailyChallengeMutation,
   useScheduleVideoRotationMutation,
   useCreateChallengeWithVideosMutation,
-  useGetDailyChallengeVideosQuery
+  useGetDailyChallengeVideosQuery,
+  useDeleteDailyChallengeVideoMutation
 } from "../../redux/apiSlices/dailyChallangeApi";
 import VideoUploadSystem from "../common/VideoUploade";
 import { 
@@ -29,7 +30,7 @@ const ChallengeDetails = () => {
   
   // Initialize all the hooks at the component level
   const [updateDailyChallenge] = useUpdateDailyChallengeMutation();
-  const [deleteDailyChallenge] = useDeleteDailyChallegeMutation();
+  const [deleteDailyChallengeVideo] = useDeleteDailyChallengeVideoMutation();
   const [scheduleVideoRotation] = useScheduleVideoRotationMutation();
   
   // State for scheduling
@@ -62,7 +63,7 @@ const ChallengeDetails = () => {
   const apiHooks = {
     useGetAllQuery: useGetDailyChallengeVideosQuery,
     useGetByIdQuery: useGetSingleDailyChallengeQuery,
-    deleteItem: deleteDailyChallenge, 
+    deleteItem: deleteDailyChallengeVideo, 
     updateItemStatus: updateDailyChallenge, 
     updateItem: updateDailyChallenge, 
     createItem: createChallengeWithVideos,
@@ -79,11 +80,27 @@ const ChallengeDetails = () => {
         return;
       }
   
+      // Debug: Log challenge details to see available fields
+      console.log("Challenge Details:", challengeDetails);
+      console.log("Challenge ID:", id);
+      
+      // For challenges, the challenge ID itself should be used as the categoryId
+      // This is because challenges are created as challenge-categories
+      const categoryId = id; // Use the challenge ID from URL params
+      
+      if (!categoryId) {
+        message.error("Challenge category not found. Please check challenge configuration.");
+        console.error("Available challenge fields:", Object.keys(challengeDetails || {}));
+        return;
+      }
+  
       const scheduleData = {
         videoId: videoId,
         publishAt: scheduleDate.toISOString(),
-        challengeId: id // Associate with this challenge
+        categoryId: categoryId // Use the challenge ID as categoryId
       };
+  
+      console.log("Scheduling data:", scheduleData);
   
       // Call API to schedule video
       await scheduleVideoRotation(scheduleData);

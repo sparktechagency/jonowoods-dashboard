@@ -279,13 +279,13 @@ const TodayVideos = () => {
       ellipsis: true,
       render: (text) => <p className="max-w-md truncate">{text}</p>,
     },
-    {
-      title: "Videos Count",
-      key: "videosCount",
-      render: (_, record) => (
-        <Tag color="blue">{record.videos?.length || 0} Videos</Tag>
-      ),
-    },
+    // {
+    //   title: "Videos Count",
+    //   key: "videosCount",
+    //   render: (_, record) => (
+    //     <Tag color="blue">{record.videos?.length || 0} Videos</Tag>
+    //   ),
+    // },
     {
       title: "Status",
       key: "status",
@@ -341,6 +341,9 @@ const TodayVideos = () => {
         loading={challengesLoading}
         pagination={{ pageSize: 8 }}
         locale={{ emptyText: "No challenges found" }}
+          className="custom-table"
+          size="small"
+          scroll={{ x: "max-content" }}
       />
 
       {/* Challenge Modal */}

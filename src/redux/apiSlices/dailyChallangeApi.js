@@ -93,6 +93,16 @@ const challengeApi = api.injectEndpoints({
         "DailyChallenge",
       ],
     }),
+    deleteDailyChallengeVideo: builder.mutation({
+      query: (id) => ({
+        url: `/admin/challenge/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: "DailyChallenge", id },
+        "DailyChallenge",
+      ],
+    }),
     
     // POST: Add video to challenge
     addVideoToChallenge: builder.mutation({
@@ -156,6 +166,7 @@ export const {
   useUpdateDailyChallengeStatusMutation,
   useGetChallengeVideosQuery,
   useAddVideoToChallengeMutation,
+  useDeleteDailyChallengeVideoMutation,
   useRemoveVideoFromChallengeMutation,
   useUpdateVideoOrderMutation,
   useScheduleVideoRotationMutation,
