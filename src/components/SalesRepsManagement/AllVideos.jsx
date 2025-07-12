@@ -537,7 +537,7 @@ console.log(scheduleData)
 
       {/* Schedule Videos Modal */}
       <Modal
-        title="Add Videos to Daily Inspiration"
+        title="Add Videos to library"
         open={isScheduleModalVisible}
         onCancel={closeScheduleModal}
         footer={null}

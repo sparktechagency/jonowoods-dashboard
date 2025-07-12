@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, Upload, Tag } from "antd";
-import { UploadOutlined, ReloadOutlined } from "@ant-design/icons";
+import { UploadOutlined, ReloadOutlined, PictureOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../../common/imageUrl";
 
 const { TextArea } = Input;
@@ -8,7 +8,9 @@ const { TextArea } = Input;
 const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
   const [thumbnailFile, setThumbnailFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("/api/placeholder/400/200");
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   // Equipment state
   const [equipmentInput, setEquipmentInput] = useState("");
@@ -29,17 +31,23 @@ const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
         // Set thumbnail preview URL using getImageUrl helper if thumbnail exists
         if (initialValues.thumbnail) {
           setPreviewUrl(getImageUrl(initialValues.thumbnail));
+          setImageLoaded(false);
+          setImageError(false);
         } else {
-          setPreviewUrl("/api/placeholder/400/200");
+          setPreviewUrl(null);
+          setImageLoaded(false);
+          setImageError(false);
         }
 
         // Clear thumbnail file because no new file selected yet
         setThumbnailFile(null);
       } else {
         form.resetFields();
-        setPreviewUrl("/api/placeholder/400/200");
+        setPreviewUrl(null);
         setThumbnailFile(null);
         setEquipments([]);
+        setImageLoaded(false);
+        setImageError(false);
       }
       setEquipmentInput("");
     }
@@ -53,9 +61,28 @@ const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewUrl(reader.result);
+        setImageLoaded(true);
+        setImageError(false);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoaded(false);
+    setImageError(true);
+  };
+
+  const resetImage = () => {
+    setPreviewUrl(null);
+    setThumbnailFile(null);
+    setImageLoaded(false);
+    setImageError(false);
   };
 
   const addEquipment = () => {
@@ -87,9 +114,48 @@ const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
     });
   };
 
+  // Render image preview section
+  const renderImagePreview = () => {
+    if (!previewUrl) {
+      // No image selected - show placeholder
+      return (
+        <div className="w-full h-48 bg-gray-200 rounded mb-2 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <PictureOutlined style={{ fontSize: '48px', marginBottom: '8px' }} />
+            <div>No image selected</div>
+          </div>
+        </div>
+      );
+    }
+
+    if (imageError) {
+      // Image failed to load - show error placeholder
+      return (
+        <div className="w-full h-48 bg-red-100 rounded mb-2 flex items-center justify-center">
+          <div className="text-center text-red-500">
+            <PictureOutlined style={{ fontSize: '48px', marginBottom: '8px' }} />
+            <div>Failed to load image</div>
+          </div>
+        </div>
+      );
+    }
+
+    // Show actual image
+    return (
+      <img
+        src={previewUrl}
+        alt="Thumbnail preview"
+        className="w-full rounded mb-2"
+        style={{ maxHeight: "200px", objectFit: "contain" }}
+        onLoad={handleImageLoad}
+        onError={handleImageError}
+      />
+    );
+  };
+
   return (
     <Modal
-      title={initialValues ? "Edit Sub Category" : "Add New Sub Category"}
+      title={initialValues ? "Edit Course" : "Add New Course"}
       open={visible}
       onCancel={onCancel}
       footer={[
@@ -109,12 +175,12 @@ const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
       <Form form={form} layout="vertical">
         <Form.Item
           name="name"
-          label="Sub Category Name"
+          label="Course Name"
           rules={[
-            { required: true, message: "Please input sub category name!" },
+            { required: true, message: "Please input Course Name!" },
           ]}
         >
-          <Input placeholder="Write Sub Category Title" />
+          <Input placeholder="Write course Title" />
         </Form.Item>
 
         <Form.Item
@@ -123,11 +189,11 @@ const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
           rules={[
             {
               required: true,
-              message: "Please input sub category description!",
+              message: "Please input course description!",
             },
           ]}
         >
-          <TextArea rows={4} placeholder="Write Sub Category Description" />
+          <TextArea rows={4} placeholder="Write course Description" />
         </Form.Item>
 
         <Form.Item label="Equipment">
@@ -167,20 +233,14 @@ const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
 
         <Form.Item name="thumbnail" label="Thumbnail">
           <div className="bg-gray-100 p-1 rounded">
-            {previewUrl && (
-              <img
-                src={previewUrl}
-                alt="Thumbnail preview"
-                className="w-full rounded mb-2"
-                style={{ maxHeight: "200px", objectFit: "contain" }}
-              />
-            )}
+            {renderImagePreview()}
             <div className="flex justify-between">
               <Upload
                 beforeUpload={() => false}
                 onChange={handleThumbnailChange}
                 maxCount={1}
                 showUploadList={false}
+                accept="image/*"
               >
                 <Button icon={<UploadOutlined />}>Select Thumbnail</Button>
               </Upload>
@@ -188,10 +248,8 @@ const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
                 icon={<ReloadOutlined />}
                 size="small"
                 shape="circle"
-                onClick={() => {
-                  setPreviewUrl("/api/placeholder/400/200");
-                  setThumbnailFile(null);
-                }}
+                onClick={resetImage}
+                title="Reset image"
               />
             </div>
           </div>

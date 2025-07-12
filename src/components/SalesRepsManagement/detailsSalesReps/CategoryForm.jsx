@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Select, Button, Upload } from "antd";
-import { UploadOutlined, ReloadOutlined } from "@ant-design/icons";
+import { UploadOutlined, ReloadOutlined, PictureOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../../common/imageUrl";
 import { useParams } from "react-router-dom";
 
 const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
   const [thumbnailFile, setThumbnailFile] = useState(null);
- 
-  const [previewUrl, setPreviewUrl] = useState("/api/placeholder/400/200");
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -20,17 +21,20 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
         // Set preview URL from existing thumbnail
         if (initialValues.thumbnail) {
           setPreviewUrl(getImageUrl(initialValues.thumbnail));
+          setImageLoaded(false);
+          setImageError(false);
         } else {
-          setPreviewUrl(
-            "https://static.vecteezy.com/system/resources/thumbnails/006/408/741/small/meditate-yoga-person-sitting-in-lotus-position-line-icon-relaxation-tranquility-rest-keep-calm-illustration-free-vector.jpg"
-          );
+          setPreviewUrl(null);
+          setImageLoaded(false);
+          setImageError(false);
         }
+        setThumbnailFile(null);
       } else {
         form.resetFields();
-        setPreviewUrl(
-          "https://static.vecteezy.com/system/resources/thumbnails/006/408/741/small/meditate-yoga-person-sitting-in-lotus-position-line-icon-relaxation-tranquility-rest-keep-calm-illustration-free-vector.jpg"
-        );
+        setPreviewUrl(null);
         setThumbnailFile(null);
+        setImageLoaded(false);
+        setImageError(false);
       }
     }
   }, [visible, initialValues, form]);
@@ -44,9 +48,28 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
       const reader = new FileReader();
       reader.onload = () => {
         setPreviewUrl(reader.result);
+        setImageLoaded(true);
+        setImageError(false);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageLoaded(false);
+    setImageError(true);
+  };
+
+  const resetImage = () => {
+    setPreviewUrl(null);
+    setThumbnailFile(null);
+    setImageLoaded(false);
+    setImageError(false);
   };
 
   const handleFormSubmit = () => {
@@ -58,6 +81,45 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
       .catch((info) => {
         console.log("Validate Failed:", info);
       });
+  };
+
+  // Render image preview section
+  const renderImagePreview = () => {
+    if (!previewUrl) {
+      // No image selected - show placeholder
+      return (
+        <div className="w-full h-48 bg-gray-200 rounded mb-2 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <PictureOutlined style={{ fontSize: '48px', marginBottom: '8px' }} />
+            <div>No image selected</div>
+          </div>
+        </div>
+      );
+    }
+
+    if (imageError) {
+      // Image failed to load - show error placeholder
+      return (
+        <div className="w-full h-48 bg-red-100 rounded mb-2 flex items-center justify-center">
+          <div className="text-center text-red-500">
+            <PictureOutlined style={{ fontSize: '48px', marginBottom: '8px' }} />
+            <div>Failed to load image</div>
+          </div>
+        </div>
+      );
+    }
+
+    // Show actual image
+    return (
+      <img
+        src={previewUrl}
+        alt="Thumbnail preview"
+        className="w-full rounded-3xl mb-2"
+        style={{ maxHeight: "200px", objectFit: "contain" }}
+        onLoad={handleImageLoad}
+        onError={handleImageError}
+      />
+    );
   };
 
   return (
@@ -99,23 +161,14 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
         </Form.Item> */}
         <Form.Item name="thumbnail" label="Thumbnail">
           <div className="bg-gray-100 p-1 rounded">
-            <img
-              src={
-                previewUrl
-                  ? previewUrl
-                  : "https://static.vecteezy.com/system/resources/thumbnails/001/892/283/small/woman-meditating-concept-for-yoga-meditation-relax-healthy-lifestyle-in-landscape-free-vector.jpg"
-              }
-              alt="Thumbnail preview"
-              className="w-full rounded-3xl mb-2"
-              style={{ maxHeight: "200px", objectFit: "contain" }}
-            />
-
+            {renderImagePreview()}
             <div className="flex justify-between">
               <Upload
                 beforeUpload={() => false}
                 onChange={handleThumbnailChange}
                 maxCount={1}
                 showUploadList={false}
+                accept="image/*"
               >
                 <Button icon={<UploadOutlined />}>Select Thumbnail</Button>
               </Upload>
@@ -123,12 +176,8 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
                 icon={<ReloadOutlined />}
                 size="small"
                 shape="circle"
-                onClick={() => {
-                  setPreviewUrl(
-                    "https://static.vecteezy.com/system/resources/thumbnails/001/892/283/small/woman-meditating-concept-for-yoga-meditation-relax-healthy-lifestyle-in-landscape-free-vector.jpg"
-                  );
-                  setThumbnailFile(null);
-                }}
+                onClick={resetImage}
+                title="Reset image"
               />
             </div>
           </div>
