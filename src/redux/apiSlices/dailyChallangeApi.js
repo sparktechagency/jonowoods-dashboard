@@ -4,10 +4,10 @@ const challengeApi = api.injectEndpoints({
   endpoints: (builder) => ({
     // POST: Create a new Challenge
     newDailyChallenge: builder.mutation({
-      query: (data) => ({
-        url: "/admin/challenge/create",
+      query: (challengeData) => ({
+        url: "/admin/challenge-category/create-challenge-category",
         method: "POST",
-        body: data,
+        body: challengeData,
       }),
       invalidatesTags: ["DailyChallenge"], 
     }),
@@ -15,7 +15,7 @@ const challengeApi = api.injectEndpoints({
     // POST: Create a new Challenge with videos
     createChallengeWithVideos: builder.mutation({
       query: (data) => ({
-        url: "/admin/challenge/create-with-videos",
+        url: "/admin/challenge/create",
         method: "POST",
         body: data,
       }),
@@ -25,7 +25,7 @@ const challengeApi = api.injectEndpoints({
     // GET: Retrieve all Challenges
     getDailyChallenge: builder.query({
       query: () => ({
-        url: "/admin/challenge",
+        url: "/admin/challenge-category/get-all-challenge-category",
         method: "GET",
       }),
       providesTags: ["DailyChallenge"], 
@@ -35,6 +35,14 @@ const challengeApi = api.injectEndpoints({
     getSingleDailyChallenge: builder.query({
       query: (id) => ({
         url: `/admin/challenge/${id}`,
+        method: "GET",
+      }),
+      providesTags: (result, error, id) => [{ type: "DailyChallenge", id }], 
+    }),
+
+    getDailyChallengeVideos: builder.query({
+      query: (id) => ({
+        url: `/admin/challenge/get-challenges-videos/${id}`,
         method: "GET",
       }),
       providesTags: (result, error, id) => [{ type: "DailyChallenge", id }], 
@@ -51,10 +59,22 @@ const challengeApi = api.injectEndpoints({
 
     // PATCH: Update a Challenge
     updateDailyChallenge: builder.mutation({
-      query: ({ id, comingSoonData }) => ({
+      query: ({ id,  data}) => ({
         url: `/admin/challenge/${id}`,
         method: "PATCH",
-        body: comingSoonData,
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "DailyChallenge", id },
+        "DailyChallenge",
+      ],
+    }),
+
+    updateDailyChallengeStatus: builder.mutation({
+      query: ({ id,  data}) => ({
+        url: `/admin/challenge-category/update-challenge-category-status/${id}`,
+        method: "PUT",
+        body: data,
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: "DailyChallenge", id },
@@ -65,7 +85,7 @@ const challengeApi = api.injectEndpoints({
     // DELETE: Delete a Challenge
     deleteDailyChallege: builder.mutation({
       query: (id) => ({
-        url: `/admin/challenge/${id}`,
+        url: `/admin/challenge-category/delete-challenge-category/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: (result, error, id) => [
@@ -131,7 +151,9 @@ export const {
   useUpdateDailyChallengeMutation,
   useDeleteDailyChallegeMutation,
   // New exports
+  useGetDailyChallengeVideosQuery,
   useCreateChallengeWithVideosMutation,
+  useUpdateDailyChallengeStatusMutation,
   useGetChallengeVideosQuery,
   useAddVideoToChallengeMutation,
   useRemoveVideoFromChallengeMutation,

@@ -1,280 +1,409 @@
 import React, { useState, useEffect } from "react";
-import {
-  useCreateComingSoonMutation,
-  useDeleteComingSoonMutation,
-  useGetAllComingSoonQuery,
-  useGetComingSoonByIdQuery,
-  useUpdateComingSoonMutation,
-} from "../../redux/apiSlices/comingSoonApi";
+import { useNavigate } from "react-router-dom";
 import {
   useDeleteDailyChallegeMutation,
   useGetDailyChallengeQuery,
-  useGetSingleDailyChallengeQuery,
   useNewDailyChallengeMutation,
   useUpdateDailyChallengeMutation,
-  useCreateChallengeWithVideosMutation,
-  useGetChallengeVideosQuery,
-  useScheduleVideoRotationMutation
+  useUpdateDailyChallengeStatusMutation, 
 } from "../../redux/apiSlices/dailyChallangeApi";
-import VideoUploadSystem from "../common/VideoUploade";
-import { 
-  useGetAllVideosQuery,
-  useGetLibraryVideosQuery
-} from "../../redux/apiSlices/videoApi";
-import { Button, Modal, Form, Input, Select, DatePicker, Space, Table, message, Tag, Card, Popover, Tabs } from "antd";
-import { PlusOutlined, EyeOutlined, DeleteOutlined, CalendarOutlined } from "@ant-design/icons";
+import { useGetAllVideosQuery } from "../../redux/apiSlices/videoApi";
+import { Button, Modal, Form, Input, Table, message, Tag, Upload, Switch } from "antd";
+import { PlusOutlined, EyeOutlined, DeleteOutlined, EditOutlined, UploadOutlined, ReloadOutlined, PictureOutlined } from "@ant-design/icons";
 import GradientButton from "../common/GradiantButton";
-import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
+import { getImageUrl } from "../common/imageUrl";
 
-const { Option } = Select;
-const { TabPane } = Tabs;
+const { TextArea } = Input;
 
 const TodayVideos = () => {
-  // Initialize all the hooks at the component level
+  const navigate = useNavigate();
   const [createDailyChallenge] = useNewDailyChallengeMutation();
   const [updateDailyChallenge] = useUpdateDailyChallengeMutation();
   const [deleteDailyChallenge] = useDeleteDailyChallegeMutation();
-  
-  // New API hooks
-  const [scheduleVideoRotation] = useScheduleVideoRotationMutation();
-  
-  // State for scheduling
-  const [schedulingModalVisible, setSchedulingModalVisible] = useState(false);
-  const [schedulingVideo, setSchedulingVideo] = useState(null);
-  const [schedulingDate, setSchedulingDate] = useState(null);
+  const [updateDailyChallengeStatus] = useUpdateDailyChallengeStatusMutation(); // Add this hook
 
-  // Get all videos from library
-  const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
-  const allVideos = allVideosData?.data || [];
+  const [challengeModalVisible, setChallengeModalVisible] = useState(false);
+  const [editingChallenge, setEditingChallenge] = useState(null);
+  const [challengeForm] = Form.useForm();
   
-  // Get scheduled videos/challenges
+  // Image handling states (following SubCategoryForm pattern)
+  const [imageFile, setImageFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  const { data: allVideosData } = useGetAllVideosQuery();
+  const allVideos = allVideosData?.data || [];
+
   const { data: challengesData, isLoading: challengesLoading, refetch: refetchChallenges } = useGetDailyChallengeQuery();
   const challenges = challengesData?.data || [];
-  
-  // Sort videos by scheduled date (chronologically, earliest first)
-  const sortedVideos = React.useMemo(() => {
-    // Map all videos with their schedule info
-    const videosWithScheduleInfo = allVideos.map(video => {
-      // Check if this video is part of any challenge
-      const challenge = challenges.find(ch => 
-        ch.videos?.some(v => v._id === video._id || v === video._id)
-      );
-      
-      return {
-        ...video,
-        isScheduled: challenge ? true : false,
-        challenge: challenge || null,
-        scheduledDate: challenge?.startDate || null
-      };
-    });
 
-    // Sort videos by scheduled date (chronologically, earliest first)
-    return videosWithScheduleInfo.sort((a, b) => {
-      // If both have scheduled dates, compare them
-      if (a.scheduledDate && b.scheduledDate) {
-        const dateA = new Date(a.scheduledDate);
-        const dateB = new Date(b.scheduledDate);
-        return dateA - dateB; // ascending order (earliest first)
+  // Reset form and image states when modal opens/closes
+  useEffect(() => {
+    if (challengeModalVisible) {
+      if (editingChallenge) {
+        // Set form fields for editing
+        challengeForm.setFieldsValue({
+          name: editingChallenge.name || "",
+          description: editingChallenge.description || "",
+        });
+
+        // Set image preview URL using getImageUrl helper if image exists
+        if (editingChallenge.image) {
+          setPreviewUrl(getImageUrl(editingChallenge.image));
+          setImageLoaded(false);
+          setImageError(false);
+        } else {
+          setPreviewUrl(null);
+          setImageLoaded(false);
+          setImageError(false);
+        }
+
+        // Clear image file because no new file selected yet
+        setImageFile(null);
+      } else {
+        // Reset for new challenge
+        challengeForm.resetFields();
+        setPreviewUrl(null);
+        setImageFile(null);
+        setImageLoaded(false);
+        setImageError(false);
       }
-      
-      // If only one has a scheduled date, the one with date comes first
-      if (a.scheduledDate && !b.scheduledDate) return -1;
-      if (!a.scheduledDate && b.scheduledDate) return 1;
-      
-      // If neither has a scheduled date, keep original order
-      return 0;
-    });
-  }, [allVideos, challenges]);
-  
-  // Define categories for today's videos
-  const categories = [
-    "Video/Picture",
-    "Fitness",
-    "Yoga",
-    "Meditation",
-    "Workout",
-  ];
+    }
+  }, [challengeModalVisible, editingChallenge, challengeForm]);
 
-  // Pass the initialized mutation functions and query hooks
-  const apiHooks = {
-    useGetAllQuery: useGetDailyChallengeQuery,
-    useGetByIdQuery: useGetSingleDailyChallengeQuery,
-    deleteItem: deleteDailyChallenge, 
-    updateItemStatus: updateDailyChallenge, 
-    createItem: createDailyChallenge, 
-    updateItem: updateDailyChallenge, 
-    categories,
-    // Add scheduling capability
-    scheduleVideo: scheduleVideoRotation,
-    refetchScheduled: refetchChallenges
+  // Handle image file change
+  const handleImageChange = (info) => {
+    if (info.file) {
+      const file = info.file.originFileObj || info.file;
+      setImageFile(file);
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewUrl(reader.result);
+        setImageLoaded(true);
+        setImageError(false);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  // Handle video scheduling
-  const handleScheduleVideo = async (videoId, scheduleDate) => {
+  // Handle image load success
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+    setImageError(false);
+  };
+
+  // Handle image load error
+  const handleImageError = () => {
+    setImageLoaded(false);
+    setImageError(true);
+  };
+
+  // Reset image
+  const resetImage = () => {
+    setPreviewUrl(null);
+    setImageFile(null);
+    setImageLoaded(false);
+    setImageError(false);
+  };
+
+  // Render image preview section (following SubCategoryForm pattern)
+  const renderImagePreview = () => {
+    if (!previewUrl) {
+      // No image selected - show placeholder
+      return (
+        <div className="w-full h-48 bg-gray-200 rounded mb-2 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <PictureOutlined style={{ fontSize: '48px', marginBottom: '8px' }} />
+            <div>No image selected</div>
+          </div>
+        </div>
+      );
+    }
+
+    if (imageError) {
+      // Image failed to load - show error placeholder
+      return (
+        <div className="w-full h-48 bg-red-100 rounded mb-2 flex items-center justify-center">
+          <div className="text-center text-red-500">
+            <PictureOutlined style={{ fontSize: '48px', marginBottom: '8px' }} />
+            <div>Failed to load image</div>
+          </div>
+        </div>
+      );
+    }
+
+    // Show actual image
+    return (
+      <img
+        src={previewUrl}
+        alt="Challenge image preview"
+        className="w-full rounded mb-2"
+        style={{ maxHeight: "200px", objectFit: "contain" }}
+        onLoad={handleImageLoad}
+        onError={handleImageError}
+      />
+    );
+  };
+
+  const handleChallengeSubmit = async (values) => {
     try {
-      if (!videoId || !scheduleDate) {
-        message.error("Please select a video and schedule date");
-        return;
-      }
-  
-      // Combine the selected date and time into the required format
-      const scheduleDateTime = moment(scheduleDate).toISOString(); // This will give you the "publishAt" format
-  
-      const scheduleData = {
-        videoId: videoId,
-        publishAt: scheduleDate.toISOString()
+      const formData = new FormData();
+      const jsonData = {
+        name: values.name,
+        description: values.description,
       };
   
-      // Call API to schedule video
-      await scheduleVideoRotation(scheduleData);
-      message.success("Video scheduled successfully!");
-      setSchedulingVideo(null);
-      setSchedulingDate(null);
+      // If there is an image, append it to FormData
+      if (imageFile) {
+        formData.append('image', imageFile);
+      } else if (editingChallenge?.image) {
+        formData.append('image', editingChallenge.image);
+      }
+  
+      // Log the FormData contents
+      console.log("FormData contents:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+  
+      // Add JSON data to the form (excluding the image)
+      formData.append('data', JSON.stringify(jsonData));
+  
+      // Check if we are editing or creating a new challenge
+      if (editingChallenge) {
+        await updateDailyChallenge({
+          id: editingChallenge._id, // Send the ID as a parameter
+          data: formData, // Send the form data as the body
+        });
+        message.success("Challenge updated successfully!");
+      } else {
+        await createDailyChallenge(formData);  // Add the function to create a new challenge if needed.
+        message.success("Challenge created successfully!");
+      }
+  
+      // Reset form and states
+      challengeForm.resetFields();
+      setImageFile(null);
+      setPreviewUrl(null);
+      setEditingChallenge(null);
+      setChallengeModalVisible(false);
+      setImageLoaded(false);
+      setImageError(false);
       refetchChallenges();
     } catch (error) {
-      console.error("Failed to schedule video:", error);
-      message.error("Failed to schedule video");
+      console.error("Failed to save challenge:", error);
+      message.error("Failed to save challenge");
+    }
+  };
+
+  // Handle status toggle
+  const handleStatusToggle = async (challengeId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "active" ? "inactive" : "active";
+      
+      await updateDailyChallengeStatus({
+        id: challengeId,
+        data: { status: newStatus }
+      });
+      
+      message.success(`Challenge status updated to ${newStatus}`);
+      refetchChallenges();
+    } catch (error) {
+      console.error("Failed to update challenge status:", error);
+      message.error("Failed to update challenge status");
     }
   };
   
+  const handleDeleteChallenge = async (id) => {
+    try {
+      await deleteDailyChallenge(id);
+      message.success("Challenge deleted successfully!");
+      refetchChallenges();
+    } catch (error) {
+      console.error("Failed to delete challenge:", error);
+      message.error("Failed to delete challenge");
+    }
+  };
 
-  // Filter out already scheduled videos
-  const availableVideos = allVideos.filter(video => {
-    // Check if the video is not part of any challenge
-    return !challenges.some(challenge => 
-      challenge.videos?.some(v => v._id === video._id || v === video._id)
-    );
-  });
+  const handleEditChallenge = (challenge) => {
+    setEditingChallenge(challenge);
+    setChallengeModalVisible(true);
+  };
 
-  // Videos Table Columns for the modal
-  const videoColumns = [
+  const handleViewChallenge = (challenge) => {
+    navigate(`/challenge-details/${challenge._id}`, { state: { challenge } });
+  };
+
+  const handleModalCancel = () => {
+    setChallengeModalVisible(false);
+    setEditingChallenge(null);
+    challengeForm.resetFields();
+    setImageFile(null);
+    setPreviewUrl(null);
+    setImageLoaded(false);
+    setImageError(false);
+  };
+
+  const challengeColumns = [
     {
-      title: "Video",
-      dataIndex: "title",
-      key: "video",
+      title: "Challenge",
+      key: "challenge",
       render: (_, record) => (
         <div className="flex items-center">
-          {record.thumbnailUrl && (
-            <img 
-              src={getVideoAndThumbnail(record.thumbnailUrl)} 
-              alt={record.title || "Thumbnail"} 
+          {record.image && (
+            <img
+              src={getImageUrl(record.image)}
+              alt={record.name || "Challenge"}
               style={{ width: 80, height: 45, objectFit: "cover" }}
               className="mr-3 rounded"
             />
           )}
           <div>
-            <p className="font-medium">{record.title || "Untitled Video"}</p>
-            {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>}
-          </div>
-        </div>
-      )
-    },
-    {
-      title: "Schedule Status",
-      key: "scheduleStatus",
-      render: (_, record) => {
-        if (!record.isScheduled) {
-          return <Tag color="red">Not Scheduled</Tag>;
-        }
-        
-        const scheduleDate = record.scheduledDate ? new Date(record.scheduledDate) : null;
-        const isUpcoming = scheduleDate && scheduleDate > new Date();
-        
-        return (
-          <div>
-            <Tag color={isUpcoming ? "orange" : "green"}>
-              {isUpcoming ? "Scheduled" : "Active"}
-            </Tag>
-            {scheduleDate && (
-              <p className="text-xs mt-1">
-                {moment(scheduleDate).format("MMM DD, YYYY")}
+            <p className="font-medium">{record.name || "Untitled Challenge"}</p>
+            {record.startDate && (
+              <p className="text-xs text-gray-500">
+                Start Date: {moment(record.startDate).format("MMM DD, YYYY")}
               </p>
             )}
           </div>
-        );
-      }
+        </div>
+      ),
+    },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      ellipsis: true,
+      render: (text) => <p className="max-w-md truncate">{text}</p>,
+    },
+    {
+      title: "Videos Count",
+      key: "videosCount",
+      render: (_, record) => (
+        <Tag color="blue">{record.videos?.length || 0} Videos</Tag>
+      ),
+    },
+    {
+      title: "Status",
+      key: "status",
+      render: (_, record) => (
+        <div className="flex items-center space-x-2">
+          <Tag color={record.status === "active" ? "green" : "red"}>
+            {record.status || "inactive"}
+          </Tag>
+          
+        </div>
+      ),
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_, record) => {
-        // Check if video is already scheduled
-        if (record.isScheduled) {
-          return (
-            <Button 
-              type="default"
-              size="small"
-              disabled
-            >
-              Scheduled
-            </Button>
-          );
-        }
-        
-        return (
-          <div className="flex items-center space-x-2">
-            <DatePicker 
-              showTime 
-              size="small"
-              onChange={(date) => {
-                setSchedulingVideo(record._id);
-                setSchedulingDate(date);
-              }}
-              className="mr-2"
-            />
-            <Button 
-              type="primary"
-              size="small"
-              icon={<CalendarOutlined />}
-              onClick={() => handleScheduleVideo(record._id, schedulingDate)}
-              disabled={!schedulingDate || schedulingVideo !== record._id}
-            >
-              Schedule
-            </Button>
-          </div>
-        );
-      }
-    }
+      render: (_, record) => (
+        <div className="flex items-center space-x-2">
+          <Button type="primary" size="small" icon={<EyeOutlined />} onClick={() => handleViewChallenge(record)} />
+          <Button type="default" size="small" icon={<EditOutlined />} onClick={() => handleEditChallenge(record)} />
+          <Switch
+            checked={record.status === "active"}
+            onChange={() => handleStatusToggle(record._id, record.status)}
+            size="small"
+            // checkedChildren="Active"
+            // unCheckedChildren="Inactive"
+          />
+          <Button type="danger" size="small" icon={<DeleteOutlined />} onClick={() => handleDeleteChallenge(record._id)} />
+        </div>
+      ),
+    },
   ];
 
   return (
     <div>
-      {/* Add New Content button with Schedule Video button next to it */}
-      <VideoUploadSystem 
-        pageType="daily-challenge" 
-        apiHooks={apiHooks}
-        additionalButtons={
-          <GradientButton 
-            onClick={() => setSchedulingModalVisible(true)}
-            icon={<CalendarOutlined />}
-            className="ml-2"
-          >
-            Schedule Video
-          </GradientButton>
-        }
+      {/* Add New Challenge button */}
+      <div className="mb-4 flex justify-end">
+        <GradientButton
+          onClick={() => {
+            setEditingChallenge(null);
+            setChallengeModalVisible(true);
+          }}
+          icon={<PlusOutlined />}
+        >
+          Add New Challenge
+        </GradientButton>
+      </div>
+
+      {/* Challenges Table */}
+      <Table
+        columns={challengeColumns}
+        dataSource={challenges}
+        rowKey="_id"
+        loading={challengesLoading}
+        pagination={{ pageSize: 8 }}
+        locale={{ emptyText: "No challenges found" }}
       />
-      
-      {/* Schedule Videos Modal */}
+
+      {/* Challenge Modal */}
       <Modal
-        title="Schedule Daily Challenge Videos"
-        open={schedulingModalVisible}
-        onCancel={() => {
-          setSchedulingModalVisible(false);
-          setSchedulingVideo(null);
-          setSchedulingDate(null);
-        }}
-        footer={null}
-        width={900}
+        title={editingChallenge ? "Edit Challenge" : "Add New Challenge"}
+        open={challengeModalVisible}
+        onCancel={handleModalCancel}
+        footer={[
+          <Button key="cancel" onClick={handleModalCancel}>
+            Cancel
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            onClick={() => challengeForm.submit()}
+            className="bg-red-500"
+          >
+            {editingChallenge ? "Update" : "Create"} Challenge
+          </Button>,
+        ]}
+        width={600}
       >
-        <Table 
-          columns={videoColumns}
-          dataSource={sortedVideos}
-          rowKey="_id"
-          loading={allVideosLoading || challengesLoading}
-          pagination={{ pageSize: 8 }}
-          locale={{ emptyText: "No videos found" }}
-        />
+        <Form form={challengeForm} layout="vertical" onFinish={handleChallengeSubmit}>
+          <Form.Item
+            name="name"
+            label="Challenge Name"
+            rules={[{ required: true, message: "Please enter challenge name" }]}
+          >
+            <Input placeholder="Enter challenge name" />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[{ required: true, message: "Please enter description" }]}
+          >
+            <TextArea rows={4} placeholder="Enter challenge description" />
+          </Form.Item>
+
+          <Form.Item name="image" label="Challenge Image">
+            <div className="bg-gray-100 p-1 rounded">
+              {renderImagePreview()}
+              <div className="flex justify-between">
+                <Upload
+                  beforeUpload={() => false}
+                  onChange={handleImageChange}
+                  maxCount={1}
+                  showUploadList={false}
+                  accept="image/*"
+                >
+                  <Button icon={<UploadOutlined />}>Select Image</Button>
+                </Upload>
+                <Button
+                  icon={<ReloadOutlined />}
+                  size="small"
+                  shape="circle"
+                  onClick={resetImage}
+                  title="Reset image"
+                />
+              </div>
+            </div>
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

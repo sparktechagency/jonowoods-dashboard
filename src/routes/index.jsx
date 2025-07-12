@@ -33,6 +33,7 @@ import SubCategoryManagement from "../components/SalesRepsManagement/detailsSale
 import LoginCredentials from "../components/loginCredentials/LoginCredentials";
 import CommingSoonVideoPage from "../components/comingSoon/CommingSoonVideoPage";
 import TodayVideos from "../components/todayVideos/TodayVideos";
+import ChallengeDetails from "../components/todayVideos/ChallengeDetails";
 import CourseDetailsVideoManagement from "../components/retailerManagement/CourseDetailsVideoManagement";
 import DailyInspirationPage from "../components/comingSoon/DailyInspiration";
 import PostManagementSystem from "../components/createPost/CreatePostManagement";
@@ -100,6 +101,10 @@ const router = createBrowserRouter([
       {
         path: "/today-video",
         element: <TodayVideos />,
+      },
+      {
+        path: "/challenge-details/:id",
+        element: <ChallengeDetails />,
       },
       {
         path: "/daily-inspiration",
