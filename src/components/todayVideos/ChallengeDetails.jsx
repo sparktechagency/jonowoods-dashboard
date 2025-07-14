@@ -19,7 +19,8 @@ import { PlusOutlined, EyeOutlined, DeleteOutlined, CalendarOutlined } from "@an
 import GradientButton from "../common/GradiantButton";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
-import ChallengeVideoUpload from "./challengeVideoUpload";
+import ChallengeVideoUpload from "./ChallengeVideoUpload";
+// import ChallengeVideoUpload from "./challengeVideoUpload";
 
 const { TabPane } = Tabs;
 
