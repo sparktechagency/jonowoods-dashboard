@@ -278,12 +278,15 @@ const ChallengeDetails = () => {
         </div>
       </div>
       
-      <GradientButton 
+      <div className="relative">
+        <Button
           onClick={() => setSchedulingModalVisible(true)}
           icon={<CalendarOutlined />}
+          className="absolute top-0 right-44 h-10 bg-[#CA3939] text-white border-none"
         >
           Schedule Video
-        </GradientButton>
+        </Button>
+      </div>
       {/* Action buttons */}
       <div className="mb-6 ">
         {/* Upload New Content button */}

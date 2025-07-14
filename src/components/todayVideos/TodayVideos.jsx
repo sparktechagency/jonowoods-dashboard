@@ -303,16 +303,17 @@ const TodayVideos = () => {
       key: "actions",
       render: (_, record) => (
         <div className="flex items-center space-x-2">
-          <Button type="primary" size="small" icon={<EyeOutlined />} onClick={() => handleViewChallenge(record)} />
-          <Button type="default" size="small" icon={<EditOutlined />} onClick={() => handleEditChallenge(record)} />
+          <Button  size="small" className="hover:bg-red-600 border-none hover:text-white text-red-500" icon={<EyeOutlined />} onClick={() => handleViewChallenge(record)} />
+          <Button  size="small" className="hover:bg-red-600 border-none hover:text-white text-red-500" icon={<EditOutlined />} onClick={() => handleEditChallenge(record)} />
           <Switch
             checked={record.status === "active"}
             onChange={() => handleStatusToggle(record._id, record.status)}
             size="small"
             // checkedChildren="Active"
             // unCheckedChildren="Inactive"
+            className="hover:bg-red-600 border-none hover:text-white text-red-500"
           />
-          <Button type="danger" size="small" icon={<DeleteOutlined />} onClick={() => handleDeleteChallenge(record._id)} />
+          <Button className="hover:bg-red-600 border-none hover:text-white text-red-500" size="small" icon={<DeleteOutlined />} onClick={() => handleDeleteChallenge(record._id)} />
         </div>
       ),
     },
