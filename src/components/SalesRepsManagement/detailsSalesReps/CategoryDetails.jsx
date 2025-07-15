@@ -255,10 +255,10 @@ const SubCategoryManagement = () => {
       </div>
 
       {/* Sub Category List Header */}
-      <div className="mb-4 flex justify-between">
-        <h3 className="text-lg mb-2">
+      <div className="mb-4 flex justify-end">
+        {/* <h3 className="text-lg mb-2">
           Sub Category List ({formattedSubCategories.length})
-        </h3>
+        </h3> */}
         <Button
           type="primary"
           onClick={() => showSubCategoryModal()}

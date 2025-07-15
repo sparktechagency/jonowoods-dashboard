@@ -249,8 +249,17 @@ const TodayVideos = () => {
 
   const challengeColumns = [
     {
-      title: "Challenge",
-      key: "challenge",
+      title: "Challenge Name",
+      key: "challengeName",
+      render: (_, record) => (
+        <div className="flex items-center">
+          <p className="font-medium">{record.name || "Untitled Challenge"}</p>
+        </div>
+      ),
+    },
+    {
+      title: "Challenge Image",
+      key: "challengeImage",
       render: (_, record) => (
         <div className="flex items-center">
           {record.image && (
@@ -258,17 +267,9 @@ const TodayVideos = () => {
               src={getImageUrl(record.image)}
               alt={record.name || "Challenge"}
               style={{ width: 80, height: 45, objectFit: "cover" }}
-              className="mr-3 rounded"
+              className="rounded"
             />
           )}
-          <div>
-            <p className="font-medium">{record.name || "Untitled Challenge"}</p>
-            {record.startDate && (
-              <p className="text-xs text-gray-500">
-                Start Date: {moment(record.startDate).format("MMM DD, YYYY")}
-              </p>
-            )}
-          </div>
         </div>
       ),
     },
@@ -279,13 +280,6 @@ const TodayVideos = () => {
       ellipsis: true,
       render: (text) => <p className="max-w-md truncate">{text}</p>,
     },
-    // {
-    //   title: "Videos Count",
-    //   key: "videosCount",
-    //   render: (_, record) => (
-    //     <Tag color="blue">{record.videos?.length || 0} Videos</Tag>
-    //   ),
-    // },
     {
       title: "Status",
       key: "status",
@@ -294,7 +288,6 @@ const TodayVideos = () => {
           <Tag color={record.status === "active" ? "green" : "red"}>
             {record.status || "inactive"}
           </Tag>
-          
         </div>
       ),
     },
@@ -303,21 +296,35 @@ const TodayVideos = () => {
       key: "actions",
       render: (_, record) => (
         <div className="flex items-center space-x-2">
-          <Button  size="small" className="hover:bg-red-600 border-none hover:text-white text-red-500" icon={<EyeOutlined />} onClick={() => handleViewChallenge(record)} />
-          <Button  size="small" className="hover:bg-red-600 border-none hover:text-white text-red-500" icon={<EditOutlined />} onClick={() => handleEditChallenge(record)} />
+          <Button
+            size="small"
+            className="hover:bg-red-600 border-none hover:text-white text-red-500"
+            icon={<EyeOutlined />}
+            onClick={() => handleViewChallenge(record)}
+          />
+          <Button
+            size="small"
+            className="hover:bg-red-600 border-none hover:text-white text-red-500"
+            icon={<EditOutlined />}
+            onClick={() => handleEditChallenge(record)}
+          />
           <Switch
             checked={record.status === "active"}
             onChange={() => handleStatusToggle(record._id, record.status)}
             size="small"
-            // checkedChildren="Active"
-            // unCheckedChildren="Inactive"
             className="hover:bg-red-600 border-none hover:text-white text-red-500"
           />
-          <Button className="hover:bg-red-600 border-none hover:text-white text-red-500" size="small" icon={<DeleteOutlined />} onClick={() => handleDeleteChallenge(record._id)} />
+          <Button
+            className="hover:bg-red-600 border-none hover:text-white text-red-500"
+            size="small"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteChallenge(record._id)}
+          />
         </div>
       ),
     },
   ];
+  
 
   return (
     <div>

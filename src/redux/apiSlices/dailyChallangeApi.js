@@ -60,7 +60,7 @@ const challengeApi = api.injectEndpoints({
     // PATCH: Update a Challenge
     updateDailyChallenge: builder.mutation({
       query: ({ id,  data}) => ({
-        url: `/admin/challenge/${id}`,
+        url: `/admin/challenge-category/update-challenge-category/${id}`,
         method: "PATCH",
         body: data,
       }),

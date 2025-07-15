@@ -411,7 +411,7 @@ console.log(itemsData)
             className="py-5"
             icon={<PlusOutlined />}
           >
-            Add New {getPageTitle()} Content
+            Add New {getPageTitle()} 
           </GradientButton>
           {/* Render additionalButtons next to the Add New button */}
           {additionalButtons}

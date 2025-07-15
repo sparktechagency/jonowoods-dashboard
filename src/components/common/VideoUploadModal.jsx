@@ -223,6 +223,12 @@ const VideoFormModal = ({
     showUploadList: false,
   };
 
+  // Disable past dates for DatePicker
+  const disablePastDates = (current) => {
+    // Can not select days before today
+    return current && current < moment().startOf('day');
+  };
+
   // Form submission handler
   const handleFormSubmit = useCallback(
     async (values) => {
@@ -390,6 +396,7 @@ const VideoFormModal = ({
               placeholder="Select date and time to publish" 
               className="h-12 w-full" 
               format="YYYY-MM-DDTHH:mm:ss.SSS[Z]"
+              disabledDate={disablePastDates}
             />
           </Form.Item>
 

@@ -196,19 +196,19 @@ console.log(categoryOrder)
     });
   };
 
-  const filterMenu = (
-    <Menu>
-      <Menu.Item key="all" onClick={() => setFilterType("all")}>
-        All
-      </Menu.Item>
-      <Menu.Item key="class" onClick={() => setFilterType("class")}>
-        Class
-      </Menu.Item>
-      <Menu.Item key="course" onClick={() => setFilterType("course")}>
-        Course
-      </Menu.Item>
-    </Menu>
-  );
+  // const filterMenu = (
+  //   <Menu>
+  //     <Menu.Item key="all" onClick={() => setFilterType("all")}>
+  //       All
+  //     </Menu.Item>
+  //     <Menu.Item key="class" onClick={() => setFilterType("class")}>
+  //       Class
+  //     </Menu.Item>
+  //     <Menu.Item key="course" onClick={() => setFilterType("course")}>
+  //       Course
+  //     </Menu.Item>
+  //   </Menu>
+  // );
 
   const statusMenu = (
     <Menu>
@@ -253,7 +253,7 @@ console.log(categoryOrder)
             </Button>
           </div>
           <div className="flex items-center">
-            <Dropdown overlay={filterMenu} trigger={["click"]}>
+            {/* <Dropdown overlay={filterMenu} trigger={["click"]}>
               <Button
                 className="mr-2 bg-red-600 text-white py-5"
                 style={{ border: "none" }}
@@ -264,7 +264,7 @@ console.log(categoryOrder)
                   <DownOutlined />
                 </Space>
               </Button>
-            </Dropdown>
+            </Dropdown> */}
 
             <Dropdown overlay={statusMenu} trigger={["click"]}>
               <Button

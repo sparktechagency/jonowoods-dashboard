@@ -33,7 +33,11 @@ import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
 import CreateAndEditModal from "./CreateAndEditModal";
 
 // Added additionalButtons prop with default empty fragment
-const ChallengeVideoUpload = ({ pageType, apiHooks, additionalButtons = <></> }) => {
+const ChallengeVideoUpload = ({
+  pageType,
+  apiHooks,
+  additionalButtons = <></>,
+}) => {
   const {
     useGetAllQuery,
     useGetByIdQuery,
@@ -48,8 +52,8 @@ const ChallengeVideoUpload = ({ pageType, apiHooks, additionalButtons = <></> })
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [selectedItemId, setSelectedItemId] = useState(null);
-  const {id}=useParams()
-  console.log(id)
+  const { id } = useParams();
+  console.log(id);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -77,7 +81,7 @@ const ChallengeVideoUpload = ({ pageType, apiHooks, additionalButtons = <></> })
     isLoading: isLoadingItems,
     refetch,
   } = useGetAllQuery(id);
-console.log(itemsData)
+  console.log(itemsData);
   // Fetch single item for details and edit form
   const { data: itemDetails, isLoading: isLoadingDetails } = useGetByIdQuery(
     selectedItemId,
@@ -122,26 +126,24 @@ console.log(itemsData)
       setIsSubmitting(true);
       try {
         const dataJSON = JSON.parse(formData.get("data"));
-  
+
         dataJSON.challengeId = id;
         formData.set("data", JSON.stringify(dataJSON));
-  
+
         if (editingId) {
           // Edit Mode
-  
+
           if (thumbnailFile) {
             formData.append("thumbnail", thumbnailFile);
-          } 
-          else if (itemDetails?.data?.thumbnailUrl) {
+          } else if (itemDetails?.data?.thumbnailUrl) {
             formData.append("thumbnail", itemDetails.data.thumbnailUrl);
           }
           if (videoFile) {
             formData.append("video", videoFile);
-          } 
-          else if (itemDetails?.data?.videoUrl) {
+          } else if (itemDetails?.data?.videoUrl) {
             formData.append("video", itemDetails.data.videoUrl);
           }
-  
+
           await updateItem({
             id: editingId,
             data: formData,
@@ -149,20 +151,19 @@ console.log(itemsData)
           message.success(`${getPageTitle()} updated successfully`);
         } else {
           // Create Mode
-  
+
           if (thumbnailFile) {
             formData.append("thumbnail", thumbnailFile);
           }
-  
+
           if (videoFile) {
             formData.append("video", videoFile);
           }
-  
-         
+
           await createItem(formData);
           message.success(`${getPageTitle()} created successfully`);
         }
-  
+
         // Modal reset & close
         setIsFormModalVisible(false);
         setEditingId(null);
@@ -179,13 +180,17 @@ console.log(itemsData)
         setIsSubmitting(false);
       }
     },
-    [editingId, createItem, updateItem, refetch, id, thumbnailFile, videoFile, itemDetails] // Added itemDetails dependency
+    [
+      editingId,
+      createItem,
+      updateItem,
+      refetch,
+      id,
+      thumbnailFile,
+      videoFile,
+      itemDetails,
+    ] // Added itemDetails dependency
   );
-  
-  
-  
-  
-  
 
   // Delete handler
   const handleDeleteItem = useCallback(
@@ -311,12 +316,12 @@ console.log(itemsData)
         key: "title",
         align: "center",
       },
-    //   {
-    //     title: "Category",
-    //     dataIndex: "category",
-    //     key: "category",
-    //     align: "center",
-    //   },
+      //   {
+      //     title: "Category",
+      //     dataIndex: "category",
+      //     key: "category",
+      //     align: "center",
+      //   },
       {
         title: "Duration",
         dataIndex: "duration",
@@ -459,7 +464,7 @@ console.log(itemsData)
             className="py-5"
             icon={<PlusOutlined />}
           >
-            Add New {getPageTitle()} 
+            Add New {getPageTitle()}
           </GradientButton>
           {/* Render additionalButtons next to the Add New button */}
           {additionalButtons}

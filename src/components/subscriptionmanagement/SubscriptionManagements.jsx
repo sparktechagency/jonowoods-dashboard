@@ -6,7 +6,7 @@ const SubscriptionManagements = () => {
   return (
     <div>
       <SubscriptionPackagesManagement />
-      <SubscriptionRulesManagement />
+      {/* <SubscriptionRulesManagement /> */}
     </div>
   );
 };

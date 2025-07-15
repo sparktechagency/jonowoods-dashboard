@@ -245,19 +245,19 @@ console.log(scheduleData)
     </Menu>
   );
 
-  const typeMenu = (
-    <Menu>
-      <Menu.Item key="all" onClick={() => handleTypeFilter("all")}>
-        All Type
-      </Menu.Item>
-      <Menu.Item key="class" onClick={() => handleTypeFilter("class")}>
-        Class
-      </Menu.Item>
-      <Menu.Item key="course" onClick={() => handleTypeFilter("course")}>
-        Course
-      </Menu.Item>
-    </Menu>
-  );
+  // const typeMenu = (
+  //   <Menu>
+  //     <Menu.Item key="all" onClick={() => handleTypeFilter("all")}>
+  //       All Type
+  //     </Menu.Item>
+  //     <Menu.Item key="class" onClick={() => handleTypeFilter("class")}>
+  //       Class
+  //     </Menu.Item>
+  //     <Menu.Item key="course" onClick={() => handleTypeFilter("course")}>
+  //       Course
+  //     </Menu.Item>
+  //   </Menu>
+  // );
 
   // Schedule Modal Video Columns
   const scheduleVideoColumns = [
@@ -350,17 +350,17 @@ console.log(scheduleData)
       align: "center",
       render: (subCategory) => subCategory || "N/A",
     },
-    {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-      align: "center",
-      render: (type) => (
-        <Tag color={type === "course" ? "blue" : "orange"}>
-          {type.toUpperCase()}
-        </Tag>
-      ),
-    },
+    // {
+    //   title: "Type",
+    //   dataIndex: "type",
+    //   key: "type",
+    //   align: "center",
+    //   render: (type) => (
+    //     <Tag color={type === "course" ? "blue" : "orange"}>
+    //       {type.toUpperCase()}
+    //     </Tag>
+    //   ),
+    // },
    
     {
       title: "Created Date",
@@ -453,7 +453,7 @@ console.log(scheduleData)
               </Space>
             </Button>
           </Dropdown>
-
+{/* 
           <Dropdown
             overlay={typeMenu}
             trigger={["click"]}
@@ -469,7 +469,7 @@ console.log(scheduleData)
                 <DownOutlined />
               </Space>
             </Button>
-          </Dropdown>
+          </Dropdown> */}
         </Space>
 
         <Space>

@@ -10,8 +10,6 @@ import {
 import Spinner from "../common/Spinner";
 import { Filtering } from "../common/Svg";
 
-
-
 // Duration options that match the API's expected enum values
 const DURATION_OPTIONS = [
   { value: "1 month", label: "1 Month" },
@@ -25,8 +23,6 @@ const PAYMENT_TYPE_OPTIONS = [
   { value: "Yearly", label: "Yearly" },
   { value: "Monthly", label: "Monthly" },
 ];
-
-// Remove discount type options since we only need percentage
 
 // Membership types that can see discounts
 const MEMBERSHIP_OPTIONS = [
@@ -62,14 +58,44 @@ export default function SubscriptionPackagesManagement() {
     useUpdateSubscriptionPackageMutation();
   const [deletePackage] = useDeleteSubscriptionPackageMutation();
 
-  // Calculate discounted price
-  const calculateDiscountedPrice = (originalPrice, discountPercentage) => {
-    if (!discountPercentage || discountPercentage <= 0) return originalPrice;
+  console.log(subscriptionPackages);
 
-    const price = Number(originalPrice);
-    const discount = Number(discountPercentage);
+  // Form validation function
+  const isFormValid = () => {
+    const requiredFields = [
+      "title",
+      "description",
+      "price",
+      "duration",
+      "paymentType",
+      "subscriptionType",
+    ];
 
-    return price - (price * discount) / 100;
+    // Check if all required fields have values
+    for (let field of requiredFields) {
+      if (
+        !currentPackage[field] ||
+        currentPackage[field].toString().trim() === ""
+      ) {
+        return false;
+      }
+    }
+
+    // Check if price is a valid positive number
+    const price = Number(currentPackage.price);
+    if (isNaN(price) || price <= 0) {
+      return false;
+    }
+
+    // Check if discount percentage is valid (if provided)
+    if (currentPackage.discountPercentage !== "") {
+      const discount = Number(currentPackage.discountPercentage);
+      if (isNaN(discount) || discount < 0 || discount > 100) {
+        return false;
+      }
+    }
+
+    return true;
   };
 
   // Package functions
@@ -112,13 +138,22 @@ export default function SubscriptionPackagesManagement() {
   };
 
   const savePackage = async () => {
+    // Double check form validity before saving
+    if (!isFormValid()) {
+      Modal.error({
+        title: "Form Validation Error",
+        content: "Please fill in all required fields with valid values.",
+      });
+      return;
+    }
+
     try {
-      // Format package data
+      // Format package data - send original price and discount percentage to backend
       const formattedPackage = {
         ...currentPackage,
         price: Number(currentPackage.price),
-        discountPercentage: currentPackage.discountPercentage
-          ? Number(currentPackage.discountPercentage)
+        discount: currentPackage.discountPercentage
+          ? parseInt(currentPackage.discountPercentage, 10)
           : 0,
       };
 
@@ -140,7 +175,7 @@ export default function SubscriptionPackagesManagement() {
         duration: "1 month",
         paymentType: "Yearly",
         subscriptionType: "web",
-        discountPercentage: "",
+        discount: "",
         discountVisibleTo: "all",
       });
       setEditingPackageId(null);
@@ -243,18 +278,14 @@ export default function SubscriptionPackagesManagement() {
 
       {/* Subscription Plans */}
       <div className="grid grid-cols-1 gap-8 mb-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        
         {filteredPackages.length === 0 ? (
           <div className="p-4 col-span-full text-center text-gray-500">
             No subscription packages found. Add a new package to get started.
           </div>
         ) : (
           filteredPackages.map((pkg) => {
-            const originalPrice = Number(pkg.price);
-            const discountedPrice = calculateDiscountedPrice(
-              originalPrice,
-              pkg.discountPercentage
-            );
-            const hasDiscount = pkg.discountPercentage > 0;
+            const hasDiscount = pkg.discount > 0;
 
             return (
               <div
@@ -275,7 +306,7 @@ export default function SubscriptionPackagesManagement() {
                 {/* Discount Badge */}
                 {hasDiscount && (
                   <div className="absolute top-2 right-2 px-2 py-1 text-xs text-white bg-red-500 rounded-full">
-                    {pkg.discountPercentage}% OFF
+                    {pkg.discount}% OFF
                   </div>
                 )}
 
@@ -310,16 +341,22 @@ export default function SubscriptionPackagesManagement() {
 
                 <div className="mb-3 text-sm text-center">{pkg.title}</div>
 
-                {/* Price Display with Discount */}
+                {/* Updated Price Display */}
                 <div className="mb-3 text-center">
                   {hasDiscount ? (
                     <div>
-                      <div className="text-3xl font-bold text-gray-400 line-through">
-                        ${originalPrice}
+                      {/* Original Price with strikethrough */}
+                      <div className="text-2xl font-bold text-gray-400 line-through mb-1">
+                        ${pkg.originalPrice}
                       </div>
-                      <div className="text-6xl font-bold text-red-600">
-                        ${discountedPrice.toFixed(2)}
+                      {/* Discounted Price */}
+                      <div className="text-5xl font-bold text-red-600">
+                        ${pkg.price}
                       </div>
+                      {/* Savings amount */}
+                      {/* <div className="text-sm text-green-600 mt-1">
+                        Save ${pkg.originalPrice - pkg.price}
+                      </div> */}
                     </div>
                   ) : (
                     <div className="text-6xl font-bold">${pkg.price}</div>
@@ -333,8 +370,8 @@ export default function SubscriptionPackagesManagement() {
                   - {pkg.paymentType}
                 </div>
 
-                {/* Membership Visibility */}
-                {hasDiscount && pkg.discountVisibleTo !== "all" && (
+                {/* Membership Visibility - Updated to use discount field */}
+                {/* {hasDiscount && pkg.discountVisibleTo !== "all" && (
                   <div className="mb-2 text-xs text-center text-orange-600">
                     Discount for{" "}
                     {
@@ -344,7 +381,7 @@ export default function SubscriptionPackagesManagement() {
                     }{" "}
                     only
                   </div>
-                )}
+                )} */}
 
                 <p className="mb-8 text-xs text-center">{pkg.description}</p>
                 <button className="w-full py-2 text-white bg-red-500 rounded-md">
@@ -384,14 +421,14 @@ export default function SubscriptionPackagesManagement() {
                 {/* Title */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Title
+                    Title <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     name="title"
                     value={currentPackage.title}
                     onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     placeholder="e.g. Basic Plan, Premium Plan"
                     required
                   />
@@ -400,13 +437,13 @@ export default function SubscriptionPackagesManagement() {
                 {/* Duration */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Duration
+                    Duration <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="duration"
                     value={currentPackage.duration}
                     onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     required
                   >
                     {DURATION_OPTIONS.map((option) => (
@@ -420,15 +457,17 @@ export default function SubscriptionPackagesManagement() {
                 {/* Price */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Original Price
+                    Original Price <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
                     name="price"
                     value={currentPackage.price}
                     onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     placeholder="e.g. 60.99"
+                    min="0"
+                    step="0.01"
                     required
                   />
                 </div>
@@ -449,74 +488,29 @@ export default function SubscriptionPackagesManagement() {
                       name="discountPercentage"
                       value={currentPackage.discountPercentage}
                       onChange={handlePackageChange}
-                      className="w-full p-2 border border-gray-300 rounded-md"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                       placeholder="e.g. 20 (for 20% off)"
                       min="0"
                       max="100"
                     />
                     <p className="mt-1 text-xs text-gray-500">
                       Enter 0 for no discount, or any number from 1-100 for
-                      percentage off
+                      percentage off. Backend will calculate the discounted
+                      price.
                     </p>
                   </div>
-
-                  {/* Discount Visibility */}
-                  {/* {currentPackage.discountPercentage > 0 && (
-                    <div className="mb-3">
-                      <label className="block mb-1 text-sm font-medium text-gray-700">
-                        Discount Visible To
-                      </label>
-                      <select
-                        name="discountVisibleTo"
-                        value={currentPackage.discountVisibleTo}
-                        onChange={handlePackageChange}
-                        className="w-full p-2 border border-gray-300 rounded-md"
-                      >
-                        {MEMBERSHIP_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )} */}
-
-                  {/* Price Preview */}
-                  {currentPackage.discountPercentage > 0 &&
-                    currentPackage.price && (
-                      <div className="p-3 mt-3 bg-white border rounded-md">
-                        <div className="text-sm text-gray-600">
-                          Price Preview:
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg text-gray-400 line-through">
-                            ${Number(currentPackage.price).toFixed(2)}
-                          </span>
-                          <span className="text-xl font-bold text-red-600">
-                            $
-                            {calculateDiscountedPrice(
-                              currentPackage.price,
-                              currentPackage.discountPercentage
-                            ).toFixed(2)}
-                          </span>
-                          <span className="text-sm text-green-600">
-                            ({currentPackage.discountPercentage}% off)
-                          </span>
-                        </div>
-                      </div>
-                    )}
                 </div>
 
                 {/* Payment Type */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Payment Type
+                    Payment Type <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="paymentType"
                     value={currentPackage.paymentType}
                     onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     required
                   >
                     {PAYMENT_TYPE_OPTIONS.map((option) => (
@@ -530,13 +524,13 @@ export default function SubscriptionPackagesManagement() {
                 {/* Subscription Type */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Subscription Type
+                    Subscription Type <span className="text-red-500">*</span>
                   </label>
                   <select
                     name="subscriptionType"
                     value={currentPackage.subscriptionType}
                     onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     required
                   >
                     <option value="web">Web</option>
@@ -547,13 +541,13 @@ export default function SubscriptionPackagesManagement() {
                 {/* Description */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Description
+                    Description <span className="text-red-500">*</span>
                   </label>
                   <textarea
                     name="description"
                     value={currentPackage.description}
                     onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     rows="4"
                     placeholder="Enter package description"
                     required
@@ -565,12 +559,23 @@ export default function SubscriptionPackagesManagement() {
             {/* Modal Footer */}
             <div className="p-4">
               <button
-                className="w-full py-3 font-medium text-white bg-red-500 rounded-md disabled:bg-red-300"
+                className={`w-full py-3 font-medium text-white rounded-md transition-colors ${
+                  !isFormValid() || isCreating || isUpdating
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-red-500 hover:bg-red-600"
+                }`}
                 onClick={savePackage}
-                disabled={isCreating || isUpdating}
+                disabled={!isFormValid() || isCreating || isUpdating}
               >
                 {isCreating || isUpdating ? "Saving..." : "Save"}
               </button>
+
+              {/* Validation message */}
+              {!isFormValid() && (
+                <p className="mt-2 text-sm text-red-600 text-center">
+                  Please fill in all required fields with valid values
+                </p>
+              )}
             </div>
           </div>
         </div>

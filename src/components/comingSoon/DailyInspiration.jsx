@@ -35,6 +35,7 @@ const DailyInspirationPage = () => {
   const [schedulingModalVisible, setSchedulingModalVisible] = useState(false);
   const [schedulingVideo, setSchedulingVideo] = useState(null);
   const [schedulingDate, setSchedulingDate] = useState(null);
+  const [scheduledVideoId, setScheduledVideoId] = useState(null); // Track just scheduled video
   
   // Get all videos and scheduled videos - using the all videos API
   const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
@@ -112,6 +113,8 @@ const DailyInspirationPage = () => {
       message.success("Daily Inspiration video scheduled successfully!");
       setSchedulingVideo(null);
       setSchedulingDate(null);
+      setScheduledVideoId(videoId); // Mark as scheduled
+      setSchedulingModalVisible(false); // Close modal
       refetchScheduled();
     } catch (error) {
       console.error("Failed to schedule Daily Inspiration:", error);
@@ -198,13 +201,26 @@ const DailyInspirationPage = () => {
               }}
               className="mr-2"
               format="YYYY-MM-DDTHH:mm:ss.SSS[Z]"
+              disabledDate={(current) => current && current < moment().startOf('day')}
+              disabledTime={(current) => {
+                if (!current) return {};
+                const now = moment();
+                if (current.isSame(now, 'day')) {
+                  return {
+                    disabledHours: () => [...Array(now.hour()).keys()],
+                    disabledMinutes: () => current.hour() === now.hour() ? [...Array(now.minute()).keys()] : [],
+                    disabledSeconds: () => current.hour() === now.hour() && current.minute() === now.minute() ? [...Array(now.second()).keys()] : [],
+                  };
+                }
+                return {};
+              }}
             />
             <Button 
               type="primary"
               size="small"
               icon={<CalendarOutlined />}
               onClick={() => handleScheduleVideo(record._id, schedulingDate)}
-              disabled={!schedulingDate || schedulingVideo !== record._id}
+              disabled={scheduledVideoId === record._id || !schedulingDate || schedulingVideo !== record._id}
             >
               Schedule
             </Button>
@@ -239,6 +255,7 @@ const DailyInspirationPage = () => {
           setSchedulingModalVisible(false);
           setSchedulingVideo(null);
           setSchedulingDate(null);
+          setScheduledVideoId(null); // Reset on modal close
         }}
         footer={null}
         width={900}

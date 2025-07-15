@@ -47,15 +47,15 @@ const CategoryTable = ({
         </div>
       ),
     },
-    {
-      title: "Courses",
-      dataIndex: "subCategory",
-      key: "subCategory",
-      align: "center",
-      render: (subCategory) => {
-        return Array.isArray(subCategory) ? subCategory.length : 0;
-      },
-    },
+    // {
+    //   title: "Courses",
+    //   dataIndex: "subCategory",
+    //   key: "subCategory",
+    //   align: "center",
+    //   render: (subCategory) => {
+    //     return Array.isArray(subCategory) ? subCategory.length : 0;
+    //   },
+    // },
     {
       title: "Videos",
       dataIndex: "videoCount",

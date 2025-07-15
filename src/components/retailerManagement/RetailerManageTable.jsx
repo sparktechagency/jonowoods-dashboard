@@ -289,19 +289,19 @@ const VideoManagementSystem = () => {
       key: "category",
       align: "center",
     },
-    {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-      align: "center",
-    },
-    {
-      title: "Name",
-      dataIndex: "subCategory",
-      key: "subCategory",
-      align: "center",
-      render: (text) => (text ? text : "N/A"), 
-    },
+    // {
+    //   title: "Type",
+    //   dataIndex: "type",
+    //   key: "type",
+    //   align: "center",
+    // },
+    // {
+    //   title: "Name",
+    //   dataIndex: "subCategory",
+    //   key: "subCategory",
+    //   align: "center",
+    //   render: (text) => (text ? text : "N/A"), 
+    // },
     
     {
       title: "Upload Date",

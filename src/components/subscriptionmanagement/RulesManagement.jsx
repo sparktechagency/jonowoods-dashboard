@@ -16,6 +16,8 @@ export default function SubscriptionRulesManagement() {
   const [subscriptionType, setSubscriptionType] = useState("app");
   const [isEditing, setIsEditing] = useState(false);
   const [editingRuleId, setEditingRuleId] = useState(null);
+  const [originalRule, setOriginalRule] = useState(""); // Store original rule for comparison
+  const [originalSubscriptionType, setOriginalSubscriptionType] = useState("app"); // Store original type
 
   // RTK Query hooks
   const { data: subscriptionRules = [], isLoading: isLoadingRules } =
@@ -26,6 +28,20 @@ export default function SubscriptionRulesManagement() {
     useUpdateSubscriptionRuleMutation();
   const [deleteRule, { isLoading: isDeleting }] =
     useDeleteSubscriptionRuleMutation();
+
+  // Function to check if save button should be disabled
+  const isSaveDisabled = () => {
+    // If creating new rule, disable if currentRule is empty or only whitespace
+    if (!isEditing) {
+      return !currentRule || currentRule.trim() === "" || isCreating;
+    }
+    
+    // If editing, disable if no changes made or currentRule is empty
+    const hasChanges = currentRule !== originalRule || subscriptionType !== originalSubscriptionType;
+    const isRuleEmpty = !currentRule || currentRule.trim() === "";
+    
+    return !hasChanges || isRuleEmpty || isUpdating;
+  };
 
   // Rule functions
   const addSubscriptionRule = async () => {
@@ -48,6 +64,8 @@ export default function SubscriptionRulesManagement() {
       setCurrentRule(""); // Clear the rule after adding
       setIsEditing(false); // Reset editing flag
       setEditingRuleId(null); // Reset ID
+      setOriginalRule(""); // Reset original rule
+      setOriginalSubscriptionType("app"); // Reset original type
     } catch (error) {
       console.error("Error saving rule:", error);
       // Handle error - could show an error message to the user
@@ -57,6 +75,8 @@ export default function SubscriptionRulesManagement() {
   const editSubscriptionRule = (rule) => {
     setCurrentRule(rule.rule);
     setSubscriptionType(rule.subscriptionType);
+    setOriginalRule(rule.rule); // Store original rule for comparison
+    setOriginalSubscriptionType(rule.subscriptionType); // Store original type
     setIsEditing(true);
     setEditingRuleId(rule.id);
     setShowRuleModal(true); // Open modal to edit the rule
@@ -110,6 +130,8 @@ export default function SubscriptionRulesManagement() {
             setIsEditing(false);
             setCurrentRule("");
             setSubscriptionType("app");
+            setOriginalRule("");
+            setOriginalSubscriptionType("app");
           }}
         >
           <Plus size={18} className="mr-2" />
@@ -215,9 +237,9 @@ export default function SubscriptionRulesManagement() {
             {/* Modal Footer */}
             <div className="p-4">
               <button
-                className="w-full py-3 font-medium text-white bg-red-500 rounded-md disabled:bg-red-300"
+                className="w-full py-3 font-medium text-white bg-red-500 rounded-md disabled:bg-red-300 disabled:cursor-not-allowed"
                 onClick={addSubscriptionRule}
-                disabled={isCreating || isUpdating}
+                disabled={isSaveDisabled()}
               >
                 {isCreating || isUpdating ? "Saving..." : "Save"}
               </button>

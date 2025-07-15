@@ -77,10 +77,8 @@ const PostFormModal = ({
         fieldsToSet.publishAt = moment(editingItem.publishAt);
         setPublishDate(moment(editingItem.publishAt));
       } else {
-        // Default to tomorrow
-        const tomorrow = moment().add(1, 'days');
-        fieldsToSet.publishAt = tomorrow;
-        setPublishDate(tomorrow);
+        fieldsToSet.publishAt = null;
+        setPublishDate(null);
       }
 
       form.setFieldsValue(fieldsToSet);
@@ -98,10 +96,8 @@ const PostFormModal = ({
       setPostType("text");
       setTextContent("");
       setVideoDuration("");
-      // Default to tomorrow for new posts
-      const tomorrow = moment().add(1, 'days');
-      setPublishDate(tomorrow);
-      form.setFieldsValue({ publishAt: tomorrow });
+      setPublishDate(null);
+      form.setFieldsValue({ publishAt: null });
     }
   }, [editingItem, visible, form]);
 
@@ -349,6 +345,23 @@ const PostFormModal = ({
             placeholder="Select Date and Time"
             className="h-12 w-full"
             onChange={(date) => setPublishDate(date)}
+            disabledDate={(current) => current && current < moment().startOf('day')}
+            disabledTime={(current) => {
+              if (!current) return {};
+              const now = moment();
+              if (current.isSame(now, 'day')) {
+                const disabledHours = [];
+                for (let i = 0; i < now.hour(); i++) disabledHours.push(i);
+                const disabledMinutes = current.hour() === now.hour() ? Array.from({length: now.minute()}, (_, i) => i) : [];
+                const disabledSeconds = (current.hour() === now.hour() && current.minute() === now.minute()) ? Array.from({length: now.second()}, (_, i) => i) : [];
+                return {
+                  disabledHours: () => disabledHours,
+                  disabledMinutes: () => disabledMinutes,
+                  disabledSeconds: () => disabledSeconds,
+                };
+              }
+              return {};
+            }}
           />
         </Form.Item>
        </div>
