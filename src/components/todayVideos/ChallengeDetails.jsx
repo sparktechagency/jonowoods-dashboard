@@ -7,7 +7,8 @@ import {
   useScheduleVideoRotationMutation,
   useCreateChallengeWithVideosMutation,
   useGetDailyChallengeVideosQuery,
-  useDeleteDailyChallengeVideoMutation
+  useDeleteDailyChallengeVideoMutation,
+  useUpdateDailyChallengeVideoMutation
 } from "../../redux/apiSlices/dailyChallangeApi";
 import VideoUploadSystem from "../common/VideoUploade";
 import { 
@@ -30,6 +31,7 @@ const ChallengeDetails = () => {
   
   // Initialize all the hooks at the component level
   const [updateDailyChallenge] = useUpdateDailyChallengeMutation();
+  const [updateDailyChallengeVideo] = useUpdateDailyChallengeVideoMutation();
   const [deleteDailyChallengeVideo] = useDeleteDailyChallengeVideoMutation();
   const [scheduleVideoRotation] = useScheduleVideoRotationMutation();
   
@@ -65,10 +67,10 @@ const ChallengeDetails = () => {
     useGetByIdQuery: useGetSingleDailyChallengeQuery,
     deleteItem: deleteDailyChallengeVideo, 
     updateItemStatus: updateDailyChallenge, 
-    updateItem: updateDailyChallenge, 
+    updateItem: updateDailyChallengeVideo, // This is the correct update function
     createItem: createChallengeWithVideos,
     categories,
-    // Add scheduling capability
+    // Add scheduling capability - only use this for scheduling, not for updates
     scheduleVideo: scheduleVideoRotation,
   };
 
@@ -102,7 +104,8 @@ const ChallengeDetails = () => {
   
       console.log("Scheduling data:", scheduleData);
   
-      // Call API to schedule video
+      // Call API to schedule video - only for scheduling, not for updates
+      // This function should only be used for scheduling new videos, not updating existing ones
       await scheduleVideoRotation(scheduleData);
       message.success("Video scheduled successfully!");
       setSchedulingVideo(null);

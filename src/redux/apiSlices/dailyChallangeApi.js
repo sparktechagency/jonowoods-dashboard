@@ -59,10 +59,21 @@ const challengeApi = api.injectEndpoints({
 
     // PATCH: Update a Challenge
     updateDailyChallenge: builder.mutation({
-      query: ({ id,  data}) => ({
+      query: ({ id,  challengeData}) => ({
         url: `/admin/challenge-category/update-challenge-category/${id}`,
         method: "PATCH",
-        body: data,
+        body: challengeData,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "DailyChallenge", id },
+        "DailyChallenge",
+      ],
+    }),
+    updateDailyChallengeVideo: builder.mutation({
+      query: ({ id,  challengeData}) => ({
+        url: `/admin/challenge/${id}`,
+        method: "PATCH",
+        body: challengeData,
       }),
       invalidatesTags: (result, error, { id }) => [
         { type: "DailyChallenge", id },
@@ -164,6 +175,7 @@ export const {
   useGetDailyChallengeVideosQuery,
   useCreateChallengeWithVideosMutation,
   useUpdateDailyChallengeStatusMutation,
+  useUpdateDailyChallengeVideoMutation,
   useGetChallengeVideosQuery,
   useAddVideoToChallengeMutation,
   useDeleteDailyChallengeVideoMutation,

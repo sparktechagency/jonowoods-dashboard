@@ -146,7 +146,7 @@ const ChallengeVideoUpload = ({
 
           await updateItem({
             id: editingId,
-            data: formData,
+            challengeData: formData,
           });
           message.success(`${getPageTitle()} updated successfully`);
         } else {

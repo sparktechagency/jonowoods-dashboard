@@ -88,10 +88,10 @@ const DailyInspirationPage = () => {
     deleteItem: deleteDailyInspiration,
     updateItemStatus: updateDailyInspirationStatus,
     createItem: createDailyInspiration,
-    updateItem: updateDailyInspiration,
+    updateItem: updateDailyInspiration, // This is the correct update function
     categories,
     // Add scheduling capability to the VideoUploadSystem component
-    scheduleVideo: scheduleDailyInspiration,
+    scheduleVideo: scheduleDailyInspiration, // Only use this for scheduling, not for updates
     refetchScheduled: refetchScheduled
   };
 

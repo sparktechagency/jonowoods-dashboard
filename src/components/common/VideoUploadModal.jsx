@@ -267,7 +267,10 @@ const VideoFormModal = ({
             : `${values.timeDuration} Min`;
 
         // Check if we're only scheduling an existing video
-        if (isEditMode && editingItem?._id && values.publishAt && !thumbnailFile && !videoFile) {
+        // Only use the scheduling API if we're specifically on a page that needs scheduling
+        // and not when we're editing an existing video (which should use the update API)
+        if (isEditMode && editingItem?._id && values.publishAt && !thumbnailFile && !videoFile && 
+            pageType !== "daily-inspiration" && pageType !== "daily-challenge") {
           // If only updating the schedule for an existing video
           const scheduleData = {
             videoId: editingItem._id,

@@ -105,16 +105,47 @@ console.log(itemsData)
     setCurrentPage(1);
   }, [statusFilter]);
 
+  // Helper functions
+  const getStatusDisplayText = () => {
+    if (statusFilter === "all") return "All Status";
+    return statusFilter?.charAt(0)?.toUpperCase() + statusFilter?.slice(1);
+  };
+
+  const getPageTitle = () => {
+    switch (pageType) {
+      case "coming-soon":
+        return "Coming Soon";
+      case "today-video":
+        return "Today's Video";
+      case "challenge-video":
+        return "Challenge Video";
+      default:
+        return "Content";
+    }
+  };
+
   // Form submit handler
   const handleFormSubmit = useCallback(
     async (formData) => {
       setIsSubmitting(true);
       try {
         if (editingId) {
-          await updateItem({
-            id: editingId,
-            comingSoonData: formData,
-          });
+          // Determine the correct parameter name based on pageType
+          let updateParams = { id: editingId };
+          
+          if (pageType === "daily-inspiration") {
+            // Make sure we're using the correct parameter structure for daily inspiration
+            updateParams.dailyInspirationData = formData;
+            console.log("Updating daily inspiration with:", updateParams);
+          } else if (pageType === "coming-soon") {
+            updateParams.comingSoonData = formData;
+          } else {
+            // Default fallback
+            updateParams.formData = formData;
+          }
+          
+          // Call the update API
+          await updateItem(updateParams);
           message.success(`${getPageTitle()} updated successfully`);
         } else {
           await createItem(formData);
@@ -136,7 +167,7 @@ console.log(itemsData)
         setIsSubmitting(false);
       }
     },
-    [editingId, createItem, updateItem, refetch]
+    [editingId, createItem, updateItem, refetch, pageType, getPageTitle]
   );
 
   // Delete handler
@@ -160,7 +191,7 @@ console.log(itemsData)
         },
       });
     },
-    [deleteItem, refetch]
+    [deleteItem, refetch, getPageTitle]
   );
 
   // Status change handler
@@ -182,10 +213,19 @@ console.log(itemsData)
                 status: newStatus,
               });
             } else {
-              await updateItem({
-                id: record._id,
-                formData: { ...record, status: newStatus },
-              });
+              // Determine the correct parameter name based on pageType
+              let updateParams = { id: record._id };
+              
+              if (pageType === "daily-inspiration") {
+                updateParams.dailyInspirationData = { ...record, status: newStatus };
+              } else if (pageType === "coming-soon") {
+                updateParams.comingSoonData = { ...record, status: newStatus };
+              } else {
+                // Default fallback
+                updateParams.formData = { ...record, status: newStatus };
+              }
+              
+              await updateItem(updateParams);
             }
             message.success(`Status updated to ${newStatus}`);
             refetch();
@@ -196,7 +236,7 @@ console.log(itemsData)
         },
       });
     },
-    [updateItemStatus, updateItem, refetch]
+    [updateItemStatus, updateItem, refetch, pageType]
   );
 
   // Table change handler
@@ -355,24 +395,6 @@ console.log(itemsData)
       handleDeleteItem,
     ]
   );
-
-  const getStatusDisplayText = () => {
-    if (statusFilter === "all") return "All Status";
-    return statusFilter?.charAt(0)?.toUpperCase() + statusFilter?.slice(1);
-  };
-
-  const getPageTitle = () => {
-    switch (pageType) {
-      case "coming-soon":
-        return "Coming Soon";
-      case "today-video":
-        return "Today's Video";
-      case "challenge-video":
-        return "Challenge Video";
-      default:
-        return "Content";
-    }
-  };
 
   if (isLoadingItems) {
     return <Spinner />;
