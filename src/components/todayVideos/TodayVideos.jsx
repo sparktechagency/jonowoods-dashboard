@@ -176,7 +176,7 @@ const TodayVideos = () => {
       if (editingChallenge) {
         await updateDailyChallenge({
           id: editingChallenge._id, // Send the ID as a parameter
-          data: formData, // Send the form data as the body
+          challengeData: formData, // Send the form data as the body with the correct parameter name
         });
         message.success("Challenge updated successfully!");
       } else {

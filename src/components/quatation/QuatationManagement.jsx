@@ -72,6 +72,11 @@ const QuotationManagement = () => {
     }
   }, [quotationsData, selectedStatus]);
 
+  // Function to disable past dates
+  const disablePastDates = (current) => {
+    return current && current < dayjs().startOf('day');
+  };
+
   const showModal = () => {
     setIsModalVisible(true);
   };
@@ -80,9 +85,13 @@ const QuotationManagement = () => {
     try {
       const values = await form.validateFields();
 
-      // Validate Jodit editor content
-      if (!quotationContent.trim()) {
-        message.error("Please enter quotation content!");
+      // Remove HTML tags and trim to check actual content length
+      const plainTextContent = quotationContent.replace(/<[^>]*>/g, '');
+      const trimmedContent = plainTextContent.trim();
+      
+      // Validate minimum content length (10 characters) and not just spaces
+      if (trimmedContent.length < 10) {
+        message.error("Quotation must contain at least 10 characters!");
         return;
       }
 
@@ -368,7 +377,11 @@ const QuotationManagement = () => {
             label="Date"
             rules={[{ required: true, message: "Please select a date!" }]}
           >
-            <DatePicker style={{ width: "100%" }} className="h-12" />
+            <DatePicker 
+              style={{ width: "100%" }} 
+              className="h-12" 
+              disabledDate={disablePastDates}
+            />
           </Form.Item>
         </Form>
       </Modal>

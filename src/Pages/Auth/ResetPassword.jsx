@@ -1,12 +1,15 @@
 import { Button, ConfigProvider, Form, Input } from "antd";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import image4 from "../../assets/image4.png";
+import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
 
 const ResetPassword = () => {
 
   const email = new URLSearchParams(location.search).get("email")
   const navigate = useNavigate();
+  const [newPasswordVisible, setNewPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
   const onFinish = async(values) => {
         navigate(`/auth/login`);
@@ -44,8 +47,13 @@ const ResetPassword = () => {
           style={{ marginBottom: 0 }}
         >
           <Input.Password
-            type="password"
+            type={newPasswordVisible ? "text" : "password"}
             placeholder="Enter New password"
+            iconRender={(visible) => 
+              visible ? 
+                <EyeOutlined onClick={() => setNewPasswordVisible(!newPasswordVisible)} /> : 
+                <EyeInvisibleOutlined onClick={() => setNewPasswordVisible(!newPasswordVisible)} />
+            }
             style={{
               border: "1px solid #E0E4EC",
               height: "52px",
@@ -92,8 +100,13 @@ const ResetPassword = () => {
           ]}
         >
           <Input.Password
-            type="password"
+            type={confirmPasswordVisible ? "text" : "password"}
             placeholder="Enter Confirm password"
+            iconRender={(visible) => 
+              visible ? 
+                <EyeOutlined onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)} /> : 
+                <EyeInvisibleOutlined onClick={() => setConfirmPasswordVisible(!confirmPasswordVisible)} />
+            }
             style={{
               border: "1px solid #E0E4EC",
               height: "52px",

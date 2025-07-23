@@ -1,4 +1,3 @@
-// LineChart.jsx
 import React from "react";
 import { Line } from "react-chartjs-2";
 import {
@@ -25,18 +24,18 @@ ChartJS.register(
 );
 
 const LineChart = () => {
-  const { data: revenueData,isLoading } = useGetRevenueQuery();
-  
+  const { data: revenueData, isLoading } = useGetRevenueQuery();
 
-   const months = revenueData?.data.map((item) => item.month);
-  const totalRevenue = revenueData?.data.map((item) => item.totalRevenue);
-  
+  // Get months and total revenue data
+  const months = revenueData?.data.map((item) => item.month);
+  const totalRevenue = revenueData?.data.map((item) => item.totalRevenue); // Show negative values
+
   const data = {
     labels: months,
     datasets: [
       {
         label: "Total Revenue",
-        data: totalRevenue,
+        data: totalRevenue, // Use original data with negative values
         fill: false,
         borderColor: "#DE5555", // Line color changed to #DE5555
         backgroundColor: "transparent",
@@ -93,7 +92,7 @@ const LineChart = () => {
         grid: {
           display: false, // Disable grid lines for Y axis
         },
-        beginAtZero: false,
+        beginAtZero: false, // Allow negative values
         ticks: {
           color: "#191820", // Tick label color
           padding: 32, // Padding between tick labels
@@ -105,7 +104,9 @@ const LineChart = () => {
     },
   };
 
-
+  if (isLoading) {
+    return <Spinner />; // Show loading spinner if data is loading
+  }
 
   return (
     <div style={{ width: "100%", height: "250px" }} className="text-black">

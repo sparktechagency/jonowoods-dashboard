@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { FiUploadCloud } from "react-icons/fi";
+import { FiUploadCloud, FiEye, FiEyeOff } from "react-icons/fi";
 
 export const AddWholesealerModal = ({ isOpen, onClose }) => {
   const [phone, setPhone] = useState("");
   const [image, setImage] = useState(null);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   if (!isOpen) return null;
 
@@ -80,11 +81,23 @@ export const AddWholesealerModal = ({ isOpen, onClose }) => {
                 <label className="block text-sm font-medium mb-1">
                   Password *
                 </label>
-                <input
-                  type="password"
-                  placeholder="Enter Password"
-                  className="w-full border p-2 rounded"
-                />
+                <div className="relative">
+                  <input
+                    type={passwordVisible ? "text" : "password"}
+                    placeholder="Enter Password"
+                    className="w-full border p-2 rounded"
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setPasswordVisible(!passwordVisible)} 
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {passwordVisible ? 
+                      <FiEyeOff className="h-5 w-5 text-gray-500" /> : 
+                      <FiEye className="h-5 w-5 text-gray-500" />
+                    }
+                  </button>
+                </div>
               </div>
             </form>
           </div>

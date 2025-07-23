@@ -55,8 +55,8 @@ const ChangePassword = () => {
   return (
     <div className="shadow-lg p-10 rounded-md">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold flex items-center gap-1">
-          <IoArrowBackCircleOutline size={26} className="font-medium" />
+        <h1 className="text-2xl font-bold flex items-center justify-center w-full">
+          {/* <IoArrowBackCircleOutline size={26} className="font-medium" /> */}
           Change Password
         </h1>
       </div>

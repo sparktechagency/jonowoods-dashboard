@@ -26,6 +26,8 @@ const UserManagementTable = () => {
   const [planFilter, setPlanFilter] = useState("All");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [pageSize, setPageSize] = useState(2);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Use RTK Query hooks
   const [queryParams, setQueryParams] = useState([]);
@@ -41,19 +43,19 @@ const UserManagementTable = () => {
       params.push({ name: "status", value: statusFilter });
     }
 
-    if (planFilter !== "All") {
-      params.push({ name: "planRunning", value: planFilter });
-    }
+    params.push({ name: "limit", value: pageSize });
+    params.push({ name: "page", value: currentPage });
 
     if (searchText) {
       params.push({ name: "searchTerm", value: searchText }); 
     }
 
     setQueryParams(params);
-  }, [statusFilter, planFilter, searchText]);
+  }, [statusFilter, planFilter, searchText, pageSize, currentPage]);
 
   const handleSearch = (e) => {
     setSearchText(e.target.value); 
+    setCurrentPage(1); // Reset to first page on new search
   };
 
   const showUserDetails = (user) => {
@@ -101,7 +103,7 @@ const UserManagementTable = () => {
       key: "sl",
       width: 60,
       align: "center",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => ((currentPage - 1) * pageSize) + index + 1,
     },
     {
       title: "User Name",
@@ -120,8 +122,11 @@ const UserManagementTable = () => {
       dataIndex: "phone",
       key: "phone",
       align: "center",
-      render: (text) => <span>{text || "N/A"}</span>,
+      render: (text) => (
+        <span>{text && text.length > 14 ? `${text.slice(0, 14)}...` : text || "N/A"}</span>
+      ),
     },
+    
     {
       title: "Joining Date",
       dataIndex: "joinDate",
@@ -200,8 +205,8 @@ const UserManagementTable = () => {
       <Menu.Item key="active" onClick={() => setStatusFilter("active")}>
         Active
       </Menu.Item>
-      <Menu.Item key="block" onClick={() => setStatusFilter("block")}>
-        Block
+      <Menu.Item key="blocked" onClick={() => setStatusFilter("blocked")}>
+        Blocked
       </Menu.Item>
     </Menu>
   );
@@ -286,21 +291,15 @@ const UserManagementTable = () => {
           dataSource={data?.users || []}
           loading={isLoading}
           pagination={{
-            defaultPageSize: 10,
-            total: data?.pagination?.total,
-            current: data?.pagination?.currentPage,
-            onChange: (page) => {
-              const paginationParams = [...queryParams];
-              const pageParam = paginationParams.findIndex(
-                (p) => p.name === "page"
-              );
-              if (pageParam !== -1) {
-                paginationParams[pageParam].value = page;
-              } else {
-                paginationParams.push({ name: "page", value: page });
-              }
-              setQueryParams(paginationParams);
+            pageSize: pageSize,
+            total: data?.pagination?.total || 0,
+            current: currentPage,
+            onChange: (page, size) => {
+              setCurrentPage(page);
+              setPageSize(size);
             },
+            // showSizeChanger: true,
+            // pageSizeOptions: ['10', '20', '50', '100'],
           }}
           size="middle"
           rowKey="_id"
