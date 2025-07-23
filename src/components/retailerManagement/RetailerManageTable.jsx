@@ -111,7 +111,6 @@ const VideoManagementSystem = () => {
   const showFormModal = (record = null) => {
     if (record) {
       setEditingId(record._id);
-      // currentVideo & equipmentTags will update automatically via useEffect above
     } else {
       setEditingId(null);
     }
@@ -133,7 +132,6 @@ const VideoManagementSystem = () => {
     }
   };
 
-  // Close form modal and reset states
   const closeFormModal = () => {
     setIsFormModalVisible(false);
     setEditingId(null);
@@ -141,7 +139,6 @@ const VideoManagementSystem = () => {
     setEquipmentTags([]);
   };
 
-  // Close details modal and reset states
   const closeDetailsModal = () => {
     setIsDetailsModalVisible(false);
     setEditingId(null);
@@ -149,7 +146,6 @@ const VideoManagementSystem = () => {
     setEquipmentTags([]);
   };
 
-  // After form submission, close modal and refresh list
   const handleFormSubmit = async () => {
     closeFormModal();
     await refetch();
@@ -238,19 +234,19 @@ const VideoManagementSystem = () => {
     </Menu>
   );
 
-  const typeMenu = (
-    <Menu>
-      <Menu.Item key="all" onClick={() => handleTypeFilter("all")}>
-        All Type
-      </Menu.Item>
-      <Menu.Item key="class" onClick={() => handleTypeFilter("class")}>
-        Class
-      </Menu.Item>
-      <Menu.Item key="course" onClick={() => handleTypeFilter("course")}>
-        Course
-      </Menu.Item>
-    </Menu>
-  );
+  // const typeMenu = (
+  //   <Menu>
+  //     <Menu.Item key="all" onClick={() => handleTypeFilter("all")}>
+  //       All Type
+  //     </Menu.Item>
+  //     <Menu.Item key="class" onClick={() => handleTypeFilter("class")}>
+  //       Class
+  //     </Menu.Item>
+  //     <Menu.Item key="course" onClick={() => handleTypeFilter("course")}>
+  //       Course
+  //     </Menu.Item>
+  //   </Menu>
+  // );
 
   // Table columns
   const columns = [
