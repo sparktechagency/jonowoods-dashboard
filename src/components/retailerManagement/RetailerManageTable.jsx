@@ -421,7 +421,7 @@ const VideoManagementSystem = () => {
             </Button>
           </Dropdown>
 
-          <Dropdown
+          {/* <Dropdown
             overlay={typeMenu}
             trigger={["click"]}
             placement="bottomLeft"
@@ -436,7 +436,7 @@ const VideoManagementSystem = () => {
                 <DownOutlined />
               </Space>
             </Button>
-          </Dropdown>
+          </Dropdown> */}
         </Space>
 
         <GradientButton
