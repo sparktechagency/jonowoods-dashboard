@@ -42,6 +42,7 @@ const PushNotification = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [notificationTypeFilter, setNotificationTypeFilter] = useState("All");
+  const [messageContent, setMessageContent] = useState("");
 
   const [pushNotificationSend, { isLoading }] =
     usePushNotificationSendMutation();
@@ -229,7 +230,7 @@ const PushNotification = () => {
 
     const notificationPayload = {
       title: values.title,
-      message: values.message,
+      message: messageContent, // local state থেকে নিবে
       isScheduled: isScheduled,
       sendAt: scheduledDateTime ? scheduledDateTime.toISOString() : null,
     };
@@ -350,7 +351,6 @@ const PushNotification = () => {
       <Menu.Item key="SEND" onClick={() => setStatusFilter("SEND")}>
         Send
       </Menu.Item>
-      
     </Menu>
   );
 
@@ -451,21 +451,17 @@ const PushNotification = () => {
           >
             <Input placeholder="Write Your Title Here" size="large" />
           </Form.Item>
-
           <Form.Item
             label="Message"
-            name="message"
+            required
             rules={[
               { required: true, message: "Please add notification content" },
             ]}
-            getValueFromEvent={(_, editor) => editor?.value}
           >
             <JoditEditor
               ref={editor}
               config={config}
-              onChange={(newContent) => {
-                form.setFieldsValue({ message: newContent });
-              }}
+              onBlur={(newContent) => setMessageContent(newContent)} 
             />
           </Form.Item>
 

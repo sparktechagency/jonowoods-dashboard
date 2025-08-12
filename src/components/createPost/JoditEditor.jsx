@@ -6,16 +6,16 @@ const JoditTextEditor = ({ value, onChange, tabIndex, onBlur, ...props }) => {
   const editor = useRef(null);
 
   return (
-   <div className="jodit-editor-container">
-     <JoditEditor
-      ref={editor}
-      value={value}
-      tabIndex={tabIndex || 1}
-      onBlur={onBlur || onChange}
-      onChange={onChange}
-      {...props}
-    />
-   </div>
+    <div className="jodit-editor-container">
+      <JoditEditor
+        ref={editor}
+        value={undefined} // কন্ট্রোল না করা
+        defaultValue={value} // initial content
+        onBlur={(newContent) => onChange(newContent)}
+        tabIndex={tabIndex || 1}
+        {...props}
+      />
+    </div>
   );
 };
 

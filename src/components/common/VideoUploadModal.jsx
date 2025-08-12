@@ -116,6 +116,10 @@ const VideoFormModal = ({
         description: editingItem.description,
         // Parse publishAt as ISO string if it exists
         publishAt: editingItem.publishAt ? moment(editingItem.publishAt) : null,
+        // Set isReady value if it exists for coming-soon videos
+        isReady: editingItem.isReady,
+        // Set redirectUrl if it exists for coming-soon videos
+        redirectUrl: editingItem.redirectUrl,
       });
 
       // Set equipments
@@ -242,7 +246,9 @@ const VideoFormModal = ({
           message.error("Please select a thumbnail");
           return;
         }
-        if (!videoFile && !isEditMode) {
+        
+        // Video is optional for coming-soon page type
+        if (!videoFile && !isEditMode && pageType !== "coming-soon") {
           message.error("Please select a video");
           return;
         }
@@ -253,7 +259,7 @@ const VideoFormModal = ({
             message.error("Please select a thumbnail");
             return;
           }
-          if (!videoFile && !hasExistingVideo) {
+          if (!videoFile && !hasExistingVideo && pageType !== "coming-soon") {
             message.error("Please select a video");
             return;
           }
@@ -302,6 +308,21 @@ const VideoFormModal = ({
           equipment: equipments,
           equipments: equipments,
           uploadDate: editingItem?.uploadDate || new Date().toLocaleDateString(),
+        };
+        
+        // If it's coming-soon and no video is provided, set a flag
+        if (pageType === "coming-soon" && !videoFile && !hasExistingVideo) {
+          videoData.noVideo = true;
+        }
+        
+        // Add isReady field if it's a coming-soon video
+        if (pageType === "coming-soon") {
+          if (values.isReady) {
+            videoData.isReady = values.isReady;
+          }
+          if (values.redirectUrl) {
+            videoData.redirectUrl = values.redirectUrl;
+          }
         };
 
         // Add publishAt if provided
@@ -402,6 +423,32 @@ const VideoFormModal = ({
               disabledDate={disablePastDates}
             />
           </Form.Item>
+          
+          {/* Ready Status - Only for coming-soon videos */}
+          {pageType === "coming-soon" && (
+            <>
+              <Form.Item
+                name="isReady"
+                label="Status"
+                rules={[{ required: true, message: "Please select a status" }]}
+              >
+                <Select placeholder="Select status" className="h-12">
+                  <Option value="arrivedSoon">Arrived Soon</Option>
+                  <Option value="ready">Ready</Option>
+                </Select>
+              </Form.Item>
+              
+              <Form.Item
+                name="redirectUrl"
+                label="Redirect URL"
+                rules={[{ type: 'url', message: 'Please enter a valid URL' }]}
+              >
+                <Input placeholder="Enter redirect URL (optional)" className="h-12" />
+              </Form.Item>
+            </>
+          )}
+            
+          
 
           {/* Equipment */}
           <Form.Item label="Equipment">
@@ -485,10 +532,10 @@ const VideoFormModal = ({
           </Form.Item>
 
           {/* Video Upload */}
-          <Form.Item label="Video" required={!isEditMode}>
+          <Form.Item label="Video" required={!isEditMode && pageType !== "coming-soon"}>
             <Dragger {...videoProps}>
               <InboxOutlined className="text-2xl mb-2" />
-              <p>Click or drag video to upload</p>
+              <p>Click or drag video to upload {pageType === "coming-soon" && "(optional)"}</p>
               {isEditMode && (
                 <p className="text-blue-500 text-xs">
                   Leave empty to keep existing video

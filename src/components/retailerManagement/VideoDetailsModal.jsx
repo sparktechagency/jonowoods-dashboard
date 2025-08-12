@@ -133,7 +133,11 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
               </Tag>
             </InfoItem>
 
-            <InfoItem icon={<FolderOutlined />} label="SUB CATEGORY" span={12}>
+            <InfoItem
+              icon={<FolderOutlined />}
+              label={currentVideo?.isReady ? "Status" : "SUB CATEGORY"}
+              span={12}
+            >
               <Tag
                 color="#DE5555"
                 style={{
@@ -142,7 +146,7 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
                   borderColor: "#DE5555",
                 }}
               >
-                {currentVideo?.subCategory}
+                {currentVideo?.isReady || currentVideo?.subCategory}
               </Tag>
             </InfoItem>
 

@@ -74,7 +74,7 @@ const QuotationManagement = () => {
 
   // Function to disable past dates
   const disablePastDates = (current) => {
-    return current && current < dayjs().startOf('day');
+    return current && current < dayjs().startOf("day");
   };
 
   const showModal = () => {
@@ -86,9 +86,9 @@ const QuotationManagement = () => {
       const values = await form.validateFields();
 
       // Remove HTML tags and trim to check actual content length
-      const plainTextContent = quotationContent.replace(/<[^>]*>/g, '');
+      const plainTextContent = quotationContent.replace(/<[^>]*>/g, "");
       const trimmedContent = plainTextContent.trim();
-      
+
       // Validate minimum content length (10 characters) and not just spaces
       if (trimmedContent.length < 10) {
         message.error("Quotation must contain at least 10 characters!");
@@ -285,7 +285,6 @@ const QuotationManagement = () => {
       ),
     },
   ];
-  
 
   if (isLoading) {
     return (
@@ -369,17 +368,18 @@ const QuotationManagement = () => {
               value={quotationContent}
               tabIndex={1}
               onBlur={(newContent) => setQuotationContent(newContent)}
-              onChange={(newContent) => setQuotationContent(newContent)}
+              onChange={() => {}} // typing চলাকালীন কিছু করবে না
             />
           </Form.Item>
+
           <Form.Item
             name="date"
             label="Date"
             rules={[{ required: true, message: "Please select a date!" }]}
           >
-            <DatePicker 
-              style={{ width: "100%" }} 
-              className="h-12" 
+            <DatePicker
+              style={{ width: "100%" }}
+              className="h-12"
               disabledDate={disablePastDates}
             />
           </Form.Item>
