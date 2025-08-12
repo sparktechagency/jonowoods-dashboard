@@ -26,7 +26,7 @@ const UserManagementTable = () => {
   const [planFilter, setPlanFilter] = useState("All");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [pageSize, setPageSize] = useState(2);
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
   // Use RTK Query hooks
