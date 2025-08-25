@@ -16,7 +16,13 @@ import {
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
 import DraggableCategoryList from "./DraggableCategoryList";
-import { SaveOutlined, TableOutlined, AppstoreOutlined } from "@ant-design/icons";
+import {
+  SaveOutlined,
+  TableOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
+import DragDropList from "../common/DragDropList";
+import DraggableCategoryCard from "./DraggableCategoryCard";
 
 const CategoryManagement = () => {
   const navigate = useNavigate();
@@ -111,7 +117,7 @@ const CategoryManagement = () => {
   const showCategoryDetails = (record) => {
     navigate(`/subcategory-management/${record._id}`);
   };
-  
+
   const showAllVideos = (record) => {
     navigate(`/category-management/${record._id}`);
   };
@@ -170,9 +176,9 @@ const CategoryManagement = () => {
       // Create an array of category IDs in the new order
       const categoryOrder = orderedCategories.map((category, index) => ({
         _id: category._id,
-        serial:category.serial,
+        serial: category.serial,
       }));
-console.log(categoryOrder)
+      console.log(categoryOrder);
       await updateCategoryOrder(categoryOrder).unwrap();
       message.success("Category order updated successfully!");
       setHasOrderChanges(false);
@@ -241,7 +247,9 @@ console.log(categoryOrder)
           <div>
             <Button
               type="default"
-              icon={viewMode === "table" ? <AppstoreOutlined /> : <TableOutlined />}
+              icon={
+                viewMode === "table" ? <AppstoreOutlined /> : <TableOutlined />
+              }
               onClick={toggleViewMode}
               style={{
                 borderRadius: "4px",
@@ -296,16 +304,27 @@ console.log(categoryOrder)
             onViewVideos={showAllVideos}
           />
         ) : (
-          <DraggableCategoryList
-            categories={orderedCategories}
-            onReorder={handleReorder}
-            onEdit={showModal}
-            onView={showCategoryDetails}
-            onStatusChange={handleStatusChange}
-            onDelete={handleDelete}
-            onViewVideos={showAllVideos}
-            hasChanges={hasOrderChanges}
-            onUpdateOrder={handleUpdateOrder}
+          <DragDropList
+            items={orderedCategories} // data array
+            onReorder={handleReorder} // drag হলে state আপডেট করবে
+            onUpdateOrder={handleUpdateOrder} // save চাপলে API কল করবে
+            hasChanges={hasOrderChanges} // order বদলেছে কিনা চেক
+            renderItem={(
+              category,
+              index,
+              draggedItem 
+            ) => (
+              <DraggableCategoryCard
+                category={category}
+                onEdit={showModal}
+                onView={showCategoryDetails}
+                onDelete={handleDelete}
+                onStatusChange={handleStatusChange}
+                onViewVideos={showAllVideos}
+                isDragging={draggedItem?._id === category._id}
+                serialNumber={index + 1}
+              />
+            )}
           />
         )}
       </div>

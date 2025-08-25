@@ -43,6 +43,15 @@ const categorySlice = api.injectEndpoints({
       },
       invalidatesTags: ["Categories"],
     }),
+    deleteCategoryVideo: builder.mutation({
+      query: (id) => {
+        return {
+          url: `/admin/videos/management/delete/${id}`,
+          method: "DELETE",
+        };
+      },
+      invalidatesTags: ["Categories"],
+    }),
 
     getCategory: builder.query({
       query: () => {
@@ -84,6 +93,15 @@ const categorySlice = api.injectEndpoints({
       },
       providesTags: (result, error, id) => [{ type: "Category", id }],
     }),
+    getCategoryVideoDetails: builder.query({
+      query: (id) => {
+        return {
+          url: `/admin/videos/management/get-single-video-for-admin/${id}`,
+          method: "GET",
+        };
+      },
+      providesTags: (result, error, id) => [{ type: "Category", id }],
+    }),
 
     // Toggle status endpoint
     toggleCategoryStatus: builder.mutation({
@@ -112,11 +130,19 @@ const categorySlice = api.injectEndpoints({
     invalidatesTags: ["Categories"],
     }),
 
+    updateVideoOrderInCategory: builder.mutation({
+      query: (orderData) => ({
+        url: "/admin/videos/management/shuffle",
+        method: "POST",
+        body: orderData,
+      }),
+      invalidatesTags: ["Video"],
+    }),
 
-    videoCopyOthersCategory: builder.mutation({
+    videoAddInCategory: builder.mutation({
       query: (scheduleData) => {
         return {
-          url: `/videos/copy-video`,
+          url: `/admin/videos/managment/copy-video`,
           method: "POST",
           body: scheduleData ,
         };
@@ -135,5 +161,12 @@ export const {
   useGetByCategoryAllVideosQuery,
   useToggleCategoryStatusMutation,
   useUpdateCategoryOrderMutation,
-  useVideoCopyOthersCategoryMutation,
+  useVideoAddInCategoryMutation,
+  useGetCategoryVideoDetailsQuery,
+  useDeleteCategoryVideoMutation,
+  useUpdateVideoOrderInCategoryMutation,
+
+
+
+
 } = categorySlice;

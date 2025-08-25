@@ -18,16 +18,18 @@ import {
   DownOutlined,
   PlusOutlined,
   CalendarOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import moment from "moment/moment";
-import { useGetByCategoryAllVideosQuery, useGetCategoryQuery, useVideoCopyOthersCategoryMutation } from "../../redux/apiSlices/categoryApi";
-import { useDeleteVideoMutation, useGetAllVideosQuery, useGetVideoByIdQuery, useUpdateVideoStatusMutation } from "../../redux/apiSlices/videoApi";
+import { useDeleteCategoryVideoMutation, useGetByCategoryAllVideosQuery, useGetCategoryQuery, useGetCategoryVideoDetailsQuery, useUpdateVideoOrderInCategoryMutation, useVideoAddInCategoryMutation } from "../../redux/apiSlices/categoryApi";
+import { useDeleteVideoMutation, useGetAllVideosQuery, useGetVideoByIdQuery, useUpdateVideoStatusMutation, useUpdateVideoOrderMutation } from "../../redux/apiSlices/videoApi";
 import { useScheduleDailyInspirationMutation } from "../../redux/apiSlices/dailyInspiraton";
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
 import GradientButton from "../common/GradiantButton";
 import VideoFormModal from "../retailerManagement/VideoFormModal";
 import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
+import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 
 const AllVideos = () => {
@@ -41,6 +43,13 @@ const AllVideos = () => {
   const [editingId, setEditingId] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
   const [equipmentTags, setEquipmentTags] = useState([]);
+  const [selectedVideos, setSelectedVideos] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  
+  // Drag and drop states
+  const [localVideos, setLocalVideos] = useState([]);
+  const [hasOrderChanges, setHasOrderChanges] = useState(false);
+  const [viewMode, setViewMode] = useState("table"); // "table" or "drag"
 
   // Filters and pagination
   const [statusFilter, setStatusFilter] = useState("all");
@@ -59,7 +68,7 @@ const AllVideos = () => {
     const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
     const TotalVideo = allVideosData?.data || [];
   // Schedule API
-  const [videoCopyOthersCategory] = useVideoCopyOthersCategoryMutation();
+  const [videoAddInCategory] = useVideoAddInCategoryMutation();
 
   const allVideos = data?.data?.videos || [];
   const paginationData = data?.data?.meta || {
@@ -82,12 +91,15 @@ const AllVideos = () => {
   const paginatedVideos = filteredVideos.slice(startIndex, endIndex);
 
   // Fetch single video data when editingId is set
-  const { data: videoDetails } = useGetVideoByIdQuery(editingId, {
+  const { data: videoDetail } = useGetCategoryVideoDetailsQuery(editingId, {
     skip: !editingId,
   });
-
-  const [deleteVideo] = useDeleteVideoMutation();
+const videoDetails=videoDetail?.data
+  console.log(videoDetails)
+  const [deleteCategoryVideo] = useDeleteCategoryVideoMutation();
   const [updateVideoStatus] = useUpdateVideoStatusMutation();
+  const [updateVideoOrderInCategory] = useUpdateVideoOrderInCategoryMutation();
+
 
   // Update currentVideo and equipmentTags whenever videoDetails or editingId changes
   useEffect(() => {
@@ -108,7 +120,94 @@ const AllVideos = () => {
     setCurrentPage(1);
   }, [statusFilter, typeFilter]);
 
+  // Update local videos when allVideos changes
+  useEffect(() => {
+    if (allVideos.length > 0) {
+      const sortedVideos = [...allVideos].sort((a, b) => (a.serial || 0) - (b.serial || 0));
+      setLocalVideos(sortedVideos);
+      setHasOrderChanges(false);
+    }
+  }, [allVideos]);
+
   console.log("Filtered Videos:", paginatedVideos);
+
+  // VideoCard component for drag and drop view
+  const VideoCard = ({ video, onEdit, onView, onDelete, onStatusChange, isDragging, serialNumber }) => (
+    <div
+      className={`bg-white rounded-lg shadow-md p-4 mb-4 border transition-all duration-200 ${
+        isDragging ? "opacity-50 transform rotate-2" : "hover:shadow-lg"
+      }`}
+      style={{
+        cursor: "grab",
+        border: isDragging ? "2px dashed #1890ff" : "1px solid #e8e8e8",
+      }}
+    >
+      <div className="flex items-center space-x-4">
+        {/* Serial Number */}
+        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-semibold text-blue-600">
+          {serialNumber || "#"}
+        </div>
+        
+        {/* Thumbnail */}
+        <div className="flex-shrink-0">
+          <img
+            src={getVideoAndThumbnail(video.thumbnailUrl)}
+            alt={video.title}
+            className="w-20 h-12 object-cover rounded"
+          />
+        </div>
+        
+        {/* Video Info */}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg font-medium text-gray-900 truncate">{video.title}</h3>
+          <div className="flex items-center space-x-4 text-sm text-gray-500">
+            <span>Duration: {video.duration}</span>
+            <span>Category: {video.category}</span>
+            <span>Created: {moment(video.createdAt).format("L")}</span>
+          </div>
+        </div>
+        
+        {/* Status */}
+        <div className="flex-shrink-0">
+          <Tag color={video.status?.toLowerCase() === "active" ? "green" : "red"}>
+            {video.status?.toUpperCase()}
+          </Tag>
+        </div>
+        
+        {/* Actions */}
+        <div className="flex-shrink-0">
+          <Space size="small">
+            <Button
+              type="text"
+              icon={<EditOutlined style={{ color: "#f55" }} />}
+              onClick={() => onEdit(video)}
+              title="Edit Video"
+            />
+            <Button
+              type="text"
+              icon={<EyeOutlined style={{ color: "#55f" }} />}
+              onClick={() => onView(video)}
+              title="View Video Details"
+            />
+            <Switch
+              size="small"
+              checked={video.status === "active"}
+              onChange={(checked) => onStatusChange(checked, video)}
+              style={{
+                backgroundColor: video.status === "active" ? "red" : "gray",
+              }}
+            />
+            <Button
+              type="text"
+              icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
+              onClick={() => onDelete(video._id)}
+              title="Delete Video"
+            />
+          </Space>
+        </div>
+      </div>
+    </div>
+  );
 
   // Show form modal for add or edit
   const showFormModal = (record = null) => {
@@ -146,6 +245,8 @@ const AllVideos = () => {
   // Close schedule modal
   const closeScheduleModal = () => {
     setIsScheduleModalVisible(false);
+    setSelectedVideos([]);
+    setSelectedRowKeys([]);
   };
 
   // After form submission, close modal and refresh list
@@ -164,7 +265,7 @@ const AllVideos = () => {
       cancelText: "No",
       onOk: async () => {
         try {
-          await deleteVideo(id).unwrap();
+          await deleteCategoryVideo(id).unwrap();
           message.success("Video deleted successfully");
           refetch();
         } catch {
@@ -198,7 +299,7 @@ const AllVideos = () => {
     });
   };
 
-  // Handle adding video to Daily Inspiration
+  // Handle adding single video to category
   const handleAddToSchedule = async (video) => {
     try {
       if (!video || !categoryId) {
@@ -207,16 +308,62 @@ const AllVideos = () => {
       }
 
       const scheduleData = {
-        videoId: video._id,
+        videoIds: [video._id],
         categoryId: categoryId,
       };
-console.log(scheduleData)
-      await videoCopyOthersCategory(scheduleData);
-      message.success("Video added to Daily Inspiration successfully!");
+      
+      console.log('Single video data:', scheduleData);
+      await videoAddInCategory(scheduleData);
+      message.success("Video added to category successfully!");
+    } catch (error) {
+      console.error("Failed to add video to category:", error);
+      message.error("Failed to add video to category");
+    }
+  };
+
+  // Handle adding multiple selected videos
+  const handleAddSelectedVideos = async () => {
+    if (selectedVideos.length === 0) {
+      message.warning("Please select at least one video");
+      return;
+    }
+
+    try {
+      const videoIds = selectedVideos.map(video => video._id);
+      const scheduleData = {
+        videoIds: videoIds,
+        categoryId: categoryId,
+      };
+      
+      console.log('Multiple videos data:', scheduleData);
+      await videoAddInCategory(scheduleData);
+      message.success(`${selectedVideos.length} videos added to category successfully!`);
+      setSelectedVideos([]);
+      setSelectedRowKeys([]);
       setIsScheduleModalVisible(false);
     } catch (error) {
-      console.error("Failed to add video to Daily Inspiration:", error);
-      message.error("Failed to add video to Daily Inspiration");
+      console.error("Failed to add videos to category:", error);
+      message.error("Failed to add videos to category");
+    }
+  };
+
+  // Handle video reordering (local state only)
+  const handleReorder = (reorderedVideos) => {
+    setLocalVideos(reorderedVideos);
+    setHasOrderChanges(true);
+  };
+
+  // Handle actual order update to server
+  const handleUpdateOrder = async (orderData) => {
+    try {
+      await updateVideoOrderInCategory(orderData).unwrap();
+
+      message.success("Video order updated successfully!");
+      setHasOrderChanges(false);
+      await refetch();
+    } catch (error) {
+      message.error("Failed to update video order");
+      console.error("Update order error:", error);
     }
   };
 
@@ -259,6 +406,19 @@ console.log(scheduleData)
   //   </Menu>
   // );
 
+  // Row selection configuration for schedule modal
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (selectedRowKeys, selectedRows) => {
+      setSelectedRowKeys(selectedRowKeys);
+      setSelectedVideos(selectedRows);
+    },
+    getCheckboxProps: (record) => ({
+      disabled: false,
+      name: record.title,
+    }),
+  };
+
   // Schedule Modal Video Columns
   const scheduleVideoColumns = [
     {
@@ -292,6 +452,8 @@ console.log(scheduleData)
           size="small"
           icon={<PlusOutlined />}
           onClick={() => handleAddToSchedule(record)}
+          className="bg-primary text-white h-10"
+
         >
           Add Video
         </Button>
@@ -343,13 +505,13 @@ console.log(scheduleData)
       key: "category",
       align: "center",
     },
-    {
-      title: "Course Name",
-      dataIndex: "subCategory",
-      key: "subCategory",
-      align: "center",
-      render: (subCategory) => subCategory || "N/A",
-    },
+    // {
+    //   title: "Course Name",
+    //   dataIndex: "subCategory",
+    //   key: "subCategory",
+    //   align: "center",
+    //   render: (subCategory) => subCategory || "N/A",
+    // },
     // {
     //   title: "Type",
     //   dataIndex: "type",
@@ -435,6 +597,25 @@ console.log(scheduleData)
 
   return (
     <div style={{ padding: 24 }}>
+      <style jsx>{`
+        .drag-item {
+          transition: all 0.2s ease;
+          cursor: grab;
+        }
+        .drag-item:active {
+          cursor: grabbing;
+        }
+        .drag-over {
+          border: 2px dashed #1890ff !important;
+          background-color: #f0f8ff;
+        }
+        .drag-item:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+      `}</style>
+
+          {/* <h2 style={{ marginBottom: 16 }}> Videos</h2> */}
       <div className="flex justify-end gap-6 mb-6">
         <Space size="small" className="flex gap-4">
           <Dropdown
@@ -473,6 +654,14 @@ console.log(scheduleData)
         </Space>
 
         <Space>
+          <Button
+            onClick={() => setViewMode(viewMode === "table" ? "drag" : "table")}
+            className="py-5 mr-2"
+            type={viewMode === "drag" ? "primary" : "default"}
+          >
+            {viewMode === "table" ? "Switch to Drag & Drop" : "Switch to Table"}
+          </Button>
+          
           <GradientButton
             type="primary"
             onClick={() => setIsScheduleModalVisible(true)}
@@ -493,28 +682,48 @@ console.log(scheduleData)
         </Space>
       </div>
 
-      <h2 style={{ marginBottom: 16 }}>All Videos</h2>
+  
 
-      <Table
-        columns={columns}
-        dataSource={paginatedVideos}
-        rowKey="_id"
-        loading={isLoadingVideos}
-        pagination={{
-          current: currentPage,
-          pageSize: pageSize,
-          //   total: filteredVideos.length,
-          //   showSizeChanger: true,
-          //   showQuickJumper: true,
-          //   showTotal: (total, range) =>
-          //     `${range[0]}-${range[1]} of ${total} videos`,
-        }}
-        onChange={handleTableChange}
-        bordered
-        size="small"
-        className="custom-table"
-        scroll={{ x: "max-content" }}
-      />
+      {viewMode === "table" ? (
+        <Table
+          columns={columns}
+          dataSource={paginatedVideos}
+          rowKey="_id"
+          loading={isLoadingVideos}
+          pagination={{
+            current: currentPage,
+            pageSize: pageSize,
+            //   total: filteredVideos.length,
+            //   showSizeChanger: true,
+            //   showQuickJumper: true,
+            //   showTotal: (total, range) =>
+            //     `${range[0]}-${range[1]} of ${total} videos`,
+          }}
+          onChange={handleTableChange}
+          bordered
+          size="small"
+          className="custom-table"
+          scroll={{ x: "max-content" }}
+        />
+      ) : (
+        <DragDropList
+          items={localVideos}
+          onReorder={handleReorder}
+          onUpdateOrder={handleUpdateOrder}
+          hasChanges={hasOrderChanges}
+          renderItem={(video, index, draggedItem) => (
+            <VideoCard
+              video={video}
+              onEdit={showFormModal}
+              onView={showDetailsModal}
+              onDelete={handleDeleteVideo}
+              onStatusChange={handleStatusChange}
+              isDragging={draggedItem?._id === video._id}
+              serialNumber={video.serial || index + 1}
+            />
+          )}
+        />
+      )}
 
       {/* Add/Edit Video Modal */}
       <VideoFormModal
@@ -540,7 +749,34 @@ console.log(scheduleData)
         title="Add Videos to library"
         open={isScheduleModalVisible}
         onCancel={closeScheduleModal}
-        footer={null}
+        footer={
+          <div className="flex justify-between items-center">
+            <div>
+              {selectedVideos.length > 0 && (
+                <span className="text-sm text-gray-600">
+                  {selectedVideos.length} video(s) selected
+                </span>
+              )}
+            </div>
+            <Space>
+              <Button onClick={closeScheduleModal} className=" text-black h-10">
+
+
+                Cancel
+              </Button>
+              <Button 
+                type="primary" 
+                onClick={handleAddSelectedVideos}
+                disabled={selectedVideos.length === 0}
+                icon={<PlusOutlined />}
+                className="bg-primary text-white h-10"
+
+              >
+                Add Selected Videos ({selectedVideos.length})
+              </Button>
+            </Space>
+          </div>
+        }
         width={900}
       >
         <Table 
@@ -550,6 +786,7 @@ console.log(scheduleData)
           loading={isLoadingVideos}
           pagination={{ pageSize: 8 }}
           locale={{ emptyText: "No videos found" }}
+          rowSelection={rowSelection}
         />
       </Modal>
     </div>

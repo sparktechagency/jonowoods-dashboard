@@ -6,7 +6,7 @@ const videoApi = api.injectEndpoints({
     addVideo: builder.mutation({
       query: (data) => {
         return {
-          url: "/admin/videos/managment/upload-video",
+          url: "/admin/videos/library/upload-video",
           method: "POST",
           body: data,
         };
@@ -24,7 +24,7 @@ const videoApi = api.injectEndpoints({
         }
 
         return {
-          url: "/admin/videos/managment/videos",
+          url: "/admin/videos/library/videos",
           method: "GET",
           params,
         };
@@ -76,7 +76,7 @@ const videoApi = api.injectEndpoints({
     getVideoById: builder.query({
       query: (id) => {
         return {
-          url: `/admin/videos/managment/videos/${id}`,
+          url: `/admin/videos/library/videos/${id}`,
           method: "GET",
         };
       },
@@ -89,7 +89,7 @@ const videoApi = api.injectEndpoints({
     updateVideo: builder.mutation({
       query: ({ id, videoData }) => {
         return {
-          url: `/admin/videos/managment/update-video/${id}`,
+          url: `/admin/videos/library/update-video/${id}`,
           method: "PUT",
           body: videoData,
         };
@@ -100,7 +100,7 @@ const videoApi = api.injectEndpoints({
     deleteVideo: builder.mutation({
       query: (id) => {
         return {
-          url: `/admin/videos/managment/video-delete/${id}`,
+          url: `/admin/videos/library/video-delete/${id}`,
           method: "DELETE",
         };
       },
@@ -110,7 +110,7 @@ const videoApi = api.injectEndpoints({
     updateVideoStatus: builder.mutation({
       query: ({ id, status }) => {
         return {
-          url: `/admin/videos/managment/video-status/${id}`,
+          url: `/admin/videos/library/video-status/${id}`,
           method: "PUT",
           body: { status },
         };

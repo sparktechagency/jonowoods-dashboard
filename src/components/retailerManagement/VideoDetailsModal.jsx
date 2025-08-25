@@ -22,6 +22,8 @@ import { getImageUrl, getVideoAndThumbnail } from "../common/imageUrl";
 const { Title, Text, Paragraph } = Typography;
 
 const VideoDetailsModal = ({ visible, onCancel, currentVideo }) => {
+  console.log(currentVideo)
+
   const [form] = Form.useForm();
 
   const InfoItem = ({ icon, label, children, span = 24 }) => (
