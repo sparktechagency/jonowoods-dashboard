@@ -479,17 +479,17 @@ console.log(scheduleData)
             className="py-5"
             icon={<CalendarOutlined />}
           >
-            Schedule Video
+             Video Library
           </GradientButton>
           
-          <GradientButton
+          {/* <GradientButton
             type="primary"
             onClick={() => showFormModal()}
             className="py-5"
             icon={<PlusOutlined />}
           >
             Upload New Video
-          </GradientButton>
+          </GradientButton> */}
         </Space>
       </div>
 

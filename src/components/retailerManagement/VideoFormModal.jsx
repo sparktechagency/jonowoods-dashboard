@@ -62,12 +62,12 @@ const VideoFormModal = ({
 
       // Set form fields with proper values
       form.setFieldsValue({
-        serial: currentVideo.serial || undefined,
+        // serial: currentVideo.serial || undefined,
         title: currentVideo.title,
-        type: selectedVideoType,
-        category: selectedCategoryId,
+        // type: selectedVideoType,
+        // category: selectedCategoryId,
         // For subcategory, use the ID instead of name
-        subCategory: currentVideo.subCategoryId?._id || undefined,
+        // subCategory: currentVideo.subCategoryId?._id || undefined,
         duration: currentVideo.duration || "",
         description: currentVideo.description || "",
       });
@@ -133,17 +133,17 @@ const VideoFormModal = ({
   };
 
   // Equipment tag handlers
-  const addTag = () => {
-    const tag = tagInput.trim();
-    if (tag && !equipmentTags.includes(tag)) {
-      setEquipmentTags([...equipmentTags, tag]);
-      setTagInput("");
-    }
-  };
+  // const addTag = () => {
+  //   const tag = tagInput.trim();
+  //   if (tag && !equipmentTags.includes(tag)) {
+  //     setEquipmentTags([...equipmentTags, tag]);
+  //     setTagInput("");
+  //   }
+  // };
 
-  const removeTag = (tagToRemove) => {
-    setEquipmentTags(equipmentTags.filter((tag) => tag !== tagToRemove));
-  };
+  // const removeTag = (tagToRemove) => {
+  //   setEquipmentTags(equipmentTags.filter((tag) => tag !== tagToRemove));
+  // };
 
   // Handle video type change
   const handleTypeChange = (value) => {
@@ -176,13 +176,13 @@ const VideoFormModal = ({
           : null;
 
       const videoData = {
-        serial: values.serial,
+        // serial: values.serial,
         title: values.title,
-        type: values.type,
-        categoryId: values.category,
-        category: selectedCategory?.name,
-        subCategoryId: videoType === "course" ? values.subCategory : "",
-        subCategory: videoType === "course" ? selectedSubCategory?.name : "",
+        // type: values.type,
+        // categoryId: values.category,
+        // category: selectedCategory?.name,
+        // subCategoryId: videoType === "course" ? values.subCategory : "",
+        // subCategory: videoType === "course" ? selectedSubCategory?.name : "",
         duration: values.duration.includes("Min")
           ? values.duration
           : `${values.duration} Min`,
@@ -235,6 +235,24 @@ const VideoFormModal = ({
     onChange: handleVideoUpload,
   };
 
+  const addTag = () => {
+    if (tagInput.trim() && !equipmentTags.includes(tagInput.trim())) {
+      setEquipmentTags([...equipmentTags, tagInput.trim()]);
+      setTagInput("");
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setEquipmentTags(equipmentTags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const handleEquipmentKeyPress = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addTag();
+    }
+  };
+
   return (
     <Modal
       title={isEditMode ? "Edit Video" : "Add New Video"}
@@ -245,7 +263,7 @@ const VideoFormModal = ({
       destroyOnClose
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           <Form.Item
             label="Title"
             name="title"
@@ -254,7 +272,7 @@ const VideoFormModal = ({
             <Input placeholder="Video Title" className="py-6" />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             label="Category"
             name="category"
             rules={[{ required: true, message: "Please select category" }]}
@@ -270,8 +288,8 @@ const VideoFormModal = ({
                 </Option>
               ))}
             </Select>
-          </Form.Item>
-
+          </Form.Item> */}
+          {/* 
           <Form.Item
             label="Type"
             name="type"
@@ -285,11 +303,11 @@ const VideoFormModal = ({
               <Option value="class">class</Option>
               <Option value="course">course</Option>
             </Select>
-          </Form.Item>
+          </Form.Item> */}
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          {isEditMode && (
+          {/* {isEditMode && (
             <Form.Item
               label="Serial Name"
               name="serial"
@@ -309,9 +327,9 @@ const VideoFormModal = ({
                 className="py-6"
               />
             </Form.Item>
-          )}
+          )} */}
 
-          {videoType === "course" && (
+          {/* {videoType === "course" && (
             <Form.Item
               label="Sub Category"
               name="subCategory"
@@ -329,42 +347,10 @@ const VideoFormModal = ({
                 ))}
               </Select>
             </Form.Item>
-          )}
-
-          <Form.Item
-            label="Duration"
-            name="duration"
-            rules={[{ required: true, message: "Please enter duration" }]}
-          >
-            <Input placeholder="MM:SS" className="py-6" />
-          </Form.Item>
+          )} */}
         </div>
 
-        <div className="grid grid-cols-1 gap-4">
-          <Form.Item label="Equipment">
-            <div className="border rounded-lg p-2 h-[60px] w-full">
-              {equipmentTags.map((tag) => (
-                <Tag
-                  key={tag}
-                  closable
-                  onClose={() => removeTag(tag)}
-                  className="mb-1"
-                >
-                  {tag}
-                </Tag>
-              ))}
-              <Input
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onPressEnter={addTag}
-                onBlur={addTag}
-                placeholder="Add equipment"
-                className="border-none"
-                style={{ width: "200px" }}
-              />
-            </div>
-          </Form.Item>
-        </div>
+      
 
         <div className="grid grid-cols-2 gap-4 ">
           <Form.Item label="Thumbnail" required={!isEditMode}>
@@ -406,6 +392,52 @@ const VideoFormModal = ({
                 />
               </div>
             )}
+          </Form.Item>
+        </div>
+
+          <div className="grid grid-cols-2 gap-4">
+          <Form.Item
+            label="Duration"
+            name="duration"
+            rules={[{ required: true, message: "Please enter duration" }]}
+          >
+            <Input placeholder="MM:SS" className="py-6" />
+          </Form.Item>
+
+          {/* Equipment */}
+          <Form.Item label="Equipment">
+            <div className="space-y-2">
+              <Input
+                placeholder="Add equipment and press Enter"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyPress={handleEquipmentKeyPress}
+                className="h-12"
+                suffix={
+                  <Button
+                    type="text"
+                    onClick={addTag}
+                    disabled={!tagInput.trim()}
+                  >
+                    Add
+                  </Button>
+                }
+              />
+              {equipmentTags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {equipmentTags.map((equipment, index) => (
+                    <Tag
+                      key={index}
+                      closable
+                      onClose={() => removeTag(equipment)}
+                      color="red"
+                    >
+                      {equipment}
+                    </Tag>
+                  ))}
+                </div>
+              )}
+            </div>
           </Form.Item>
         </div>
 

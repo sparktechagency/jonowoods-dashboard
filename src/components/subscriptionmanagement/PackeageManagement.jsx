@@ -223,7 +223,7 @@ export default function SubscriptionPackagesManagement() {
     selectedType === "All"
       ? subscriptionPackages
       : subscriptionPackages.filter(
-          (pkg) => pkg.subscriptionType === selectedType.toLowerCase()
+          (pkg) => pkg.subscriptionType === selectedType.toLowerCase() || pkg.subscriptionType === "all"
         );
 
   // Filter menu items
@@ -535,6 +535,7 @@ export default function SubscriptionPackagesManagement() {
                   >
                     <option value="web">Web</option>
                     <option value="app">App</option>
+                    <option value="all">All</option>
                   </select>
                 </div>
 

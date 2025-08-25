@@ -266,11 +266,14 @@ const VideoFormModal = ({
         }
 
         // Format duration - use the auto-detected duration if available
-        const formattedDuration =
-          values.timeDuration.includes(" Min") ||
-          values.timeDuration.includes(" Sec")
-            ? values.timeDuration
-            : `${values.timeDuration} Min`;
+        // For coming-soon videos, duration is optional
+        let formattedDuration = "";
+        if (values.timeDuration) {
+          formattedDuration = values.timeDuration.includes(" Min") ||
+            values.timeDuration.includes(" Sec")
+              ? values.timeDuration
+              : `${values.timeDuration} Min`;
+        }
 
         // Check if we're only scheduling an existing video
         // Only use the scheduling API if we're specifically on a page that needs scheduling
@@ -302,13 +305,17 @@ const VideoFormModal = ({
         const videoData = {
           title: values.title,
           category: values.category,
-          duration: formattedDuration,
-          timeDuration: formattedDuration,
           description: values.description || "",
           equipment: equipments,
           equipments: equipments,
           uploadDate: editingItem?.uploadDate || new Date().toLocaleDateString(),
         };
+        
+        // Add duration if provided or if it's not a coming-soon video
+        if (formattedDuration || pageType !== "coming-soon") {
+          videoData.duration = formattedDuration;
+          videoData.timeDuration = formattedDuration;
+        }
         
         // If it's coming-soon and no video is provided, set a flag
         if (pageType === "coming-soon" && !videoFile && !hasExistingVideo) {
@@ -400,7 +407,7 @@ const VideoFormModal = ({
           <Form.Item
             name="timeDuration"
             label="Time Duration"
-            rules={[{ required: true, message: "Please enter time duration" }]}
+            rules={[{ required: pageType !== "coming-soon", message: "Please enter time duration" }]}
           >
             <Input
               placeholder="Duration will be auto-detected from video"

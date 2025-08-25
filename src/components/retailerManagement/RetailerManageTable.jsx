@@ -119,17 +119,8 @@ const VideoManagementSystem = () => {
 
   // Show details modal and set editingId to fetch video details
   const showDetailsModal = (record) => {
-    if (record.type === "class") {
-      setEditingId(record._id);
-      setIsDetailsModalVisible(true);
-    } else if (record.type === "course") {
-      const subCategoryId = record.subCategoryId?._id || record.subCategoryId;
-      if (subCategoryId) {
-        navigate(`/video-management/${subCategoryId}`);
-      } else {
-        message.error("Subcategory ID not found");
-      }
-    }
+    setEditingId(record._id);
+    setIsDetailsModalVisible(true);
   };
 
   const closeFormModal = () => {
@@ -207,18 +198,18 @@ const VideoManagementSystem = () => {
   const handleTypeFilter = (type) => setTypeFilter(type.toLowerCase());
 
   // Filter menus
-  const categoryMenu = (
-    <Menu>
-      <Menu.Item key="all" onClick={() => handleCategoryFilter("all")}>
-        All Categories
-      </Menu.Item>
-      {categories.map((cat) => (
-        <Menu.Item key={cat._id} onClick={() => handleCategoryFilter(cat.name)}>
-          {cat?.name}
-        </Menu.Item>
-      ))}
-    </Menu>
-  );
+  // const categoryMenu = (
+  //   <Menu>
+  //     <Menu.Item key="all" onClick={() => handleCategoryFilter("all")}>
+  //       All Categories
+  //     </Menu.Item>
+  //     {categories.map((cat) => (
+  //       <Menu.Item key={cat._id} onClick={() => handleCategoryFilter(cat.name)}>
+  //         {cat?.name}
+  //       </Menu.Item>
+  //     ))}
+  //   </Menu>
+  // );
 
   const statusMenu = (
     <Menu>
@@ -279,12 +270,12 @@ const VideoManagementSystem = () => {
         </div>
       ),
     },
-    {
-      title: "Category",
-      dataIndex: ["categoryId", "name"],
-      key: "category",
-      align: "center",
-    },
+    // {
+    //   title: "Category",
+    //   dataIndex: ["categoryId", "name"],
+    //   key: "category",
+    //   align: "center",
+    // },
     // {
     //   title: "Type",
     //   dataIndex: "type",
@@ -338,11 +329,7 @@ const VideoManagementSystem = () => {
             type="text"
             icon={<EyeOutlined style={{ color: "#55f" }} />}
             onClick={() => showDetailsModal(record)}
-            title={
-              record.type === "class"
-                ? "View Details"
-                : "View Subcategory Videos"
-            }
+            title="View Details"
           />
           <Switch
             size="small"
@@ -387,7 +374,7 @@ const VideoManagementSystem = () => {
     <div>
       <div className="flex justify-end gap-6 mb-6">
         <Space size="small" className="flex gap-4">
-          <Dropdown
+          {/* <Dropdown
             overlay={categoryMenu}
             trigger={["click"]}
             placement="bottomLeft"
@@ -402,7 +389,7 @@ const VideoManagementSystem = () => {
                 <DownOutlined />
               </Space>
             </Button>
-          </Dropdown>
+          </Dropdown> */}
 
           <Dropdown
             overlay={statusMenu}
