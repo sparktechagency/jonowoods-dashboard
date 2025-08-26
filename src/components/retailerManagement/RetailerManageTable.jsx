@@ -25,7 +25,8 @@ import {
   useGetAllVideosQuery,
   useDeleteVideoMutation,
   useUpdateVideoStatusMutation,
-  useGetVideoByIdQuery,
+  useCourserVideoDetailsQuery,
+
 } from "../../redux/apiSlices/videoApi";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment/moment";
@@ -81,7 +82,8 @@ const VideoManagementSystem = () => {
   };
 
   // Fetch single video data when editingId is set
-  const { data: videoDetails } = useGetVideoByIdQuery(editingId, {
+  const { data: videoDetails } = useCourserVideoDetailsQuery(editingId, {
+
     skip: !editingId,
   });
 
@@ -331,14 +333,14 @@ const VideoManagementSystem = () => {
             onClick={() => showDetailsModal(record)}
             title="View Details"
           />
-          <Switch
+          {/* <Switch
             size="small"
             checked={record.status === "active"}
             onChange={(checked) => handleStatusChange(checked, record)}
             style={{
               backgroundColor: record.status === "active" ? "red" : "gray",
             }}
-          />
+          /> */}
           <Button
             type="text"
             icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}

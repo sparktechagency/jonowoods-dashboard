@@ -9,7 +9,12 @@ const SubCategoryTable = ({
   onView,
   onStatusChange,
   onDelete,
+  categoryId,
 }) => {
+  console.log("subCategories:", subCategories);
+  console.log("categoryId:", categoryId);
+
+
   const columns = [
     {
       title: "SL",

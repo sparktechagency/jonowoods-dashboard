@@ -6,7 +6,7 @@ const postApi = api.injectEndpoints({
     // POST: Create a new post entry
     createPost: builder.mutation({
       query: (data) => ({
-        url: "/admin/post/managment/create",
+        url: "/admin/post/management/create",
         method: "POST",
         body: data,
       }),
@@ -22,7 +22,7 @@ const postApi = api.injectEndpoints({
         queryParams.append('limit', limit);
         
         return {
-          url: `/admin/post/managment?${queryParams.toString()}`,
+          url: `/admin/post/management?${queryParams.toString()}`,
           method: "GET",
         };
       },
@@ -31,7 +31,7 @@ const postApi = api.injectEndpoints({
     // GET: Retrieve single post by id
     getPostById: builder.query({
       query: (id) => ({
-        url: `/admin/post/managment/${id}`,
+        url: `/admin/post/management/${id}`,
         method: "GET",
       }),
     }),
@@ -39,7 +39,7 @@ const postApi = api.injectEndpoints({
     // PATCH: Update a post entry
     updatePost: builder.mutation({
       query: ({ id, postData }) => ({
-        url: `/admin/post/managment/${id}`,
+        url: `/admin/post/management/${id}`,
         method: "PATCH",
         body: postData,
       }),
@@ -48,7 +48,7 @@ const postApi = api.injectEndpoints({
     // DELETE: Delete a post entry
     deletePost: builder.mutation({
       query: (id) => ({
-        url: `/admin/post/managment/${id}`,
+        url: `/admin/post/management/${id}`,
         method: "DELETE",
       }),
     }),

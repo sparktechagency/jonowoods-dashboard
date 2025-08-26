@@ -23,6 +23,8 @@ const SubCategoryManagement = () => {
   const [subCategoryModalVisible, setSubCategoryModalVisible] = useState(false);
   const [editingSubCategory, setEditingSubCategory] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  console.log(selectedCategory);
+
 
   // Fetch category and subcategory data
   const { data: singleCategoryData, isLoading: singleCategoryLoading } =
@@ -140,9 +142,9 @@ const SubCategoryManagement = () => {
     }
   };
 
-  const showCategoryDetails = (record) => {
-    navigate(`/video-management/${record._id}`);
-  };
+ const showCategoryDetails = (record) => {
+  navigate(`/video-management/${record._id}?categoryId=${selectedCategory?._id}`);
+};
   
 
   const handleSubCategoryCancel = () => {
@@ -273,6 +275,8 @@ const SubCategoryManagement = () => {
         subCategories={formattedSubCategories}
         onEdit={showSubCategoryModal}
         onView={showCategoryDetails}
+        categoryId={selectedCategory?._id}
+
         onStatusChange={handleSubCategoryStatusChange}
         onDelete={handleSubCategoryDelete}
       />

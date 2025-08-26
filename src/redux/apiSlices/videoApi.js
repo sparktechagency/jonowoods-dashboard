@@ -11,6 +11,8 @@ const videoApi = api.injectEndpoints({
           body: data,
         };
       },
+      invalidatesTags: ["Videos"],
+
     }),
 
     // Updated getAllVideos query with proper filtering and pagination
@@ -67,10 +69,12 @@ const videoApi = api.injectEndpoints({
     getCoursesAllVideos: builder.query({
       query: (courseId) => {
         return {
-          url: `/admin/videos/managment/get-all-videos-by-course/${courseId}`,
+          url: `/admin/videos/management/get-all-videos-by-course/${courseId}`,
           method: "GET",
         };
       },
+      providesTags: ["Videos"],
+
     }),
 
     getVideoById: builder.query({
@@ -83,6 +87,22 @@ const videoApi = api.injectEndpoints({
       transformResponse: ({ data }) => {
         return data;
       },
+      providesTags: ["Videos"],
+
+    }),
+
+    courserVideoDetails: builder.query({
+      query: (id) => {
+        return {
+          url: `/admin/videos/management/get-single-video-for-admin/${id}`,
+          method: "GET",
+        };
+      },
+      transformResponse: ({ data }) => {
+        return data;
+      },
+      providesTags: ["Videos"],
+
     }),
 
     // PATCH: Update an existing video
@@ -94,6 +114,8 @@ const videoApi = api.injectEndpoints({
           body: videoData,
         };
       },
+      invalidatesTags: ["Videos"],
+
     }),
 
     // DELETE: Delete a video
@@ -104,21 +126,42 @@ const videoApi = api.injectEndpoints({
           method: "DELETE",
         };
       },
+      invalidatesTags: ["Videos"],
+
+    }),
+    deleteVideoByCategoryANdSubCategory: builder.mutation({
+      query: (id) => {
+        return {
+          url: `/admin/videos/management/delete/${id}`,
+          method: "DELETE",
+        };
+      },
+      invalidatesTags: ["Videos"],
+
     }),
 
     // Toggle video status (active/inactive)
+    // updateVideoStatus: builder.mutation({
+    //   query: ({ id, status }) => {
+    //     return {
+    //       url: `/admin/videos/library/video-status/${id}`,
+    //       method: "PUT",
+    //       body: { status },
+    //     };
+    //   },
+    // }),
     updateVideoStatus: builder.mutation({
       query: ({ id, status }) => {
         return {
-          url: `/admin/videos/library/video-status/${id}`,
-          method: "PUT",
+          url: `/admin/videos/management/update-video-status/${id}`,
+          method: "PATCH",
           body: { status },
         };
       },
     }),
     updateVideoOrder: builder.mutation({
       query: (orderData) => ({
-        url: "/admin/subcategory/safhale",
+        url: "/admin/subcategory/shuffle",
         method: "POST",
         body: orderData,
       }),
@@ -151,7 +194,7 @@ const videoApi = api.injectEndpoints({
         //   });
         // }
         return {
-          url: `/admin/videos/managment/get-all-videos-by-course/${id}`,
+          url: `/admin/videos/management/get-all-videos-by-course/${id}`,
           method: "GET",
           
         };
@@ -255,4 +298,8 @@ export const {
   useScheduleVideoMutation,
   useCreateChallengeMutation,
   useGetScheduledVideosQuery,
+  useDeleteVideoByCategoryANdSubCategoryMutation,
+  useCourserVideoDetailsQuery,
+
+
 } = videoApi;

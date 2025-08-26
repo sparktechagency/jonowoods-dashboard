@@ -4,13 +4,15 @@ import {
   useDeleteDailyChallegeMutation,
   useGetDailyChallengeQuery,
   useNewDailyChallengeMutation,
+  useUpdateChallengeOrderMutation,
   useUpdateDailyChallengeMutation,
   useUpdateDailyChallengeStatusMutation, 
 } from "../../redux/apiSlices/dailyChallangeApi";
 import { useGetAllVideosQuery } from "../../redux/apiSlices/videoApi";
-import { Button, Modal, Form, Input, Table, message, Tag, Upload, Switch } from "antd";
-import { PlusOutlined, EyeOutlined, DeleteOutlined, EditOutlined, UploadOutlined, ReloadOutlined, PictureOutlined } from "@ant-design/icons";
+import { Button, Modal, Form, Input, Table, message, Tag, Upload, Switch, Space } from "antd";
+import { PlusOutlined, EyeOutlined, DeleteOutlined, EditOutlined, UploadOutlined, ReloadOutlined, PictureOutlined, SaveOutlined } from "@ant-design/icons";
 import GradientButton from "../common/GradiantButton";
+import DragDropList from "../common/DragDropList";
 import moment from "moment";
 import { getImageUrl } from "../common/imageUrl";
 
@@ -21,17 +23,24 @@ const TodayVideos = () => {
   const [createDailyChallenge] = useNewDailyChallengeMutation();
   const [updateDailyChallenge] = useUpdateDailyChallengeMutation();
   const [deleteDailyChallenge] = useDeleteDailyChallegeMutation();
-  const [updateDailyChallengeStatus] = useUpdateDailyChallengeStatusMutation(); // Add this hook
+  const [updateDailyChallengeStatus] = useUpdateDailyChallengeStatusMutation();
+  const [updateChallengeOrder] = useUpdateChallengeOrderMutation();
 
   const [challengeModalVisible, setChallengeModalVisible] = useState(false);
   const [editingChallenge, setEditingChallenge] = useState(null);
   const [challengeForm] = Form.useForm();
   
-  // Image handling states (following SubCategoryForm pattern)
+  // Image handling states
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+
+  // Drag and drop states
+  const [localChallenges, setLocalChallenges] = useState([]);
+  const [sortedChallenges, setSortedChallenges] = useState([]);
+  const [hasOrderChanges, setHasOrderChanges] = useState(false);
+  const [viewMode, setViewMode] = useState("table"); // "table" or "drag"
 
   const { data: allVideosData } = useGetAllVideosQuery();
   const allVideos = allVideosData?.data || [];
@@ -39,17 +48,133 @@ const TodayVideos = () => {
   const { data: challengesData, isLoading: challengesLoading, refetch: refetchChallenges } = useGetDailyChallengeQuery();
   const challenges = challengesData?.data || [];
 
+  // Update local challenges and sorted challenges when challenges changes
+  useEffect(() => {
+    if (challenges.length > 0) {
+      const sorted = [...challenges].sort((a, b) => (a.serial || 0) - (b.serial || 0));
+      setLocalChallenges(sorted);
+      setSortedChallenges(sorted);
+      setHasOrderChanges(false);
+    }
+  }, [challenges]);
+
+  // ChallengeCard component for drag and drop view
+  const ChallengeCard = ({ challenge, onEdit, onView, onDelete, onStatusChange, isDragging, serialNumber }) => (
+    <div
+      className={`bg-white rounded-lg shadow-md p-4 mb-4 border transition-all duration-200 ${
+        isDragging ? "opacity-50 transform rotate-2" : "hover:shadow-lg"
+      }`}
+      style={{
+        cursor: "grab",
+        border: isDragging ? "2px dashed #1890ff" : "1px solid #e8e8e8",
+      }}
+    >
+      <div className="flex items-center space-x-4">
+        {/* Serial Number */}
+        <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-semibold text-blue-600">
+          {serialNumber || "#"}
+        </div>
+        
+        {/* Challenge Image */}
+        <div className="flex-shrink-0">
+          {challenge.image ? (
+            <img
+              src={getImageUrl(challenge.image)}
+              alt={challenge.name || "Challenge"}
+              className="w-20 h-12 object-cover rounded"
+            />
+          ) : (
+            <div className="w-20 h-12 bg-gray-200 rounded flex items-center justify-center">
+              <PictureOutlined />
+            </div>
+          )}
+        </div>
+        
+        {/* Challenge Info */}
+        <div className="flex-1 min-w-0">
+          <h3 className="text-lg font-medium text-gray-900 truncate">{challenge.name || "Untitled Challenge"}</h3>
+          <p className="text-sm text-gray-500 truncate">{challenge.description}</p>
+          <span className="text-xs text-gray-400">Created: {moment(challenge.createdAt).format("L")}</span>
+        </div>
+        
+        {/* Status */}
+        <div className="flex-shrink-0">
+          <Tag color={challenge.status === "active" ? "green" : "red"}>
+            {challenge.status || "inactive"}
+          </Tag>
+        </div>
+        
+        {/* Actions */}
+        <div className="flex-shrink-0">
+          <Space size="small">
+            <Button
+              size="small"
+              className="hover:bg-red-600 border-none hover:text-white text-red-500"
+              icon={<EyeOutlined />}
+              onClick={() => onView(challenge)}
+              title="View Challenge"
+            />
+            <Button
+              size="small"
+              className="hover:bg-red-600 border-none hover:text-white text-red-500"
+              icon={<EditOutlined />}
+              onClick={() => onEdit(challenge)}
+              title="Edit Challenge"
+            />
+            <Switch
+              checked={challenge.status === "active"}
+              onChange={() => onStatusChange(challenge._id, challenge.status)}
+              size="small"
+              className="hover:bg-red-600 border-none hover:text-white text-red-500"
+            />
+            <Button
+              className="hover:bg-red-600 border-none hover:text-white text-red-500"
+              size="small"
+              icon={<DeleteOutlined />}
+              onClick={() => onDelete(challenge._id)}
+              title="Delete Challenge"
+            />
+          </Space>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Handle challenge reordering (local state only)
+  const handleReorder = (reorderedChallenges) => {
+    setLocalChallenges(reorderedChallenges);
+    setHasOrderChanges(true);
+  };
+
+  // Handle actual order update to server
+  const handleUpdateOrder = async (orderData) => {
+    try {
+      // Use provided orderData or create from localChallenges
+      const dataToSend = orderData || localChallenges.map((challenge, index) => ({
+        _id: challenge._id,
+        serial: index + 1, // Update serial based on new order
+      }));
+
+      await updateChallengeOrder(dataToSend).unwrap();
+
+      message.success("Challenge order updated successfully!");
+      setHasOrderChanges(false);
+      await refetchChallenges();
+    } catch (error) {
+      message.error("Failed to update challenge order");
+      console.error("Update order error:", error);
+    }
+  };
+
   // Reset form and image states when modal opens/closes
   useEffect(() => {
     if (challengeModalVisible) {
       if (editingChallenge) {
-        // Set form fields for editing
         challengeForm.setFieldsValue({
           name: editingChallenge.name || "",
           description: editingChallenge.description || "",
         });
 
-        // Set image preview URL using getImageUrl helper if image exists
         if (editingChallenge.image) {
           setPreviewUrl(getImageUrl(editingChallenge.image));
           setImageLoaded(false);
@@ -60,10 +185,8 @@ const TodayVideos = () => {
           setImageError(false);
         }
 
-        // Clear image file because no new file selected yet
         setImageFile(null);
       } else {
-        // Reset for new challenge
         challengeForm.resetFields();
         setPreviewUrl(null);
         setImageFile(null);
@@ -109,10 +232,9 @@ const TodayVideos = () => {
     setImageError(false);
   };
 
-  // Render image preview section (following SubCategoryForm pattern)
+  // Render image preview section
   const renderImagePreview = () => {
     if (!previewUrl) {
-      // No image selected - show placeholder
       return (
         <div className="w-full h-48 bg-gray-200 rounded mb-2 flex items-center justify-center">
           <div className="text-center text-gray-500">
@@ -124,7 +246,6 @@ const TodayVideos = () => {
     }
 
     if (imageError) {
-      // Image failed to load - show error placeholder
       return (
         <div className="w-full h-48 bg-red-100 rounded mb-2 flex items-center justify-center">
           <div className="text-center text-red-500">
@@ -135,7 +256,6 @@ const TodayVideos = () => {
       );
     }
 
-    // Show actual image
     return (
       <img
         src={previewUrl}
@@ -156,35 +276,25 @@ const TodayVideos = () => {
         description: values.description,
       };
   
-      // If there is an image, append it to FormData
       if (imageFile) {
         formData.append('image', imageFile);
       } else if (editingChallenge?.image) {
         formData.append('image', editingChallenge.image);
       }
   
-      // Log the FormData contents
-      console.log("FormData contents:");
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-  
-      // Add JSON data to the form (excluding the image)
       formData.append('data', JSON.stringify(jsonData));
   
-      // Check if we are editing or creating a new challenge
       if (editingChallenge) {
         await updateDailyChallenge({
-          id: editingChallenge._id, // Send the ID as a parameter
-          challengeData: formData, // Send the form data as the body with the correct parameter name
+          id: editingChallenge._id,
+          challengeData: formData,
         });
         message.success("Challenge updated successfully!");
       } else {
-        await createDailyChallenge(formData);  // Add the function to create a new challenge if needed.
+        await createDailyChallenge(formData);
         message.success("Challenge created successfully!");
       }
   
-      // Reset form and states
       challengeForm.resetFields();
       setImageFile(null);
       setPreviewUrl(null);
@@ -218,14 +328,23 @@ const TodayVideos = () => {
   };
   
   const handleDeleteChallenge = async (id) => {
-    try {
-      await deleteDailyChallenge(id);
-      message.success("Challenge deleted successfully!");
-      refetchChallenges();
-    } catch (error) {
-      console.error("Failed to delete challenge:", error);
-      message.error("Failed to delete challenge");
-    }
+    Modal.confirm({
+      title: "Are you sure you want to delete this challenge?",
+      content: "This action cannot be undone.",
+      okText: "Yes",
+      okType: "danger",
+      cancelText: "No",
+      onOk: async () => {
+        try {
+          await deleteDailyChallenge(id);
+          message.success("Challenge deleted successfully!");
+          refetchChallenges();
+        } catch (error) {
+          console.error("Failed to delete challenge:", error);
+          message.error("Failed to delete challenge");
+        }
+      },
+    });
   };
 
   const handleEditChallenge = (challenge) => {
@@ -324,12 +443,38 @@ const TodayVideos = () => {
       ),
     },
   ];
-  
 
   return (
     <div>
-      {/* Add New Challenge button */}
-      <div className="mb-4 flex justify-end">
+      <style jsx>{`
+        .drag-item {
+          transition: all 0.2s ease;
+          cursor: grab;
+        }
+        .drag-item:active {
+          cursor: grabbing;
+        }
+        .drag-over {
+          border: 2px dashed #1890ff !important;
+          background-color: #f0f8ff;
+        }
+        .drag-item:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+      `}</style>
+
+      {/* Controls */}
+      <div className="mb-4 flex justify-between">
+        <div>
+          <button
+            onClick={() => setViewMode(viewMode === "table" ? "drag" : "table")}
+            className="py-2 rounded-md px-4 border-none mr-2 bg-primary text-white hover:bg-secondary"
+          >
+            {viewMode === "table" ? "Switch to Drag & Drop" : "Switch to Table"}
+          </button>
+        </div>
+        
         <GradientButton
           onClick={() => {
             setEditingChallenge(null);
@@ -341,18 +486,38 @@ const TodayVideos = () => {
         </GradientButton>
       </div>
 
-      {/* Challenges Table */}
-      <Table
-        columns={challengeColumns}
-        dataSource={challenges}
-        rowKey="_id"
-        loading={challengesLoading}
-        pagination={{ pageSize: 8 }}
-        locale={{ emptyText: "No challenges found" }}
+      {/* Display challenges - either in table or drag-and-drop mode */}
+      {viewMode === "table" ? (
+        <Table
+          columns={challengeColumns}
+          dataSource={sortedChallenges}
+          rowKey="_id"
+          loading={challengesLoading}
+          pagination={{ pageSize: 8 }}
+          locale={{ emptyText: "No challenges found" }}
           className="custom-table"
           size="small"
           scroll={{ x: "max-content" }}
-      />
+        />
+      ) : (
+        <DragDropList
+          items={localChallenges}
+          onReorder={handleReorder}
+          onUpdateOrder={handleUpdateOrder}
+          hasChanges={hasOrderChanges}
+          renderItem={(challenge, index, draggedItem) => (
+            <ChallengeCard
+              challenge={challenge}
+              onEdit={handleEditChallenge}
+              onView={handleViewChallenge}
+              onDelete={handleDeleteChallenge}
+              onStatusChange={handleStatusToggle}
+              isDragging={draggedItem?._id === challenge._id}
+              serialNumber={challenge.serial || index + 1}
+            />
+          )}
+        />
+      )}
 
       {/* Challenge Modal */}
       <Modal

@@ -48,8 +48,11 @@ const PostFormModal = ({
 
   const getFormTitle = () => (editingItem ? "Edit Post" : "Create New Post");
 
+  // Enhanced useEffect for better text content handling
   useEffect(() => {
     if (editingItem && visible) {
+      console.log("Setting editing item:", editingItem); // Debug log
+      
       const fieldsToSet = {
         type: editingItem.type,
       };
@@ -81,14 +84,42 @@ const PostFormModal = ({
         setPublishDate(null);
       }
 
-      form.setFieldsValue(fieldsToSet);
-
+      // Set post type first
       setPostType(editingItem.type || "text");
-      setTextContent(editingItem.content || "");
+      
+      // Handle text content for text posts
+      if (editingItem.type === "text") {
+        const content = editingItem.title || editingItem.content || "";
+        console.log("Setting text content:", content); // Debug log
+        
+        // Set text content immediately
+        setTextContent(content);
+        
+        // Also set with multiple delays to ensure editor is ready
+        setTimeout(() => {
+          setTextContent(content);
+          console.log("Text content set after 100ms:", content);
+        }, 100);
+        
+        setTimeout(() => {
+          setTextContent(content);
+          console.log("Text content set after 500ms:", content);
+        }, 500);
+      } else {
+        setTextContent("");
+      }
+
+      // Set form fields
+      form.setFieldsValue(fieldsToSet);
+      
+      // Reset file states
       setThumbnailFile(null);
       setVideoFile(null);
       setImageFile(null);
+      
     } else if (!visible) {
+      // Reset everything when modal closes
+      console.log("Resetting form"); // Debug log
       form.resetFields();
       setThumbnailFile(null);
       setVideoFile(null);
@@ -100,6 +131,15 @@ const PostFormModal = ({
       form.setFieldsValue({ publishAt: null });
     }
   }, [editingItem, visible, form]);
+
+  // Separate useEffect to handle text content changes when editingItem changes
+  useEffect(() => {
+    if (editingItem && editingItem.type === "text" && visible) {
+      const content = editingItem.title || editingItem.content || "";
+      console.log("Text content effect triggered:", content);
+      setTextContent(content);
+    }
+  }, [editingItem?.title, editingItem?.content, editingItem?.type, visible]);
 
   const handlePostTypeChange = (value) => {
     setPostType(value);
@@ -113,6 +153,7 @@ const PostFormModal = ({
     form.resetFields(["title", "description", "duration"]);
   };
 
+  // Rest of your existing code remains the same...
   const imageProps = {
     beforeUpload: (file) => {
       if (!file.type.startsWith("image/")) {
@@ -124,7 +165,7 @@ const PostFormModal = ({
         return false;
       }
       setImageFile(file);
-      return false; // prevent auto upload
+      return false;
     },
     onRemove: () => {
       setImageFile(null);
@@ -165,7 +206,6 @@ const PostFormModal = ({
       }
       setVideoFile(file);
 
-      // Get video duration when file is selected
       const video = document.createElement("video");
       video.preload = "metadata";
       video.onloadedmetadata = function () {
@@ -238,14 +278,12 @@ const PostFormModal = ({
         };
 
         if (postType === "text") {
-          // Send textContent as title to backend
           postData.title = textContent;
         } else if (postType === "image") {
           postData.title = values.title;
         } else if (postType === "video") {
           postData.title = values.title;
           postData.description = values.description || "";
-          // Keep duration as string to match backend validation
           postData.duration =
             values.duration !== undefined
               ? String(values.duration)
@@ -284,16 +322,13 @@ const PostFormModal = ({
     ]
   );
 
-  // Helper function to get the correct image URL
   const getImageSource = (item) => {
     if (!item) return "";
     
-    // For image posts
     if (item.imageUrl) {
       return getVideoAndThumbnail(item.imageUrl);
     }
     
-    // For video posts or any post with thumbnailUrl
     if (item.thumbnailUrl) {
       return getVideoAndThumbnail(item.thumbnailUrl);
     }
@@ -332,7 +367,6 @@ const PostFormModal = ({
           </Select>
         </Form.Item>
 
-        {/* Publish Date field - for all post types */}
         <Form.Item
           name="publishAt"
           label="Publish Date & Time"
@@ -366,7 +400,6 @@ const PostFormModal = ({
         </Form.Item>
        </div>
 
-        {/* Title field - only for image and video posts */}
         {(postType === "image" || postType === "video") && (
           <Form.Item
             name="title"
@@ -377,7 +410,6 @@ const PostFormModal = ({
           </Form.Item>
         )}
 
-        {/* Text content - only for text posts */}
         {postType === "text" && (
           <Form.Item label="Post Content" required className="mb-6">
             <div className="editor-wrapper custom-height-editor">
@@ -392,7 +424,6 @@ const PostFormModal = ({
           </Form.Item>
         )}
 
-        {/* Image upload - only for image posts */}
         {postType === "image" && (
           <Form.Item label="Image (Thumbnail)" required={!isEditMode}>
             <Dragger {...imageProps}>
@@ -432,7 +463,6 @@ const PostFormModal = ({
           </Form.Item>
         )}
 
-        {/* Video fields - only for video posts */}
         {postType === "video" && (
           <>
             <Form.Item

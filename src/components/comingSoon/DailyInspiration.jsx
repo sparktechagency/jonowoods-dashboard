@@ -233,19 +233,20 @@ const DailyInspirationPage = () => {
   return (
     <div>
       {/* Add New Content button with Schedule Video button next to it */}
-      <VideoUploadSystem 
+      {/* <VideoUploadSystem 
         pageType="daily-inspiration" 
         apiHooks={apiHooks}
         additionalButtons={
-          <GradientButton 
+         
+        }
+      /> */}
+       <GradientButton 
             onClick={() => setSchedulingModalVisible(true)}
             icon={<CalendarOutlined />}
             className="ml-2"
           >
             Schedule Video
           </GradientButton>
-        }
-      />
       
       {/* Schedule Videos Modal */}
       <Modal

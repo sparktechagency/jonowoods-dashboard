@@ -82,10 +82,20 @@ const PostManagementSystem = () => {
 
   // Handle edit button click
   const handleEdit = async (id) => {
-    setSelectedItemId(id);
-    setEditingId(id);
+    // Reset states first
+    setIsFormModalVisible(false);
+    setEditingId(null);
+    setSelectedItemId(null);
+    
+    // Set new values with delay
     setTimeout(() => {
-      setIsFormModalVisible(true);
+      setSelectedItemId(id);
+      setEditingId(id);
+      
+      // Open modal after data is set
+      setTimeout(() => {
+        setIsFormModalVisible(true);
+      }, 200);
     }, 100);
   };
 

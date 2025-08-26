@@ -401,19 +401,7 @@ const videoDetails=videoDetail?.data
     </Menu>
   );
 
-  // const typeMenu = (
-  //   <Menu>
-  //     <Menu.Item key="all" onClick={() => handleTypeFilter("all")}>
-  //       All Type
-  //     </Menu.Item>
-  //     <Menu.Item key="class" onClick={() => handleTypeFilter("class")}>
-  //       Class
-  //     </Menu.Item>
-  //     <Menu.Item key="course" onClick={() => handleTypeFilter("course")}>
-  //       Course
-  //     </Menu.Item>
-  //   </Menu>
-  // );
+
 
   // Row selection configuration for schedule modal
   const rowSelection = {
@@ -514,24 +502,7 @@ const videoDetails=videoDetail?.data
       key: "category",
       align: "center",
     },
-    // {
-    //   title: "Course Name",
-    //   dataIndex: "subCategory",
-    //   key: "subCategory",
-    //   align: "center",
-    //   render: (subCategory) => subCategory || "N/A",
-    // },
-    // {
-    //   title: "Type",
-    //   dataIndex: "type",
-    //   key: "type",
-    //   align: "center",
-    //   render: (type) => (
-    //     <Tag color={type === "course" ? "blue" : "orange"}>
-    //       {type.toUpperCase()}
-    //     </Tag>
-    //   ),
-    // },
+  
    
     {
       title: "Created Date",
@@ -663,13 +634,14 @@ const videoDetails=videoDetail?.data
         </Space>
 
         <Space>
-          <Button
+          <button
             onClick={() => setViewMode(viewMode === "table" ? "drag" : "table")}
-            className="py-5 mr-2"
-            type={viewMode === "drag" ? "primary" : "default"}
+            className="py-2 rounded-md px-4 border-none mr-2 bg-primary text-white hover:bg-secondary"
+            // type={viewMode === "drag" ? "primary" : "default"}
+            // classNames="bg-primary"
           >
             {viewMode === "table" ? "Switch to Drag & Drop" : "Switch to Table"}
-          </Button>
+          </button>
           
           <GradientButton
             type="primary"

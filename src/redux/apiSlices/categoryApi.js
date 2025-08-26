@@ -142,7 +142,7 @@ const categorySlice = api.injectEndpoints({
     videoAddInCategory: builder.mutation({
       query: (scheduleData) => {
         return {
-          url: `/admin/videos/managment/copy-video`,
+          url: `/admin/videos/library/copy-video`,
           method: "POST",
           body: scheduleData ,
         };

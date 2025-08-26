@@ -162,6 +162,26 @@ const challengeApi = api.injectEndpoints({
       }),
       invalidatesTags: ["DailyChallenge"],
     }),
+
+        updateChallengeOrder: builder.mutation({
+      query: (orderData) => ({
+        url: "/admin/challenge-category/all-challenge-category-shuffle",
+        method: "POST",
+        body: orderData,
+      }),
+      invalidatesTags: ["challenge"],
+
+    }),
+        updateChallengeVideoOrder: builder.mutation({
+      query: (orderData) => ({
+        url: "/admin/challenge/shuffle",
+        method: "POST",
+        body: orderData,
+      }),
+      invalidatesTags: ["challenge"],
+
+    })
+
   }),
 });
 
@@ -182,4 +202,8 @@ export const {
   useRemoveVideoFromChallengeMutation,
   useUpdateVideoOrderMutation,
   useScheduleVideoRotationMutation,
+  useUpdateChallengeOrderMutation,
+  useUpdateChallengeVideoOrderMutation,
+
+
 } = challengeApi;
