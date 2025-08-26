@@ -78,8 +78,11 @@ const AllVideos = () => {
     totalPage: 1,
   };
 
+  // Use localVideos if available, otherwise use allVideos
+  const videosToUse = localVideos.length > 0 ? localVideos : allVideos;
+  
   // Filter videos based on filters
-  const filteredVideos = allVideos.filter((video) => {
+  const filteredVideos = videosToUse.filter((video) => {
     const statusMatch = statusFilter === "all" || video.status === statusFilter;
     const typeMatch = typeFilter === "all" || video.type === typeFilter;
     return statusMatch && typeMatch;
@@ -356,7 +359,13 @@ const videoDetails=videoDetail?.data
   // Handle actual order update to server
   const handleUpdateOrder = async (orderData) => {
     try {
-      await updateVideoOrderInCategory(orderData).unwrap();
+      // Use provided orderData or create from localVideos
+      const dataToSend = orderData || localVideos.map((video, index) => ({
+        _id: video._id,
+        serial: index + 1, // Update serial based on new order
+      }));
+
+      await updateVideoOrderInCategory(dataToSend).unwrap();
 
       message.success("Video order updated successfully!");
       setHasOrderChanges(false);
