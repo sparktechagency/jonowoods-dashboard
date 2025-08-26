@@ -9,9 +9,9 @@ const challengeApi = api.injectEndpoints({
         method: "POST",
         body: challengeData,
       }),
-      invalidatesTags: ["DailyChallenge"], 
+      invalidatesTags: ["DailyChallenge"],
     }),
-    
+
     // POST: Create a new Challenge with videos
     createChallengeWithVideos: builder.mutation({
       query: (data) => ({
@@ -28,7 +28,7 @@ const challengeApi = api.injectEndpoints({
         url: "/admin/challenge-category/get-all-challenge-category",
         method: "GET",
       }),
-      providesTags: ["DailyChallenge"], 
+      providesTags: ["DailyChallenge"],
     }),
 
     // GET: Single Challenge
@@ -37,7 +37,7 @@ const challengeApi = api.injectEndpoints({
         url: `/admin/challenge/${id}`,
         method: "GET",
       }),
-      providesTags: (result, error, id) => [{ type: "DailyChallenge", id }], 
+      providesTags: (result, error, id) => [{ type: "DailyChallenge", id }],
     }),
 
     getDailyChallengeVideos: builder.query({
@@ -45,21 +45,24 @@ const challengeApi = api.injectEndpoints({
         url: `/admin/challenge/get-challenges-videos/${id}`,
         method: "GET",
       }),
-      providesTags: (result, error, id) => [{ type: "DailyChallenge", id }], 
+      providesTags: (result, error, id) => [{ type: "DailyChallenge", id }],
     }),
-    
+
     // GET: Get Challenge Videos
     getChallengeVideos: builder.query({
       query: (id) => ({
         url: `/admin/challenge/${id}/videos`,
         method: "GET",
       }),
-      providesTags: (result, error, id) => [{ type: "DailyChallenge", id }, "Videos"],
+      providesTags: (result, error, id) => [
+        { type: "DailyChallenge", id },
+        "Videos",
+      ],
     }),
 
     // PATCH: Update a Challenge
     updateDailyChallenge: builder.mutation({
-      query: ({ id,  challengeData}) => ({
+      query: ({ id, challengeData }) => ({
         url: `/admin/challenge-category/update-challenge-category/${id}`,
         method: "PATCH",
         body: challengeData,
@@ -70,7 +73,7 @@ const challengeApi = api.injectEndpoints({
       ],
     }),
     updateDailyChallengeVideo: builder.mutation({
-      query: ({ id,  challengeData}) => ({
+      query: ({ id, challengeData }) => ({
         url: `/admin/challenge/${id}`,
         method: "PATCH",
         body: challengeData,
@@ -82,7 +85,7 @@ const challengeApi = api.injectEndpoints({
     }),
 
     updateDailyChallengeStatus: builder.mutation({
-      query: ({ id,  data}) => ({
+      query: ({ id, data }) => ({
         url: `/admin/challenge-category/update-challenge-category-status/${id}`,
         method: "PUT",
         body: data,
@@ -114,7 +117,7 @@ const challengeApi = api.injectEndpoints({
         "DailyChallenge",
       ],
     }),
-    
+
     // POST: Add video to challenge
     addVideoToChallenge: builder.mutation({
       query: ({ challengeId, videoId }) => ({
@@ -127,7 +130,7 @@ const challengeApi = api.injectEndpoints({
         "DailyChallenge",
       ],
     }),
-    
+
     // DELETE: Remove video from challenge
     removeVideoFromChallenge: builder.mutation({
       query: ({ challengeId, videoId }) => ({
@@ -139,7 +142,7 @@ const challengeApi = api.injectEndpoints({
         "DailyChallenge",
       ],
     }),
-    
+
     // PUT: Update video order in challenge
     updateVideoOrder: builder.mutation({
       query: ({ challengeId, videoOrder }) => ({
@@ -152,7 +155,7 @@ const challengeApi = api.injectEndpoints({
         "DailyChallenge",
       ],
     }),
-    
+
     // POST: Schedule video rotation
     scheduleVideoRotation: builder.mutation({
       query: (scheduleData) => ({
@@ -163,25 +166,22 @@ const challengeApi = api.injectEndpoints({
       invalidatesTags: ["DailyChallenge"],
     }),
 
-        updateChallengeOrder: builder.mutation({
+    updateChallengeOrder: builder.mutation({
       query: (orderData) => ({
         url: "/admin/challenge-category/all-challenge-category-shuffle",
         method: "POST",
         body: orderData,
       }),
       invalidatesTags: ["challenge"],
-
     }),
-        updateChallengeVideoOrder: builder.mutation({
+    updateChallengeVideoOrder: builder.mutation({
       query: (orderData) => ({
         url: "/admin/challenge/shuffle",
         method: "POST",
         body: orderData,
       }),
       invalidatesTags: ["challenge"],
-
-    })
-
+    }),
   }),
 });
 
@@ -204,6 +204,4 @@ export const {
   useScheduleVideoRotationMutation,
   useUpdateChallengeOrderMutation,
   useUpdateChallengeVideoOrderMutation,
-
-
 } = challengeApi;

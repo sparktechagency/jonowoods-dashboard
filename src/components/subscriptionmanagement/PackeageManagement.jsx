@@ -223,7 +223,9 @@ export default function SubscriptionPackagesManagement() {
     selectedType === "All"
       ? subscriptionPackages
       : subscriptionPackages.filter(
-          (pkg) => pkg.subscriptionType === selectedType.toLowerCase() || pkg.subscriptionType === "all"
+          (pkg) =>
+            pkg.subscriptionType === selectedType.toLowerCase() ||
+            pkg.subscriptionType === "all"
         );
 
   // Filter menu items
@@ -278,7 +280,6 @@ export default function SubscriptionPackagesManagement() {
 
       {/* Subscription Plans */}
       <div className="grid grid-cols-1 gap-8 mb-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        
         {filteredPackages.length === 0 ? (
           <div className="p-4 col-span-full text-center text-gray-500">
             No subscription packages found. Add a new package to get started.
@@ -533,9 +534,9 @@ export default function SubscriptionPackagesManagement() {
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     required
                   >
-                    <option value="web">Web</option>
                     <option value="app">App</option>
-                    <option value="all">All</option>
+                    <option value="web">Web</option>
+                    <option value="both">All</option>
                   </select>
                 </div>
 

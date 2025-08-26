@@ -55,7 +55,7 @@ const dailyInspirationApi = api.injectEndpoints({
       }),
       invalidatesTags: ["DailyInspiration"],
     }),
-    
+
     // NEW: Schedule Daily Inspiration
     // scheduleDailyInspiration: builder.mutation({
     //   query: (scheduleData) => ({
@@ -74,7 +74,7 @@ const dailyInspirationApi = api.injectEndpoints({
       }),
       invalidatesTags: ["DailyInspiration"],
     }),
-    
+
     // NEW: Get Daily Inspiration Library
     getDailyInspirationLibrary: builder.query({
       query: (params) => ({
@@ -94,11 +94,11 @@ const dailyInspirationApi = api.injectEndpoints({
       },
       providesTags: ["DailyInspirationLibrary"],
     }),
-    
+
     // NEW: Get scheduled Daily Inspiration
     getScheduledDailyInspiration: builder.query({
       query: (params) => ({
-        url: "/admin/dailyInspiration/scheduled",
+        url: "/admin/dailyInspiration",
         method: "GET",
         params,
       }),
@@ -114,6 +114,16 @@ const dailyInspirationApi = api.injectEndpoints({
       },
       providesTags: ["DailyInspirationScheduled"],
     }),
+
+    updateDailyInspirationOrder: builder.mutation({
+      query: (orderData) => ({
+        url: "/admin/dailyInspiration/shuffle",
+        method: "POST",
+        body: orderData,
+      }),
+      invalidatesTags: ["DailyInspirationScheduled"],
+
+    }),
   }),
 });
 
@@ -128,4 +138,6 @@ export const {
   useScheduleDailyInspirationMutation,
   useGetDailyInspirationLibraryQuery,
   useGetScheduledDailyInspirationQuery,
+  useUpdateDailyInspirationOrderMutation,
+
 } = dailyInspirationApi;

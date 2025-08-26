@@ -52,7 +52,7 @@ const subscriptionApiSlice = api.injectEndpoints({
     getSubscriptionPackages: builder.query({
       query: () => {
         return {
-          url: "/admin/package/managment",
+          url: "/admin/package/management",
           method: "GET",
         };
       },
@@ -65,7 +65,7 @@ const subscriptionApiSlice = api.injectEndpoints({
     createSubscriptionPackage: builder.mutation({
       query: (packageData) => {
         return {
-          url: "/admin/package/managment",
+          url: "/admin/package/management",
           method: "POST",
           body: packageData,
         };
