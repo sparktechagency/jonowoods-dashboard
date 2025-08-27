@@ -104,7 +104,7 @@ const challengeApi = api.injectEndpoints({
           body: updateData,
         };
       },
-      invalidatesTags: ["DailyChallenge"],
+      invalidatesTags: ["DailyChallenge", "Videos"],
 
     }),
 

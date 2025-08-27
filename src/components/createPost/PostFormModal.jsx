@@ -231,14 +231,12 @@ const PostFormModal = ({
     [videoFile, form]
   );
 
-  // PostFormModal.js এর প্রয়োজনীয় অংশের পরিবর্তন
 
   // 1. validateForm function কে এভাবে পরিবর্তন করুন:
   const validateForm = useCallback(() => {
     if (postType === "text") {
-      // Editor থেকে সরাসরি content নিন
       const editorContent = editor.current?.value || textContent || "";
-      const cleanContent = editorContent.replace(/<[^>]*>/g, "").trim(); // HTML tags remove করে check করুন
+      const cleanContent = editorContent.replace(/<[^>]*>/g, "").trim();
 
       if (!cleanContent) {
         message.error("Please enter text content");
@@ -291,11 +289,9 @@ const PostFormModal = ({
     editingItem,
   ]);
 
-  // 2. handleFormSubmit function এ text content handling পরিবর্তন করুন:
   const handleFormSubmit = useCallback(
     async (values) => {
       try {
-        // Text post এর জন্য editor থেকে সরাসরি content নিন
         let finalTextContent = textContent;
         if (postType === "text" && editor.current) {
           finalTextContent = editor.current.value || textContent || "";
@@ -311,7 +307,7 @@ const PostFormModal = ({
         };
 
         if (postType === "text") {
-          postData.title = finalTextContent; // Updated content ব্যবহার করুন
+          postData.title = finalTextContent; 
         } else if (postType === "image") {
           postData.title = values.title;
         } else if (postType === "video") {
@@ -377,7 +373,7 @@ const PostFormModal = ({
       onCancel={onClose}
       footer={null}
       width={900}
-      destroyOnClose={false} // Changed to false to prevent unnecessary destruction
+      destroyOnClose={false} 
       maskClosable={false} // Prevent accidental closure
     >
       <Form form={form} layout="vertical" onFinish={handleFormSubmit}>

@@ -94,7 +94,6 @@ const PostmanagementSystem = () => {
       setSelectedItemId(id);
       setEditingId(id);
       
-      // Open modal after data is set
       setTimeout(() => {
         setIsFormModalVisible(true);
       }, 200);

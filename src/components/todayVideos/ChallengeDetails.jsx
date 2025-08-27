@@ -24,6 +24,7 @@ import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
 import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
+import EditVideoModal from "../SalesRepsManagement/EditVideoModal";
 
 const { TabPane } = Tabs;
 
@@ -207,7 +208,17 @@ const ChallengeDetails = () => {
 
     const handleFormSubmit = async () => {
     closeFormModal();
-    await refetch();
+    // await refetch();
+  };
+    const showFormModal = (record = null) => {
+    if (record) {
+      setEditingVideo(record);
+      // currentVideo & equipmentTags will update automatically via useEffect above
+    } else {
+      setEditingVideo(null);
+
+    }
+    setIsFormModalVisible(true);
   };
 
   // Handle functions for video management
@@ -351,7 +362,7 @@ const ChallengeDetails = () => {
             <Button
               type="text"
               icon={<EditOutlined style={{ color: "#f55" }} />}
-              onClick={() => handleEdit(record._id)}
+                onClick={() => showFormModal(record)}
             />
             <Button
               type="text"
@@ -565,7 +576,7 @@ const ChallengeDetails = () => {
             onClick={() => setViewMode(viewMode === "table" ? "drag" : "table")}
             className="py-2 rounded-md px-4 border-none mr-2 bg-primary text-white hover:bg-secondary"
           >
-            {viewMode === "table" ? "Switch to Drag & Drop" : "Switch to Table"}
+            {viewMode === "table" ? "Do Shuffle" : "Table View"}
           </button>
         </div>
         
@@ -698,6 +709,17 @@ const ChallengeDetails = () => {
           currentVideo={selectedVideoDetails}
 
         />
+
+        <EditVideoModal 
+          visible={isFormModalVisible}
+          onCancel={closeFormModal}
+          onSuccess={handleFormSubmit}
+          currentVideo={editingVideo}
+
+          onUpdateVideo={updateVideoInChallenge}
+          isLoading={updateVideoInChallengeLoading}
+        />
+
 
         {/* Video Details Modal */}
         {/* <Modal
