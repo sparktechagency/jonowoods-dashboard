@@ -28,7 +28,7 @@ import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
 import GradientButton from "../common/GradiantButton";
 import EditVideoModal from "./EditVideoModal";
-import VideoDetailsModal from "../retailermanagement/VideoDetailsModal";
+import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
 import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 
@@ -88,6 +88,7 @@ const AllVideos = () => {
     return statusMatch && typeMatch;
   });
 
+
   // Paginate filtered videos
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
@@ -101,7 +102,7 @@ const videoDetails=videoDetail?.data
   console.log(videoDetails)
   const [deleteCategoryVideo] = useDeleteCategoryVideoMutation();
   const [updateVideoStatus] = useUpdateVideoStatusMutation();
-  const [updateVideoINCategoryAndSubcategory] = useUpdateVideoINCategoryAndSubcategoryMutation();
+  const [updateVideoINCategoryAndSubcategory, {isLoading}] = useUpdateVideoINCategoryAndSubcategoryMutation();
 
   const [updateVideoOrderInCategory] = useUpdateVideoOrderInCategoryMutation();
 
@@ -714,6 +715,8 @@ const videoDetails=videoDetail?.data
         onCancel={closeFormModal}
         onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
+        onUpdateVideo={updateVideoINCategoryAndSubcategory}
+        isLoading={isLoading}
       />
 
       {/* Video Details Modal */}

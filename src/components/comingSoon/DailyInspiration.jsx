@@ -9,7 +9,8 @@ import {
   useScheduleDailyInspirationMutation,
   useGetScheduledDailyInspirationQuery,
 
-  useUpdateDailyInspirationOrderMutation
+  useUpdateDailyInspirationOrderMutation,
+  useUpdateVideoInDailyInspirationMutation
 } from "../../redux/apiSlices/dailyInspiraton";
 import VideoUploadSystem from "../common/VideoUploade";
 import { 
@@ -23,6 +24,7 @@ import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
 import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
+import EditVideoModal from "../SalesRepsManagement/EditVideoModal";
 
 const { Option } = Select;
 
@@ -44,6 +46,7 @@ const DailyInspirationPage = () => {
   const [scheduledVideoId, setScheduledVideoId] = useState(null);
   const [selectedVideos, setSelectedVideos] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   
   // State for sorted videos and drag & drop
   const [localScheduledVideos, setLocalScheduledVideos] = useState([]);
@@ -60,11 +63,14 @@ const DailyInspirationPage = () => {
   const [selectedVideoDetails, setSelectedVideoDetails] = useState(null);
   
   // Get all videos and scheduled videos
-  const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
+  const { data: allVideosData, isLoading: allVideosLoading, refetch: refetchAllVideos } = useGetAllVideosQuery();
   const { data: scheduledData, isLoading: scheduledLoading, refetch: refetchScheduled } = useGetScheduledDailyInspirationQuery();
   
   const allVideos = allVideosData?.data || [];
   const scheduledVideos = scheduledData?.data || [];
+  const [updateVideoInDailyInspiration, { isLoading: updateLoading }] = useUpdateVideoInDailyInspirationMutation();
+
+
 
   // Sort videos by publishAt date and update local state
   const sortedVideos = React.useMemo(() => {
@@ -91,7 +97,15 @@ const DailyInspirationPage = () => {
     });
   }, [allVideos, scheduledVideos]);
 
-  // Update local scheduled videos when scheduledVideos changes
+
+    const showFormModal = (record = null) => {
+    if (record) {
+      setEditingVideo(record);
+    } else {
+      setEditingVideo(null);
+    }
+    setIsFormModalVisible(true);
+  };
   useEffect(() => {
     if (scheduledVideos.length > 0) {
       const sorted = [...scheduledVideos].sort((a, b) => (a.serial || 0) - (b.serial || 0));
@@ -99,6 +113,17 @@ const DailyInspirationPage = () => {
       setHasOrderChanges(false);
     }
   }, [scheduledVideos]);
+
+    const closeFormModal = () => {
+    setIsFormModalVisible(false);
+    setEditingVideo(null);
+
+  };
+   const handleFormSubmit = async () => {
+    closeFormModal();
+    await refetchAllVideos();
+    await refetchScheduled();
+  };
 
   const categories = ["Daily Inspiration"];
 
@@ -418,7 +443,7 @@ const DailyInspirationPage = () => {
             <Button
               type="text"
               icon={<EditOutlined style={{ color: "#f55" }} />}
-              onClick={() => handleEdit(record._id)}
+              onClick={() => showFormModal(record)}
             />
             <Button
               type="text"
@@ -671,9 +696,17 @@ const DailyInspirationPage = () => {
           setSelectedVideoDetails(null);
         }}
         currentVideo={selectedVideoDetails}
-
-
        />
+
+      <EditVideoModal 
+        visible={isFormModalVisible}
+        onCancel={closeFormModal}
+        onSuccess={handleFormSubmit}
+        currentVideo={editingVideo}
+
+        onUpdateVideo={updateVideoInDailyInspiration}
+        isLoading={updateLoading}
+      />
 
       {/* Video Details Modal */}
       {/* <Modal

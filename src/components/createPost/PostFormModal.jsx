@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import {
   Modal,
   Form,
@@ -41,14 +47,17 @@ const PostFormModal = ({
   const isEditMode = !!editingItem;
 
   // Memoize POST_TYPES to prevent recreation on each render
-  const POST_TYPES = useMemo(() => [
-    { value: "text", label: "Text Post" },
-    { value: "image", label: "Image Post" },
-    { value: "video", label: "Video Post" },
-  ], []);
+  const POST_TYPES = useMemo(
+    () => [
+      { value: "text", label: "Text Post" },
+      { value: "image", label: "Image Post" },
+      { value: "video", label: "Video Post" },
+    ],
+    []
+  );
 
-  const getFormTitle = useCallback(() => 
-    editingItem ? "Edit Post" : "Create New Post", 
+  const getFormTitle = useCallback(
+    () => (editingItem ? "Edit Post" : "Create New Post"),
     [editingItem]
   );
 
@@ -93,7 +102,7 @@ const PostFormModal = ({
 
       // Set post type first
       setPostType(editingItem.type || "text");
-      
+
       // Handle text content for text posts - only update if different
       if (editingItem.type === "text") {
         const content = editingItem.title || editingItem.content || "";
@@ -106,12 +115,11 @@ const PostFormModal = ({
 
       // Set form fields
       form.setFieldsValue(fieldsToSet);
-      
+
       // Reset file states
       setThumbnailFile(null);
       setVideoFile(null);
       setImageFile(null);
-      
     } else if (!visible) {
       // Reset everything when modal closes
       form.resetFields();
@@ -125,103 +133,129 @@ const PostFormModal = ({
     }
   }, [editingItem?._id, editingItem?.type, visible]); // Reduced dependencies
 
-  const handlePostTypeChange = useCallback((value) => {
-    setPostType(value);
-    setThumbnailFile(null);
-    setVideoFile(null);
-    setImageFile(null);
-    setTextContent("");
-    setVideoDuration("");
+  const handlePostTypeChange = useCallback(
+    (value) => {
+      setPostType(value);
+      setThumbnailFile(null);
+      setVideoFile(null);
+      setImageFile(null);
+      setTextContent("");
+      setVideoDuration("");
 
-    // Reset form fields when type changes
-    form.resetFields(["title", "description", "duration"]);
-  }, [form]);
+      // Reset form fields when type changes
+      form.resetFields(["title", "description", "duration"]);
+    },
+    [form]
+  );
 
   // Memoize upload props to prevent recreation
-  const imageProps = useMemo(() => ({
-    beforeUpload: (file) => {
-      if (!file.type.startsWith("image/")) {
-        message.error("You can only upload image files!");
+  const imageProps = useMemo(
+    () => ({
+      beforeUpload: (file) => {
+        if (!file.type.startsWith("image/")) {
+          message.error("You can only upload image files!");
+          return false;
+        }
+        if (file.size / 1024 / 1024 > 20) {
+          message.error("Image must be smaller than 20MB!");
+          return false;
+        }
+        setImageFile(file);
         return false;
-      }
-      if (file.size / 1024 / 1024 > 20) {
-        message.error("Image must be smaller than 20MB!");
-        return false;
-      }
-      setImageFile(file);
-      return false;
-    },
-    onRemove: () => {
-      setImageFile(null);
-    },
-    fileList: imageFile ? [imageFile] : [],
-    showUploadList: false,
-  }), [imageFile]);
+      },
+      onRemove: () => {
+        setImageFile(null);
+      },
+      fileList: imageFile ? [imageFile] : [],
+      showUploadList: false,
+    }),
+    [imageFile]
+  );
 
-  const thumbnailProps = useMemo(() => ({
-    beforeUpload: (file) => {
-      if (!file.type.startsWith("image/")) {
-        message.error("You can only upload image files!");
+  const thumbnailProps = useMemo(
+    () => ({
+      beforeUpload: (file) => {
+        if (!file.type.startsWith("image/")) {
+          message.error("You can only upload image files!");
+          return false;
+        }
+        if (file.size / 1024 / 1024 > 20) {
+          message.error("Image must be smaller than 20MB!");
+          return false;
+        }
+        setThumbnailFile(file);
         return false;
-      }
-      if (file.size / 1024 / 1024 > 20) {
-        message.error("Image must be smaller than 20MB!");
+      },
+      onRemove: () => {
+        setThumbnailFile(null);
+      },
+      fileList: thumbnailFile ? [thumbnailFile] : [],
+      showUploadList: false,
+    }),
+    [thumbnailFile]
+  );
+
+  const videoProps = useMemo(
+    () => ({
+      beforeUpload: (file) => {
+        if (!file.type.startsWith("video/")) {
+          message.error("You can only upload video files!");
+          return false;
+        }
+        if (file.size / 1024 / 1024 > 2000) {
+          message.error("Video must be smaller than 2GB!");
+          return false;
+        }
+        setVideoFile(file);
+
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.onloadedmetadata = function () {
+          window.URL.revokeObjectURL(video.src);
+          const duration = Math.round(video.duration);
+          setVideoDuration(String(duration));
+          form.setFieldsValue({ duration: String(duration) });
+        };
+        video.src = URL.createObjectURL(file);
+
         return false;
-      }
-      setThumbnailFile(file);
-      return false;
-    },
-    onRemove: () => {
-      setThumbnailFile(null);
-    },
-    fileList: thumbnailFile ? [thumbnailFile] : [],
-    showUploadList: false,
-  }), [thumbnailFile]);
+      },
+      onRemove: () => {
+        setVideoFile(null);
+        setVideoDuration("");
+        form.setFieldsValue({ duration: undefined });
+      },
+      fileList: videoFile ? [videoFile] : [],
+      showUploadList: false,
+    }),
+    [videoFile, form]
+  );
 
-  const videoProps = useMemo(() => ({
-    beforeUpload: (file) => {
-      if (!file.type.startsWith("video/")) {
-        message.error("You can only upload video files!");
-        return false;
-      }
-      if (file.size / 1024 / 1024 > 2000) {
-        message.error("Video must be smaller than 2GB!");
-        return false;
-      }
-      setVideoFile(file);
+  // PostFormModal.js এর প্রয়োজনীয় অংশের পরিবর্তন
 
-      const video = document.createElement("video");
-      video.preload = "metadata";
-      video.onloadedmetadata = function () {
-        window.URL.revokeObjectURL(video.src);
-        const duration = Math.round(video.duration);
-        setVideoDuration(String(duration));
-        form.setFieldsValue({ duration: String(duration) });
-      };
-      video.src = URL.createObjectURL(file);
-
-      return false;
-    },
-    onRemove: () => {
-      setVideoFile(null);
-      setVideoDuration("");
-      form.setFieldsValue({ duration: undefined });
-    },
-    fileList: videoFile ? [videoFile] : [],
-    showUploadList: false,
-  }), [videoFile, form]);
-
+  // 1. validateForm function কে এভাবে পরিবর্তন করুন:
   const validateForm = useCallback(() => {
-    if (postType === "text" && !textContent.trim()) {
-      message.error("Please enter text content");
-      return false;
+    if (postType === "text") {
+      // Editor থেকে সরাসরি content নিন
+      const editorContent = editor.current?.value || textContent || "";
+      const cleanContent = editorContent.replace(/<[^>]*>/g, "").trim(); // HTML tags remove করে check করুন
+
+      if (!cleanContent) {
+        message.error("Please enter text content");
+        return false;
+      }
     }
     if (postType === "image") {
       if (!imageFile && !isEditMode) {
         message.error("Please select an image");
         return false;
       }
-      if (isEditMode && !imageFile && !editingItem?.imageUrl && !editingItem?.thumbnailUrl) {
+      if (
+        isEditMode &&
+        !imageFile &&
+        !editingItem?.imageUrl &&
+        !editingItem?.thumbnailUrl
+      ) {
         message.error("Please select an image");
         return false;
       }
@@ -247,11 +281,26 @@ const PostFormModal = ({
       }
     }
     return true;
-  }, [postType, textContent, imageFile, videoFile, thumbnailFile, isEditMode, editingItem]);
+  }, [
+    postType,
+    textContent,
+    imageFile,
+    videoFile,
+    thumbnailFile,
+    isEditMode,
+    editingItem,
+  ]);
 
+  // 2. handleFormSubmit function এ text content handling পরিবর্তন করুন:
   const handleFormSubmit = useCallback(
     async (values) => {
       try {
+        // Text post এর জন্য editor থেকে সরাসরি content নিন
+        let finalTextContent = textContent;
+        if (postType === "text" && editor.current) {
+          finalTextContent = editor.current.value || textContent || "";
+        }
+
         if (!validateForm()) return;
 
         const postData = {
@@ -262,7 +311,7 @@ const PostFormModal = ({
         };
 
         if (postType === "text") {
-          postData.title = textContent;
+          postData.title = finalTextContent; // Updated content ব্যবহার করুন
         } else if (postType === "image") {
           postData.title = values.title;
         } else if (postType === "video") {
@@ -309,15 +358,15 @@ const PostFormModal = ({
 
   const getImageSource = useCallback((item) => {
     if (!item) return "";
-    
+
     if (item.imageUrl) {
       return getVideoAndThumbnail(item.imageUrl);
     }
-    
+
     if (item.thumbnailUrl) {
       return getVideoAndThumbnail(item.thumbnailUrl);
     }
-    
+
     return "";
   }, []);
 
@@ -332,59 +381,68 @@ const PostFormModal = ({
       maskClosable={false} // Prevent accidental closure
     >
       <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
-       <div className="flex justify-between gap-10 items-center">
-       <Form.Item
-          name="type"
-          label="Post Type"
-          rules={[{ required: true, message: "Please select post type" }]}
-          className="w-full"
-        >
-          <Select
-            placeholder="Select Post Type"
-            className="h-12 w-full"
-            onChange={handlePostTypeChange}
-            value={postType}
+        <div className="flex justify-between gap-10 items-center">
+          <Form.Item
+            name="type"
+            label="Post Type"
+            rules={[{ required: true, message: "Please select post type" }]}
+            className="w-full"
           >
-            {POST_TYPES.map((type) => (
-              <Option key={type.value} value={type.value}>
-                {type.label}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+            <Select
+              placeholder="Select Post Type"
+              className="h-12 w-full"
+              onChange={handlePostTypeChange}
+              value={postType}
+            >
+              {POST_TYPES.map((type) => (
+                <Option key={type.value} value={type.value}>
+                  {type.label}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
 
-        <Form.Item
-          name="publishAt"
-          label="Publish Date & Time"
-          rules={[{ required: true, message: "Please select publish date" }]} 
-          className="w-full"
-        >
-          <DatePicker 
-            showTime 
-            format="YYYY-MM-DD HH:mm:ss"
-            placeholder="Select Date and Time"
-            className="h-12 w-full"
-            onChange={(date) => setPublishDate(date)}
-            disabledDate={(current) => current && current < moment().startOf('day')}
-            disabledTime={(current) => {
-              if (!current) return {};
-              const now = moment();
-              if (current.isSame(now, 'day')) {
-                const disabledHours = [];
-                for (let i = 0; i < now.hour(); i++) disabledHours.push(i);
-                const disabledMinutes = current.hour() === now.hour() ? Array.from({length: now.minute()}, (_, i) => i) : [];
-                const disabledSeconds = (current.hour() === now.hour() && current.minute() === now.minute()) ? Array.from({length: now.second()}, (_, i) => i) : [];
-                return {
-                  disabledHours: () => disabledHours,
-                  disabledMinutes: () => disabledMinutes,
-                  disabledSeconds: () => disabledSeconds,
-                };
+          <Form.Item
+            name="publishAt"
+            label="Publish Date & Time"
+            rules={[{ required: true, message: "Please select publish date" }]}
+            className="w-full"
+          >
+            <DatePicker
+              showTime
+              format="YYYY-MM-DD HH:mm:ss"
+              placeholder="Select Date and Time"
+              className="h-12 w-full"
+              onChange={(date) => setPublishDate(date)}
+              disabledDate={(current) =>
+                current && current < moment().startOf("day")
               }
-              return {};
-            }}
-          />
-        </Form.Item>
-       </div>
+              disabledTime={(current) => {
+                if (!current) return {};
+                const now = moment();
+                if (current.isSame(now, "day")) {
+                  const disabledHours = [];
+                  for (let i = 0; i < now.hour(); i++) disabledHours.push(i);
+                  const disabledMinutes =
+                    current.hour() === now.hour()
+                      ? Array.from({ length: now.minute() }, (_, i) => i)
+                      : [];
+                  const disabledSeconds =
+                    current.hour() === now.hour() &&
+                    current.minute() === now.minute()
+                      ? Array.from({ length: now.second() }, (_, i) => i)
+                      : [];
+                  return {
+                    disabledHours: () => disabledHours,
+                    disabledMinutes: () => disabledMinutes,
+                    disabledSeconds: () => disabledSeconds,
+                  };
+                }
+                return {};
+              }}
+            />
+          </Form.Item>
+        </div>
 
         {(postType === "image" || postType === "video") && (
           <Form.Item
@@ -400,7 +458,7 @@ const PostFormModal = ({
           <Form.Item label="Post Content" required className="mb-6">
             <div className="editor-wrapper custom-height-editor">
               <JoditTextEditor
-                key={`editor-${visible}-${editingItem?._id || 'new'}`} // Add key for better control
+                key={`editor-${visible}-${editingItem?._id || "new"}`}
                 ref={editor}
                 value={textContent}
                 tabIndex={1}
@@ -422,7 +480,9 @@ const PostFormModal = ({
                 </p>
               )}
             </Dragger>
-            {(imageFile || (editingItem && (editingItem.imageUrl || editingItem.thumbnailUrl))) && (
+            {(imageFile ||
+              (editingItem &&
+                (editingItem.imageUrl || editingItem.thumbnailUrl))) && (
               <div className="mt-2 text-center relative">
                 <Image
                   src={

@@ -20,7 +20,7 @@ import {
   PlusOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
-import VideoEditModal from "./VideoEditModal";
+// import VideoEditModal from "./VideoEditModal";
 import VideoDetailsModal from "../../retailerManagement/VideoDetailsModal";
 import GradientButton from "../../common/GradiantButton";
 import DraggableVideoList from "../../retailerManagement/DraggableVideoList";
@@ -29,6 +29,8 @@ import { getTableColumns, getScheduleVideoColumns } from "../../retailerManageme
 import { getVideoAndThumbnail } from "../../common/imageUrl";
 import moment from "moment/moment";
 import Spinner from "../../common/Spinner";
+import EditVideoModal from "../EditVideoModal";
+import { useUpdateVideoINCategoryAndSubcategoryMutation } from "../../../redux/apiSlices/videoApi";
 
 const { Title } = Typography;
 
@@ -81,7 +83,7 @@ const VideoManagement = () => {
     handleStatusChange,
     handleTableChange,
   } = useVideomanagement();
-
+const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutation();
   console.log(subCategoryId);
   console.log("categoryId:", categoryId);
   console.log(categories);
@@ -254,12 +256,15 @@ const VideoManagement = () => {
         </div>
       )}
 
-      {/* Edit Video Modal - Simple title and description editing */}
-      <VideoEditModal
-        visible={isFormModalVisible}
+
+      <EditVideoModal 
+         visible={isFormModalVisible}
         onCancel={closeFormModal}
         onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
+        onUpdateVideo={updateVideo}
+        isLoading={isLoading}
+
       />
 
       {/* Video Details Modal */}

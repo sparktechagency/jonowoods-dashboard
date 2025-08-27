@@ -15,9 +15,11 @@ const EditVideoModal = ({
   onCancel,
   onSuccess,
   currentVideo,
+  onUpdateVideo,
+isLoading
 }) => {
   const [form] = Form.useForm();
-  const [updateVideoINCategoryAndSubcategory, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutation();
+  // const [updateVideoINCategoryAndSubcategory, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutation();
 
   // Initialize form data when modal opens or currentVideo changes
   useEffect(() => {
@@ -44,7 +46,7 @@ const EditVideoModal = ({
         description: values.description,
       };
 
-      await updateVideoINCategoryAndSubcategory({
+      await onUpdateVideo({
         id: currentVideo._id,
         updateData,
       }).unwrap();

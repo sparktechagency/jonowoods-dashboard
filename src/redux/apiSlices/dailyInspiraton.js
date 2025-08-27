@@ -122,6 +122,17 @@ const dailyInspirationApi = api.injectEndpoints({
         body: orderData,
       }),
       invalidatesTags: ["DailyInspirationScheduled"],
+    }),
+
+    updateVideoInDailyInspiration: builder.mutation({
+      query: ({ id, updateData }) => {
+        return {
+          url: `/admin/dailyInspiration/${id}`,
+          method: "PATCH",
+          body: updateData,
+        };
+      },
+      invalidatesTags: ["DailyInspiration", "DailyInspirationScheduled", "Videos"],
 
     }),
   }),
@@ -139,5 +150,6 @@ export const {
   useGetDailyInspirationLibraryQuery,
   useGetScheduledDailyInspirationQuery,
   useUpdateDailyInspirationOrderMutation,
+  useUpdateVideoInDailyInspirationMutation,
 
 } = dailyInspirationApi;

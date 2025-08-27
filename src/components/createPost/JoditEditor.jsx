@@ -1,13 +1,26 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect, useState, useCallback, forwardRef, useImperativeHandle } from "react";
 import JoditEditor from "jodit-react";
 import "./jodit-editor.css";
 
-const JoditTextEditor = ({ value, onChange, tabIndex, onBlur, ...props }) => {
+const JoditTextEditor = forwardRef(({ value, onChange, tabIndex, onBlur, ...props }, ref) => {
   const editor = useRef(null);
   const [internalValue, setInternalValue] = useState(value || '');
   const [isInitialized, setIsInitialized] = useState(false);
   const isUserTyping = useRef(false);
   const lastExternalValue = useRef(value);
+
+  // Expose editor methods to parent component
+  useImperativeHandle(ref, () => ({
+    get value() {
+      return editor.current?.value || internalValue;
+    },
+    focus: () => {
+      editor.current?.focus();
+    },
+    blur: () => {
+      editor.current?.blur();
+    }
+  }), [internalValue]);
 
   // Enhanced config with focus preservation
   const config = {
@@ -55,21 +68,13 @@ const JoditTextEditor = ({ value, onChange, tabIndex, onBlur, ...props }) => {
   }, [value, isInitialized]);
 
   // Debounced change handler to prevent excessive updates
-  const handleChange = useCallback((newContent) => {
-    isUserTyping.current = true;
-    setInternalValue(newContent);
-    
-    if (onChange) {
-      onChange(newContent);
-    }
-    
-    // Reset typing flag after user stops typing
-    const timeoutId = setTimeout(() => {
-      isUserTyping.current = false;
-    }, 500); // Increased timeout for better stability
-    
-    return () => clearTimeout(timeoutId);
-  }, [onChange]);
+const handleChange = useCallback((newContent) => {
+  setInternalValue(newContent);
+
+  if (onChange) {
+    onChange(newContent); // parent এ পাঠাবে সাথে সাথে
+  }
+}, [onChange]);
 
   const handleBlur = useCallback((newContent) => {
     isUserTyping.current = false;
@@ -102,6 +107,6 @@ const JoditTextEditor = ({ value, onChange, tabIndex, onBlur, ...props }) => {
       />
     </div>
   );
-};
+});
 
 export default JoditTextEditor;

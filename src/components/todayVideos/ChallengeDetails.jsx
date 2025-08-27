@@ -9,7 +9,8 @@ import {
   useGetDailyChallengeVideosQuery,
   useDeleteDailyChallengeVideoMutation,
   useUpdateDailyChallengeVideoMutation,
-  useUpdateChallengeVideoOrderMutation, // Add this mutation
+  useUpdateChallengeVideoOrderMutation,
+  useUpdateVideoInChallengeMutation, // Add this mutation
 } from "../../redux/apiSlices/dailyChallangeApi";
 import VideoUploadSystem from "../common/VideoUploade";
 import { 
@@ -51,7 +52,8 @@ const ChallengeDetails = () => {
   // Drag and drop states
   const [localChallengeVideos, setLocalChallengeVideos] = useState([]);
   const [hasOrderChanges, setHasOrderChanges] = useState(false);
-  const [viewMode, setViewMode] = useState("table"); // "table" or "drag"
+  const [viewMode, setViewMode] = useState("table"); 
+    const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -76,6 +78,9 @@ const ChallengeDetails = () => {
 
   const {data:challengeVideos,isLoading:challengeVideosLoading, refetch: refetchChallengeVideos} = useGetDailyChallengeVideosQuery(id);
   const challengeVideo = challengeVideos?.data || [];
+  const [updateVideoInChallenge,{isLoading:updateVideoInChallengeLoading}] = useUpdateVideoInChallengeMutation();
+
+
 
   // Update local challenge videos and sorted videos when challengeVideo changes
   useEffect(() => {
@@ -193,6 +198,16 @@ const ChallengeDetails = () => {
       message.error("Failed to update video order");
       console.error("Update order error:", error);
     }
+  };
+
+   const closeFormModal = () => {
+    setIsFormModalVisible(false);
+ 
+  };
+
+    const handleFormSubmit = async () => {
+    closeFormModal();
+    await refetch();
   };
 
   // Handle functions for video management
