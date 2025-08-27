@@ -209,7 +209,7 @@ const PageForm = ({ visible, onCancel, onSubmit, initialValues }) => {
   );
 };
 
-const PageManagement = () => {
+const Pagemanagement = () => {
   const [pages, setPages] = useState([
     {
       id: 1,
@@ -291,7 +291,7 @@ const PageManagement = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Page Management
+              Page management
             </h1>
             <p className="text-gray-600 mt-2">
               Manage your login and register page designs
@@ -399,4 +399,4 @@ const PageManagement = () => {
   );
 };
 
-export default PageManagement;
+export default Pagemanagement;

@@ -5,7 +5,7 @@ const loginCredentialApi = api.injectEndpoints({
     createBackUpAdmin: builder.mutation({
       query: (subCategoryData) => {
         return {
-          url: "/admin/managment/create-admin",
+          url: "/admin/management/create-admin",
           method: "POST",
           body: subCategoryData,
         };
@@ -25,7 +25,7 @@ const loginCredentialApi = api.injectEndpoints({
     deleteBackUpAdmin: builder.mutation({
       query: (id) => {
         return {
-          url: `/admin/managment/${id}`,
+          url: `/admin/management/${id}`,
           method: "DELETE",
         };
       },
@@ -34,7 +34,7 @@ const loginCredentialApi = api.injectEndpoints({
     getLoginCredentials: builder.query({
       query: () => {
         return {
-          url: "/admin/managment/get-admin",
+          url: "/admin/management/get-admin",
           method: "GET",
         };
       },

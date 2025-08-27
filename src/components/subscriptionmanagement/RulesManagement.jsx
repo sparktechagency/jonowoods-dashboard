@@ -7,10 +7,10 @@ import {
   useCreateSubscriptionRuleMutation,
   useUpdateSubscriptionRuleMutation,
   useDeleteSubscriptionRuleMutation,
-} from "../../redux/apiSlices/subscriptionManagementApi";
+} from "../../redux/apiSlices/subscriptionmanagementApi";
 import Spinner from "../common/Spinner";
 
-export default function SubscriptionRulesManagement() {
+export default function SubscriptionRulesmanagement() {
   const [showRuleModal, setShowRuleModal] = useState(false);
   const [currentRule, setCurrentRule] = useState("");
   const [subscriptionType, setSubscriptionType] = useState("app");

@@ -22,13 +22,13 @@ import {
 } from "@ant-design/icons";
 import moment from "moment/moment";
 import { useDeleteCategoryVideoMutation, useGetByCategoryAllVideosQuery, useGetCategoryQuery, useGetCategoryVideoDetailsQuery, useUpdateVideoOrderInCategoryMutation, useVideoAddInCategoryMutation } from "../../redux/apiSlices/categoryApi";
-import { useDeleteVideoMutation, useGetAllVideosQuery, useGetVideoByIdQuery, useUpdateVideoStatusMutation, useUpdateVideoOrderMutation } from "../../redux/apiSlices/videoApi";
+import { useDeleteVideoMutation, useGetAllVideosQuery, useGetVideoByIdQuery, useUpdateVideoStatusMutation, useUpdateVideoOrderMutation, useUpdateVideoINCategoryAndSubcategoryMutation } from "../../redux/apiSlices/videoApi";
 import { useScheduleDailyInspirationMutation } from "../../redux/apiSlices/dailyInspiraton";
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
 import GradientButton from "../common/GradiantButton";
-import VideoFormModal from "../retailerManagement/VideoFormModal";
-import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
+import EditVideoModal from "./EditVideoModal";
+import VideoDetailsModal from "../retailermanagement/VideoDetailsModal";
 import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 
@@ -101,6 +101,8 @@ const videoDetails=videoDetail?.data
   console.log(videoDetails)
   const [deleteCategoryVideo] = useDeleteCategoryVideoMutation();
   const [updateVideoStatus] = useUpdateVideoStatusMutation();
+  const [updateVideoINCategoryAndSubcategory] = useUpdateVideoINCategoryAndSubcategoryMutation();
+
   const [updateVideoOrderInCategory] = useUpdateVideoOrderInCategoryMutation();
 
 
@@ -706,16 +708,12 @@ const videoDetails=videoDetail?.data
         />
       )}
 
-      {/* Add/Edit Video Modal */}
-      <VideoFormModal
+      {/* Edit Video Modal */}
+      <EditVideoModal
         visible={isFormModalVisible}
         onCancel={closeFormModal}
         onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
-        editingId={editingId}
-        categories={categories}
-        equipmentTags={equipmentTags}
-        setEquipmentTags={setEquipmentTags}
       />
 
       {/* Video Details Modal */}

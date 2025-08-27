@@ -76,7 +76,7 @@ const subscriptionApiSlice = api.injectEndpoints({
     updateSubscriptionPackage: builder.mutation({
       query: ({ id, ...packageData }) => {
         return {
-          url: `/admin/package/managment/${id}`,
+          url: `/admin/package/management/${id}`,
           method: "PATCH",
           body: packageData,
         };
@@ -87,7 +87,7 @@ const subscriptionApiSlice = api.injectEndpoints({
     deleteSubscriptionPackage: builder.mutation({
       query: (id) => {
         return {
-          url: `/admin/package/managment/${id}`,
+          url: `/admin/package/management/${id}`,
           method: "DELETE",
         };
       },

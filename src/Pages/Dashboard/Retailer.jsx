@@ -1,5 +1,5 @@
 import React from 'react'
-import RetailerManageTable from '../../components/retailerManagement/RetailerManageTable'
+import RetailerManageTable from '../../components/retailermanagement/RetailerManageTable'
 
 const Retailer = () => {
   return (

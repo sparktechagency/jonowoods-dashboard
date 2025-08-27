@@ -1,7 +1,7 @@
 import { api } from "../api/baseApi";
 
 
-const userManagementApi = api.injectEndpoints({
+const usermanagementApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getAllUsers: builder.query({
       query: (args) => {
@@ -12,7 +12,7 @@ const userManagementApi = api.injectEndpoints({
           });
         }
         return {
-          url: "/admin/user/managment",
+          url: "/admin/user/management",
           method: "GET",
           params,
         };
@@ -30,7 +30,7 @@ const userManagementApi = api.injectEndpoints({
     updateUserStatus: builder.mutation({
       query: ({ userId, status }) => {
         return {
-          url: `/admin/user/managment/${userId}`,
+          url: `/admin/user/management/${userId}`,
           method: "PUT",
           body: { status },
         };
@@ -64,4 +64,4 @@ export const {
   useGetAllUsersQuery,
   useUpdateUserStatusMutation,
   useGetUserDetailsQuery,
-} = userManagementApi;
+} = usermanagementApi;

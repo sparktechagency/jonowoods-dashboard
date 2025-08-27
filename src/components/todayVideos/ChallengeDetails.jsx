@@ -22,6 +22,7 @@ import GradientButton from "../common/GradiantButton";
 import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
+import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
 
 const { TabPane } = Tabs;
 
@@ -42,6 +43,7 @@ const ChallengeDetails = () => {
   const [selectedVideos, setSelectedVideos] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [schedulingDate, setSchedulingDate] = useState(null);
+   const [currentVideo, setCurrentVideo] = useState(null);
   
   // State for sorted videos
   const [sortedVideos, setSortedVideos] = useState([]);
@@ -672,8 +674,18 @@ const ChallengeDetails = () => {
         </div>
         </Modal>
 
+        <VideoDetailsModal 
+          visible={detailsModalVisible}
+           onCancel={() => {
+            setDetailsModalVisible(false);
+            setSelectedVideoDetails(null);
+          }}
+          currentVideo={selectedVideoDetails}
+
+        />
+
         {/* Video Details Modal */}
-        <Modal
+        {/* <Modal
           title="Video Details"
           open={detailsModalVisible}
           onCancel={() => {
@@ -739,7 +751,7 @@ const ChallengeDetails = () => {
               </div>
             </div>
           )}
-        </Modal>
+        </Modal> */}
       </div>
     );
   };

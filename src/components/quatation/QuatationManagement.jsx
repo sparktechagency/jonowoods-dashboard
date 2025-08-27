@@ -29,7 +29,7 @@ import {
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
 
-const QuotationManagement = () => {
+const Quotationmanagement = () => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editRecord, setEditRecord] = useState(null);
@@ -389,4 +389,4 @@ const QuotationManagement = () => {
   );
 };
 
-export default QuotationManagement;
+export default Quotationmanagement;

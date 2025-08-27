@@ -24,7 +24,7 @@ import {
 import DragDropList from "../common/DragDropList";
 import DraggableCategoryCard from "./DraggableCategoryCard";
 
-const CategoryManagement = () => {
+const Categorymanagement = () => {
   const navigate = useNavigate();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -340,4 +340,4 @@ const CategoryManagement = () => {
   );
 };
 
-export default CategoryManagement;
+export default Categorymanagement;

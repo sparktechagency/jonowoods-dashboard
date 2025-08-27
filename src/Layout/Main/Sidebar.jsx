@@ -5,13 +5,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { IoIosLogOut } from "react-icons/io";
 import {
   Dashboard,
-  SalesRepsManagement,
+  SalesRepsmanagement,
   Settings,
-  VideoManagement,
-  InventoryManagement,
+  Videomanagement,
+  Inventorymanagement,
   LoyaltyProgram,
-  SubscriptionManagement,
-  UserManagement,
+  Subscriptionmanagement,
+  Usermanagement,
   LoginCredentials,
   ComingSoon,
 } from "../../components/common/Svg";
@@ -95,19 +95,19 @@ const Sidebar = () => {
     },
     {
       key: "/user-management",
-      icon: renderIcon(UserManagement, "/user-management"),
-      label: <Link to="/user-management">Users Management</Link>,
+      icon: renderIcon(Usermanagement, "/user-management"),
+      label: <Link to="/user-management">Users management</Link>,
       roles: ["SUPER_ADMIN"],
     },
     {
       key: "/category-management",
-      icon: renderIcon(SalesRepsManagement, "/category-management"),
-      label: <Link to="/category-management">Category Management</Link>,
+      icon: renderIcon(SalesRepsmanagement, "/category-management"),
+      label: <Link to="/category-management">Category management</Link>,
     },
     {
       key: "/video-management",
-      icon: renderIcon(VideoManagement, "/video-management"),
-      label: <Link to="/video-management">Video Management</Link>,
+      icon: renderIcon(Videomanagement, "/video-management"),
+      label: <Link to="/video-management">Video management</Link>,
     },
     {
       key: "/coming-soon",
@@ -116,12 +116,12 @@ const Sidebar = () => {
     },
     {
       key: "/today-video",
-      icon: renderIcon(VideoManagement, "/today-video"),
-      label: <Link to="/today-video">Challenge Management</Link>,
+      icon: renderIcon(Videomanagement, "/today-video"),
+      label: <Link to="/today-video">Challenge management</Link>,
     },
     {
       key: "/daily-inspiration",
-      icon: renderIcon(VideoManagement, "/daily-inspiration"),
+      icon: renderIcon(Videomanagement, "/daily-inspiration"),
       label: <Link to="/daily-inspiration"> Daily Inspiration</Link>,
     },
     {
@@ -131,7 +131,7 @@ const Sidebar = () => {
     },
     {
       key: "/loyalty-program",
-      icon: renderIcon(SubscriptionManagement, "/loyalty-program"),
+      icon: renderIcon(Subscriptionmanagement, "/loyalty-program"),
       label: <Link to="/loyalty-program">Subscription package</Link>,
       roles: ["SUPER_ADMIN"],
     },
@@ -143,8 +143,8 @@ const Sidebar = () => {
     },
     {
       key: "/inventory",
-      icon: renderIcon(InventoryManagement, "/inventory"),
-      label: <Link to="/inventory">Quotation Management</Link>,
+      icon: renderIcon(Inventorymanagement, "/inventory"),
+      label: <Link to="/inventory">Quotation management</Link>,
     },
     {
       key: "/subsciption",

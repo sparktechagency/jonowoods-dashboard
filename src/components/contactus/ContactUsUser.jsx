@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 
 const { Title } = Typography;
 
-const ContactManagementTable = () => {
+const ContactmanagementTable = () => {
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -88,7 +88,7 @@ const ContactManagementTable = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between ">
-        <Title level={2}>Contact Management</Title>
+        <Title level={2}>Contact management</Title>
 
         {/* Search Only */}
         <div className="mb-4" >
@@ -128,4 +128,4 @@ const ContactManagementTable = () => {
   );
 };
 
-export default ContactManagementTable;
+export default ContactmanagementTable;

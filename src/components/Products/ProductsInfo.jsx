@@ -22,7 +22,7 @@ import { Filtering } from "../common/Svg";
 
 
 
-const QuotationManagement = () => {
+const Quotationmanagement = () => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [data, setData] = useState([
@@ -303,4 +303,4 @@ const QuotationManagement = () => {
   );
 };
 
-export default QuotationManagement;
+export default Quotationmanagement;

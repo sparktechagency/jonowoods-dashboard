@@ -14,7 +14,7 @@ import SubCategoryTable from "./SubCategoryTable";
 import SubCategoryForm from "./SubCategoryForm";
 import { useGetSingleCategoryQuery } from "../../../redux/apiSlices/categoryApi";
 
-const SubCategoryManagement = () => {
+const SubCategorymanagement = () => {
   const navigate = useNavigate();
   const { categoryId } = useParams();
   // console.log("Category ID:", categoryId);
@@ -143,7 +143,7 @@ const SubCategoryManagement = () => {
   };
 
  const showCategoryDetails = (record) => {
-  navigate(`/video-management/${record._id}?categoryId=${selectedCategory?._id}`);
+  navigate(`/sales-video-management/${record._id}?categoryId=${selectedCategory?._id}`);
 };
   
 
@@ -233,7 +233,7 @@ const SubCategoryManagement = () => {
             Back
           </Button>
           <div>
-            <h2>Course Management</h2>
+            <h2>Course management</h2>
           </div>
         </div>
       </div>
@@ -257,10 +257,14 @@ const SubCategoryManagement = () => {
       </div>
 
       {/* Sub Category List Header */}
-      <div className="mb-4 flex justify-end">
-        {/* <h3 className="text-lg mb-2">
-          Sub Category List ({formattedSubCategories.length})
-        </h3> */}
+      <div className="mb-4 flex justify-between items-center">
+        <Button
+          type="default"
+          onClick={() => navigate(`/category-management/${selectedCategory._id}`)}
+          className="bg-blue-500 text-white py-5 border-none"
+        >
+          ALL VIDEOS
+        </Button>
         <Button
           type="primary"
           onClick={() => showSubCategoryModal()}
@@ -293,4 +297,4 @@ const SubCategoryManagement = () => {
   );
 };
 
-export default SubCategoryManagement;
+export default SubCategorymanagement;

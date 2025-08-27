@@ -22,6 +22,7 @@ import GradientButton from "../common/GradiantButton";
 import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
+import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
 
 const { Option } = Select;
 
@@ -345,7 +346,7 @@ const DailyInspirationPage = () => {
         key: "video",
         align: "center",
         render: (_, record) => (
-          <div className="flex items-center justify-center">
+          <div className="flex justify-center">
             {record.thumbnailUrl && (
               <img 
                 src={getVideoAndThumbnail(record.thumbnailUrl)} 
@@ -355,25 +356,39 @@ const DailyInspirationPage = () => {
               />
             )}
             <div>
-              <p className="font-medium">{record.title || "Untitled Video"}</p>
-              {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>}
+              {/* <p className="font-medium">{record.title || "Untitled Video"}</p> */}
+              {/* {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>} */}
             </div>
           </div>
         )
       },
       {
-        title: "Equipment",
-        dataIndex: "equipment",
-        key: "equipment",
+        title: "Title",
+        dataIndex: "title",
+        key: "title",
         align: "center",
-        render: (equipment) => (
-          <div>
-            {equipment && equipment.map((item, index) => (
-              <Tag key={index} color="blue">{item}</Tag>
-            ))}
-          </div>
-        ),
+      
       },
+      {
+        title: "Duration",
+        dataIndex: "duration",
+        key: "duration",
+        align: "center",
+      
+      },
+      // {
+      //   title: "Equipment",
+      //   dataIndex: "equipment",
+      //   key: "equipment",
+      //   align: "center",
+      //   render: (equipment) => (
+      //     <div>
+      //       {equipment && equipment.map((item, index) => (
+      //         <Tag key={index} color="blue">{item}</Tag>
+      //       ))}
+      //     </div>
+      //   ),
+      // },
       {
         title: "Publish Date",
         dataIndex: "publishAt",
@@ -649,8 +664,19 @@ const DailyInspirationPage = () => {
         </div>
       </Modal>
 
+      <VideoDetailsModal 
+        visible={detailsModalVisible}
+        onCancel={() => {
+          setDetailsModalVisible(false);
+          setSelectedVideoDetails(null);
+        }}
+        currentVideo={selectedVideoDetails}
+
+
+       />
+
       {/* Video Details Modal */}
-      <Modal
+      {/* <Modal
         title="Video Details"
         open={detailsModalVisible}
         onCancel={() => {
@@ -715,7 +741,7 @@ const DailyInspirationPage = () => {
             </div>
           </div>
         )}
-      </Modal>
+      </Modal> */}
     </div>
   );
 };

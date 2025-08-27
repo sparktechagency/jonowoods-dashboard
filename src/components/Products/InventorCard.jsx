@@ -1,6 +1,6 @@
 import React from "react";
 import { LuBadgeDollarSign, LuBox } from "react-icons/lu";
-import SalesRepsCard from "../SalesRepsManagement/CategoryTable";
+import SalesRepsCard from "../SalesRepsmanagement/CategoryTable";
 
 const InventorCard = () => {
   // Data for cards

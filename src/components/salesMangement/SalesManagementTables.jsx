@@ -133,7 +133,7 @@ const data = [
 
 
 
-const SalesManagementTable = () => {
+const SalesmanagementTable = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedOrderData, setSelectedOrderData] = useState(null);
   const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
@@ -281,4 +281,4 @@ const SalesManagementTable = () => {
   );
 };
 
-export default SalesManagementTable;
+export default SalesmanagementTable;

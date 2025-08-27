@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   Modal,
   Form,
@@ -40,19 +40,26 @@ const PostFormModal = ({
 
   const isEditMode = !!editingItem;
 
-  const POST_TYPES = [
+  // Memoize POST_TYPES to prevent recreation on each render
+  const POST_TYPES = useMemo(() => [
     { value: "text", label: "Text Post" },
     { value: "image", label: "Image Post" },
     { value: "video", label: "Video Post" },
-  ];
+  ], []);
 
-  const getFormTitle = () => (editingItem ? "Edit Post" : "Create New Post");
+  const getFormTitle = useCallback(() => 
+    editingItem ? "Edit Post" : "Create New Post", 
+    [editingItem]
+  );
 
-  // Enhanced useEffect for better text content handling
+  // Stabilize text content updates
+  const updateTextContent = useCallback((content) => {
+    setTextContent(content);
+  }, []);
+
+  // Enhanced useEffect with better dependency management
   useEffect(() => {
     if (editingItem && visible) {
-      console.log("Setting editing item:", editingItem); // Debug log
-      
       const fieldsToSet = {
         type: editingItem.type,
       };
@@ -87,25 +94,13 @@ const PostFormModal = ({
       // Set post type first
       setPostType(editingItem.type || "text");
       
-      // Handle text content for text posts
+      // Handle text content for text posts - only update if different
       if (editingItem.type === "text") {
         const content = editingItem.title || editingItem.content || "";
-        console.log("Setting text content:", content); // Debug log
-        
-        // Set text content immediately
-        setTextContent(content);
-        
-        // Also set with multiple delays to ensure editor is ready
-        setTimeout(() => {
+        if (content !== textContent) {
           setTextContent(content);
-          console.log("Text content set after 100ms:", content);
-        }, 100);
-        
-        setTimeout(() => {
-          setTextContent(content);
-          console.log("Text content set after 500ms:", content);
-        }, 500);
-      } else {
+        }
+      } else if (textContent !== "") {
         setTextContent("");
       }
 
@@ -119,7 +114,6 @@ const PostFormModal = ({
       
     } else if (!visible) {
       // Reset everything when modal closes
-      console.log("Resetting form"); // Debug log
       form.resetFields();
       setThumbnailFile(null);
       setVideoFile(null);
@@ -128,20 +122,10 @@ const PostFormModal = ({
       setTextContent("");
       setVideoDuration("");
       setPublishDate(null);
-      form.setFieldsValue({ publishAt: null });
     }
-  }, [editingItem, visible, form]);
+  }, [editingItem?._id, editingItem?.type, visible]); // Reduced dependencies
 
-  // Separate useEffect to handle text content changes when editingItem changes
-  useEffect(() => {
-    if (editingItem && editingItem.type === "text" && visible) {
-      const content = editingItem.title || editingItem.content || "";
-      console.log("Text content effect triggered:", content);
-      setTextContent(content);
-    }
-  }, [editingItem?.title, editingItem?.content, editingItem?.type, visible]);
-
-  const handlePostTypeChange = (value) => {
+  const handlePostTypeChange = useCallback((value) => {
     setPostType(value);
     setThumbnailFile(null);
     setVideoFile(null);
@@ -151,10 +135,10 @@ const PostFormModal = ({
 
     // Reset form fields when type changes
     form.resetFields(["title", "description", "duration"]);
-  };
+  }, [form]);
 
-  // Rest of your existing code remains the same...
-  const imageProps = {
+  // Memoize upload props to prevent recreation
+  const imageProps = useMemo(() => ({
     beforeUpload: (file) => {
       if (!file.type.startsWith("image/")) {
         message.error("You can only upload image files!");
@@ -172,9 +156,9 @@ const PostFormModal = ({
     },
     fileList: imageFile ? [imageFile] : [],
     showUploadList: false,
-  };
+  }), [imageFile]);
 
-  const thumbnailProps = {
+  const thumbnailProps = useMemo(() => ({
     beforeUpload: (file) => {
       if (!file.type.startsWith("image/")) {
         message.error("You can only upload image files!");
@@ -192,9 +176,9 @@ const PostFormModal = ({
     },
     fileList: thumbnailFile ? [thumbnailFile] : [],
     showUploadList: false,
-  };
+  }), [thumbnailFile]);
 
-  const videoProps = {
+  const videoProps = useMemo(() => ({
     beforeUpload: (file) => {
       if (!file.type.startsWith("video/")) {
         message.error("You can only upload video files!");
@@ -225,9 +209,9 @@ const PostFormModal = ({
     },
     fileList: videoFile ? [videoFile] : [],
     showUploadList: false,
-  };
+  }), [videoFile, form]);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     if (postType === "text" && !textContent.trim()) {
       message.error("Please enter text content");
       return false;
@@ -263,7 +247,7 @@ const PostFormModal = ({
       }
     }
     return true;
-  };
+  }, [postType, textContent, imageFile, videoFile, thumbnailFile, isEditMode, editingItem]);
 
   const handleFormSubmit = useCallback(
     async (values) => {
@@ -310,6 +294,7 @@ const PostFormModal = ({
       }
     },
     [
+      validateForm,
       postType,
       textContent,
       thumbnailFile,
@@ -322,7 +307,7 @@ const PostFormModal = ({
     ]
   );
 
-  const getImageSource = (item) => {
+  const getImageSource = useCallback((item) => {
     if (!item) return "";
     
     if (item.imageUrl) {
@@ -334,7 +319,7 @@ const PostFormModal = ({
     }
     
     return "";
-  };
+  }, []);
 
   return (
     <Modal
@@ -343,7 +328,8 @@ const PostFormModal = ({
       onCancel={onClose}
       footer={null}
       width={900}
-      destroyOnClose
+      destroyOnClose={false} // Changed to false to prevent unnecessary destruction
+      maskClosable={false} // Prevent accidental closure
     >
       <Form form={form} layout="vertical" onFinish={handleFormSubmit}>
        <div className="flex justify-between gap-10 items-center">
@@ -414,11 +400,12 @@ const PostFormModal = ({
           <Form.Item label="Post Content" required className="mb-6">
             <div className="editor-wrapper custom-height-editor">
               <JoditTextEditor
+                key={`editor-${visible}-${editingItem?._id || 'new'}`} // Add key for better control
                 ref={editor}
                 value={textContent}
                 tabIndex={1}
-                onBlur={(newContent) => setTextContent(newContent)}
-                onChange={(newContent) => setTextContent(newContent)}
+                onBlur={updateTextContent}
+                onChange={updateTextContent}
               />
             </div>
           </Form.Item>

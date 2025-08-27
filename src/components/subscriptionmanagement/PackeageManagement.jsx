@@ -6,7 +6,7 @@ import {
   useCreateSubscriptionPackageMutation,
   useUpdateSubscriptionPackageMutation,
   useDeleteSubscriptionPackageMutation,
-} from "../../redux/apiSlices/subscriptionManagementApi";
+} from "../../redux/apiSlices/subscriptionmanagementApi";
 import Spinner from "../common/Spinner";
 import { Filtering } from "../common/Svg";
 
@@ -33,7 +33,7 @@ const MEMBERSHIP_OPTIONS = [
   { value: "vip", label: "VIP Members" },
 ];
 
-export default function SubscriptionPackagesManagement() {
+export default function SubscriptionPackagesmanagement() {
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [selectedType, setSelectedType] = useState("app");
   const [currentPackage, setCurrentPackage] = useState({

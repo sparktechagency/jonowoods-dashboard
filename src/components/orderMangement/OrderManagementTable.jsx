@@ -20,7 +20,7 @@ import { Filtering, FilteringIcon } from "../common/Svg";
 import moment from "moment";
 import Spinner from "../common/Spinner.jsx";
 
-const UserManagementTable = () => {
+const UsermanagementTable = () => {
   const [searchText, setSearchText] = useState(""); 
   const [statusFilter, setStatusFilter] = useState("All");
   const [planFilter, setPlanFilter] = useState("All");
@@ -318,4 +318,4 @@ const UserManagementTable = () => {
   );
 };
 
-export default UserManagementTable;
+export default UsermanagementTable;

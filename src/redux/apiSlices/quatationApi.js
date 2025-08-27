@@ -6,7 +6,7 @@ const quotationSlice = api.injectEndpoints({
     getAllQuotations: builder.query({
       query: ( page ) => {
       return {
-        url: `/admin/quotation/managment/admin?page=${page}`,
+        url: `/admin/quotation/management/admin?page=${page}`,
         method: "GET",
       };
       },
@@ -16,7 +16,7 @@ const quotationSlice = api.injectEndpoints({
     getQuotationById: builder.query({
       query: (id) => {
         return {
-          url: `/admin/quotation/managment/${id}`,
+          url: `/admin/quotation/management/${id}`,
           method: "GET",
         };
       },
@@ -29,7 +29,7 @@ const quotationSlice = api.injectEndpoints({
     createQuotation: builder.mutation({
       query: (quotationData) => {
         return {
-          url: "/admin/quotation/managment/create",
+          url: "/admin/quotation/management/create",
           method: "POST",
           body: quotationData,
         };
@@ -40,7 +40,7 @@ const quotationSlice = api.injectEndpoints({
     updateQuotation: builder.mutation({
       query: ({ id, ...quotationData }) => {
         return {
-          url: `/admin/quotation/managment/${id}`,
+          url: `/admin/quotation/management/${id}`,
           method: "PATCH",
           body: quotationData,
         };
@@ -51,7 +51,7 @@ const quotationSlice = api.injectEndpoints({
     deleteQuotation: builder.mutation({
       query: (id) => {
         return {
-          url: `/admin/quotation/managment/${id}`,
+          url: `/admin/quotation/management/${id}`,
           method: "DELETE",
         };
       },
@@ -60,7 +60,7 @@ const quotationSlice = api.injectEndpoints({
     toggleQuotationStatus: builder.mutation({
       query: ({ id, status }) => {
         return {
-          url: `/admin/quotation/managment/${id}`,
+          url: `/admin/quotation/management/${id}`,
           method: "PATCH",
           body: { status },
         };

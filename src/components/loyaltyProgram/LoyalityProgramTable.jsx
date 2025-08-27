@@ -3,7 +3,7 @@ import { Pencil, Trash2, X, Plus, ChevronDown } from "lucide-react";
 import JoditEditor from "jodit-react";
 import { Modal, Dropdown, Menu, Button } from "antd"; // Import Modal from Ant Design
 
-// Custom Filter Icon SVG component (copied from VideoManagement)
+// Custom Filter Icon SVG component (copied from Videomanagement)
 const FilteringIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -20,7 +20,7 @@ const FilteringIcon = () => (
   </svg>
 );
 
-export default function AllSubscriptionManagement() {
+export default function AllSubscriptionmanagement() {
   const [showRuleModal, setShowRuleModal] = useState(false);
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [subscriptionRules, setSubscriptionRules] = useState([

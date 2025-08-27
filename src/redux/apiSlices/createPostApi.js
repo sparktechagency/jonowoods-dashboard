@@ -56,7 +56,7 @@ const postApi = api.injectEndpoints({
     // PATCH: Update post status only
     updatePostStatus: builder.mutation({
       query: ({ id, status }) => ({
-        url: `/admin/post/${id}/status`,
+        url: `/admin/post/management/status/${id}`,
         method: "PATCH",
         body: { status },
       }),

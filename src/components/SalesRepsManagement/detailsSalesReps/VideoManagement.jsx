@@ -20,19 +20,19 @@ import {
   PlusOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
-import VideoFormModal from "./VideoFormModal";
-import VideoDetailsModal from "./VideoDetailsModal";
-import GradientButton from "../common/GradiantButton";
-import DraggableVideoList from "./DraggableVideoList";
-import { useVideomanagement } from "./useVideomanagement";
-import { getTableColumns, getScheduleVideoColumns } from "./VideoTableConfig";
-import { getVideoAndThumbnail } from "../common/imageUrl";
+import VideoEditModal from "./VideoEditModal";
+import VideoDetailsModal from "../../retailerManagement/VideoDetailsModal";
+import GradientButton from "../../common/GradiantButton";
+import DraggableVideoList from "../../retailerManagement/DraggableVideoList";
+import { useVideomanagement } from "../../retailerManagement/useVideomanagement";
+import { getTableColumns, getScheduleVideoColumns } from "../../retailerManagement/VideoTableConfig";
+import { getVideoAndThumbnail } from "../../common/imageUrl";
 import moment from "moment/moment";
-import Spinner from "../common/Spinner";
+import Spinner from "../../common/Spinner";
 
 const { Title } = Typography;
 
-const CourseDetails = () => {
+const VideoManagement = () => {
   const navigate = useNavigate();
   
   const {
@@ -80,7 +80,7 @@ const CourseDetails = () => {
     handleDeleteVideo,
     handleStatusChange,
     handleTableChange,
-  } = useRetailerManageTable();
+  } = useVideomanagement();
 
   console.log(subCategoryId);
   console.log("categoryId:", categoryId);
@@ -100,9 +100,12 @@ const CourseDetails = () => {
     }),
   };
 
-  // Get table columns configuration
+  // Get table columns configuration with edit functionality
   const columns = getTableColumns({
-    showFormModal,
+    showFormModal: (record) => {
+      // Use our custom edit modal instead of the full form modal
+      showFormModal(record);
+    },
     showDetailsModal,
     handleStatusChange,
     handleDeleteVideo,
@@ -193,15 +196,6 @@ const CourseDetails = () => {
           >
             Video Library
           </GradientButton>
-
-          {/* <GradientButton
-            type="primary"
-            onClick={() => showFormModal()}
-            className="py-5"
-            icon={<PlusOutlined />}
-          >
-            Add New Video
-          </GradientButton> */}
         </Space>
       </div>
 
@@ -260,16 +254,12 @@ const CourseDetails = () => {
         </div>
       )}
 
-      {/* Add/Edit Video Modal */}
-      <VideoFormModal
+      {/* Edit Video Modal - Simple title and description editing */}
+      <VideoEditModal
         visible={isFormModalVisible}
         onCancel={closeFormModal}
         onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
-        editingId={editingId}
-        categories={categories}
-        equipmentTags={equipmentTags}
-        setEquipmentTags={setEquipmentTags}
       />
 
       {/* Video Details Modal */}
@@ -325,4 +315,4 @@ const CourseDetails = () => {
   );
 };
 
-export default CourseDetails;
+export default VideoManagement;

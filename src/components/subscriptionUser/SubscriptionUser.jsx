@@ -7,7 +7,7 @@ import Spinner from "../common/Spinner";
 
 const { Title } = Typography;
 
-const SubscriptionManagementTable = () => {
+const SubscriptionmanagementTable = () => {
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -167,7 +167,7 @@ const SubscriptionManagementTable = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between">
-        <Title level={2}>Subscription Management</Title>
+        <Title level={2}>Subscription management</Title>
 
         {/* Search Only */}
         <div className="mb-4">
@@ -207,4 +207,4 @@ const SubscriptionManagementTable = () => {
   );
 };
 
-export default SubscriptionManagementTable;
+export default SubscriptionmanagementTable;

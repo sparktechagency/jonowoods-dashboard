@@ -18,14 +18,15 @@ import {
   DeleteOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import VideoFormModal from "./VideoFormModal";
-import VideoDetailsModal from "./VideoDetailsModal";
+// import VideoFormModal from "./VideoFormModal";
+// import VideoDetailsModal from "./VideoDetailsModal";
 import GradientButton from "../common/GradiantButton";
 import {
   useGetAllVideosQuery,
   useDeleteVideoMutation,
   useUpdateVideoStatusMutation,
   useCourserVideoDetailsQuery,
+  useGetVideoByIdQuery,
 
 } from "../../redux/apiSlices/videoApi";
 import { getVideoAndThumbnail } from "../common/imageUrl";
@@ -33,8 +34,12 @@ import moment from "moment/moment";
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
 import { useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
+import VideoFormModal from "./VideoFormModal";
+import VideoDetailsModal from "./VideoDetailsModal";
+// import VideoDetailsModal from "./VideoDetailsModal";
+// import VideoFormModal from "../common/VideoUploadModal";
 
-const VideoManagementSystem = () => {
+const RetailerManageTable = () => {
   const navigate = useNavigate();
 
   // Modal and editing states
@@ -55,17 +60,17 @@ const VideoManagementSystem = () => {
   const queryParams = [];
   if (statusFilter !== "all")
     queryParams.push({ name: "status", value: statusFilter });
-  if (typeFilter !== "all")
-    queryParams.push({ name: "type", value: typeFilter });
-  if (categoryFilter !== "all")
-    queryParams.push({ name: "category", value: categoryFilter });
+  // if (typeFilter !== "all")
+  //   queryParams.push({ name: "type", value: typeFilter });
+  // if (categoryFilter !== "all")
+  //   queryParams.push({ name: "category", value: categoryFilter });
   queryParams.push({ name: "page", value: currentPage });
   queryParams.push({ name: "limit", value: pageSize });
 
   // API calls
-  const { data: categoryData } = useGetCategoryQuery();
-  const categories = categoryData?.data || [];
-  console.log(categories)
+  // const { data: categoryData } = useGetCategoryQuery();
+  // const categories = categoryData?.data || [];
+  // console.log(categories)
 
   const {
     data: videosData,
@@ -82,7 +87,7 @@ const VideoManagementSystem = () => {
   };
 
   // Fetch single video data when editingId is set
-  const { data: videoDetails } = useCourserVideoDetailsQuery(editingId, {
+  const { data: videoDetails } = useGetVideoByIdQuery(editingId, {
 
     skip: !editingId,
   });
@@ -352,11 +357,11 @@ const VideoManagementSystem = () => {
   ];
 
   // Display text helpers
-  const getCategoryDisplayText = () => {
-    if (categoryFilter === "all") return "All Categories";
-    const category = categories.find((cat) => cat.name === categoryFilter);
-    return category ? category.name : "All Categories";
-  };
+  // const getCategoryDisplayText = () => {
+  //   if (categoryFilter === "all") return "All Categories";
+  //   const category = categories.find((cat) => cat.name === categoryFilter);
+  //   return category ? category.name : "All Categories";
+  // };
 
   const getTypeDisplayText = () => {
     if (typeFilter === "all") return "All Type";
@@ -461,7 +466,7 @@ const VideoManagementSystem = () => {
         onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
         editingId={editingId}
-        categories={categories}
+        // categories={categories}
         equipmentTags={equipmentTags}
         setEquipmentTags={setEquipmentTags}
       />
@@ -476,4 +481,4 @@ const VideoManagementSystem = () => {
   );
 };
 
-export default VideoManagementSystem;
+export default RetailerManageTable;

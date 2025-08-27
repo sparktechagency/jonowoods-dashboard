@@ -48,7 +48,7 @@ const videoApi = api.injectEndpoints({
     getVideosBySubCategory: builder.query({
       query: ({ subCategoryId, page = 1, limit = 10 }) => {
         return {
-          url: `/admin/videos/managment/video-status/${subCategoryId}`,
+          url: `/admin/videos/management/video-status/${subCategoryId}`,
           method: "GET",
           params: { page, limit },
         };
@@ -112,6 +112,17 @@ const videoApi = api.injectEndpoints({
           url: `/admin/videos/library/update-video/${id}`,
           method: "PUT",
           body: videoData,
+        };
+      },
+      invalidatesTags: ["Videos"],
+
+    }),
+    updateVideoINCategoryAndSubcategory: builder.mutation({
+      query: ({ id, updateData }) => {
+        return {
+          url: `/admin/videos/management/update-by-admin/${id}`,
+          method: "PUT",
+          body: updateData,
         };
       },
       invalidatesTags: ["Videos"],
@@ -300,6 +311,8 @@ export const {
   useGetScheduledVideosQuery,
   useDeleteVideoByCategoryANdSubCategoryMutation,
   useCourserVideoDetailsQuery,
+  useUpdateVideoINCategoryAndSubcategoryMutation,
+
 
 
 } = videoApi;

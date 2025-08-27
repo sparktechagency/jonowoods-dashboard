@@ -23,13 +23,13 @@
 // // import VideoFormModal from "./VideoUploadModal";
 // // import Spinner from "./Spinner";
 // // import { getVideoAndThumbnail } from "./imageUrl";
-// // import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
+// // import VideoDetailsModal from "../retailermanagement/VideoDetailsModal";
 // import { useParams } from "react-router-dom";
 // import GradientButton from "../common/GradiantButton";
 // import VideoFormModal from "../common/VideoUploadModal";
 // import Spinner from "../common/Spinner";
 // import { getVideoAndThumbnail } from "../common/imageUrl";
-// import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
+// import VideoDetailsModal from "../retailermanagement/VideoDetailsModal";
 // import CreateAndEditModal from "./CreateAndEditModal";
 
 // // Added additionalButtons prop with default empty fragment

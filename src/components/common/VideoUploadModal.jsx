@@ -440,7 +440,7 @@ const VideoFormModal = ({
                 rules={[{ required: true, message: "Please select a status" }]}
               >
                 <Select placeholder="Select status" className="h-12">
-                  <Option value="arrivedSoon">Arrived Soon</Option>
+                  <Option value="arrived">Arrived </Option>
                   <Option value="ready">Ready</Option>
                 </Select>
               </Form.Item>

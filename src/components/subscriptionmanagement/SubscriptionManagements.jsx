@@ -1,14 +1,14 @@
 import React from "react";
-import SubscriptionPackagesManagement from "./PackeageManagement";
-import SubscriptionRulesManagement from "./RulesManagement";
+import SubscriptionPackagesmanagement from "./Packeagemanagement";
+import SubscriptionRulesmanagement from "./Rulesmanagement";
 
-const SubscriptionManagements = () => {
+const Subscriptionmanagements = () => {
   return (
     <div>
-      <SubscriptionPackagesManagement />
-      {/* <SubscriptionRulesManagement /> */}
+      <SubscriptionPackagesmanagement />
+      {/* <SubscriptionRulesmanagement /> */}
     </div>
   );
 };
 
-export default SubscriptionManagements;
+export default Subscriptionmanagements;

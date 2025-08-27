@@ -9,6 +9,7 @@ import {
   Col,
   Pagination,
   Tooltip,
+  Switch,
 } from "antd";
 import {
   EditOutlined,
@@ -20,6 +21,7 @@ import {
   CalendarOutlined,
   ClockCircleOutlined,
   PlayCircleOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import GradientButton from "../common/GradiantButton";
 import moment from "moment/moment";
@@ -35,7 +37,7 @@ import {
 } from "../../redux/apiSlices/createPostApi";
 import Spinner from "../common/Spinner";
 
-const PostManagementSystem = () => {
+const PostmanagementSystem = () => {
   // State management
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -177,6 +179,33 @@ const PostManagementSystem = () => {
     setSelectedItemId(null);
   };
 
+  const [updatePostStatus] = useUpdatePostStatusMutation();
+const handleStatusChange = async (id) => {
+  // Show the confirmation modal before proceeding
+  Modal.confirm({
+    title: 'Are you sure you want to change the post status to active?',
+    okText: 'Yes',
+    cancelText: 'No',
+    onOk: async () => {
+      try {
+        // Proceed with the status update if confirmed
+        await updatePostStatus({ id, status: "active" });
+        message.success("Post status updated successfully");
+        refetch();  // Refresh the data after updating
+      } catch (error) {
+        message.error("Failed to update post status");
+        console.error("Error updating post status:", error);
+      }
+    },
+    onCancel() {
+      // Handle cancel if needed, or just close the modal
+      console.log('Status update canceled');
+    }
+  });
+};
+
+
+
   // Get post type configuration
   const getPostTypeConfig = (type) => {
     const configs = {
@@ -277,12 +306,13 @@ const PostManagementSystem = () => {
     return <Spinner />;
   }
 
+
   return (
     <div className="p-6">
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Post Management</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Post management</h1>
           <p className="text-gray-600 mt-1">
             Manage your posts and content
           </p>
@@ -332,7 +362,22 @@ const PostManagementSystem = () => {
                       onClick={() => handleDeletePost(post._id)}
                       className="text-red-600 hover:text-red-600 hover:bg-red-50"
                     />
-                  </Tooltip>
+                  </Tooltip>,
+                  // <Tooltip title="Status Change">
+
+                  //   <Button
+                  //     type="text"
+                  //     icon={<UploadOutlined />}
+                  //     onClick={() => handleStatusChange(post._id)}
+                  //     className="text-green-600 hover:text-green-600 hover:bg-green-50"
+                  //   />
+                  // </Tooltip>,
+                  <Tooltip title="Status Change">
+                    <Switch
+                      checked={post.status === "active"}
+                      onChange={() => handleStatusChange(post._id)}
+                    />
+                  </Tooltip>,
                 ]}
               >
                 {/* Card Header */}
@@ -451,4 +496,4 @@ const PostManagementSystem = () => {
   );
 };
 
-export default PostManagementSystem;
+export default PostmanagementSystem;

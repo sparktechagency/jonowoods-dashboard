@@ -23,7 +23,7 @@ const Dashboard = () => {
 };
 
 
-const UserManagement = () => {
+const Usermanagement = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -39,7 +39,7 @@ const UserManagement = () => {
     </svg>
   );
 };
-const SalesManagement = () => {
+const Salesmanagement = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -67,7 +67,7 @@ const SalesManagement = () => {
   );
 };
 
-const VideoManagement = () => {
+const Videomanagement = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -88,7 +88,7 @@ const VideoManagement = () => {
   );
 };
 
-const SalesRepsManagement = () => {
+const SalesRepsmanagement = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -109,7 +109,7 @@ const SalesRepsManagement = () => {
   );
 };
 
-const InventoryManagement = () => {
+const Inventorymanagement = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -158,7 +158,7 @@ const LoyaltyProgram = () => {
   );
 };
 
-const SubscriptionManagement = () => {
+const Subscriptionmanagement = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -319,14 +319,14 @@ const FilteringIcon = () => (
 
 export {
   Dashboard,
-  UserManagement,
-  InventoryManagement,
+  Usermanagement,
+  Inventorymanagement,
   LoyaltyProgram,
-  VideoManagement,
-  SalesManagement,
-  SalesRepsManagement,
+  Videomanagement,
+  Salesmanagement,
+  SalesRepsmanagement,
   Settings,
-  SubscriptionManagement,
+  Subscriptionmanagement,
   Filtering,
   FilteringIcon,
   LoginCredentials,
