@@ -1,5 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
-import JoditEditor from "jodit-react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Input,
@@ -17,6 +16,7 @@ import {
   Menu,
   Dropdown,
 } from "antd";
+const { TextArea } = Input;
 import {
   ClockCircleOutlined,
   SendOutlined,
@@ -35,7 +35,6 @@ import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner.jsx";
 
 const PushNotification = () => {
-  const editor = useRef(null);
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScheduled, setIsScheduled] = useState(false);
@@ -84,63 +83,7 @@ const PushNotification = () => {
       : cleanText;
   };
 
-  // Jodit editor configuration
-  const config = {
-    readonly: false,
-    height: 300,
-    buttons: [
-      "source",
-      "|",
-      "bold",
-      "italic",
-      "underline",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "font",
-      "fontsize",
-      "paragraph",
-      "|",
-      "image",
-      "table",
-      "link",
-      "|",
-      "left",
-      "center",
-      "right",
-      "justify",
-      "|",
-      "undo",
-      "redo",
-      "|",
-      "hr",
-      "eraser",
-      "fullsize",
-    ],
-    buttonsMD: [
-      "bold",
-      "italic",
-      "underline",
-      "|",
-      "ul",
-      "ol",
-      "|",
-      "image",
-      "table",
-      "link",
-      "|",
-      "left",
-      "center",
-      "right",
-    ],
-    buttonsSM: ["bold", "italic", "|", "ul", "ol", "|", "image", "link"],
-    buttonsXS: ["bold", "image", "|", "ul", "ol"],
-    uploader: {
-      insertImageAsBase64URI: true,
-    },
-    toolbarAdaptive: true,
-  };
+
 
   // Table columns configuration
   const columns = [
@@ -249,13 +192,10 @@ const PushNotification = () => {
       }
 
       form.resetFields();
+      setMessageContent(""); // Clear message content
       setIsScheduled(false);
       setIsModalOpen(false);
       refetch(); // Refresh the table data
-
-      if (editor.current) {
-        editor.current.value = "";
-      }
     } catch (error) {
       console.error("Error sending notification:", error);
       message.error(
@@ -281,9 +221,9 @@ const PushNotification = () => {
     form.resetFields();
     setIsScheduled(false);
     setIsModalOpen(false);
-    if (editor.current) {
-      editor.current.value = "";
-    }
+    // if (editor.current) {
+    //   editor.current.value = "";
+    // }
   };
 
   const handleModalSubmit = async () => {
@@ -453,15 +393,15 @@ const PushNotification = () => {
           </Form.Item>
           <Form.Item
             label="Message"
-            required
+            name="message"
             rules={[
               { required: true, message: "Please add notification content" },
             ]}
           >
-            <JoditEditor
-              ref={editor}
-              config={config}
-              onBlur={(newContent) => setMessageContent(newContent)} 
+            <TextArea
+              placeholder="Write your notification message here..."
+              rows={6}
+              onChange={(e) => setMessageContent(e.target.value)}
             />
           </Form.Item>
 

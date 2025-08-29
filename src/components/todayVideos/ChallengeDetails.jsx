@@ -570,7 +570,7 @@ const ChallengeDetails = () => {
       </div>
       
       {/* Action buttons */}
-      <div className="mb-6 flex justify-between">
+      <div className="mb-6 flex justify-end">
         <div>
           <button
             onClick={() => setViewMode(viewMode === "table" ? "drag" : "table")}

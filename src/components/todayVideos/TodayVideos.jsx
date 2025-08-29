@@ -465,13 +465,13 @@ const TodayVideos = () => {
       `}</style>
 
       {/* Controls */}
-      <div className="mb-4 flex justify-between">
+      <div className="mb-4 flex justify-end">
         <div>
           <button
             onClick={() => setViewMode(viewMode === "table" ? "drag" : "table")}
             className="py-2 rounded-md px-4 border-none mr-2 bg-primary text-white hover:bg-secondary"
           >
-            {viewMode === "table" ? "Switch to Drag & Drop" : "Switch to Table"}
+            {viewMode === "table" ? "Do Shuffle" : "Table Mode"}
           </button>
         </div>
         
