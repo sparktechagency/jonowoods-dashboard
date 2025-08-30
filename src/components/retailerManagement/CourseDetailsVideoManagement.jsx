@@ -20,15 +20,16 @@ import {
   PlusOutlined,
   CalendarOutlined,
 } from "@ant-design/icons";
-import VideoFormModal from "./VideoFormModal";
+// import VideoFormModal from "./VideoFormModal";
 import VideoDetailsModal from "./VideoDetailsModal";
 import GradientButton from "../common/GradiantButton";
 import DraggableVideoList from "./DraggableVideoList";
-import { useVideomanagement } from "./useVideomanagement";
+// import { useVideoManagement } from "./useVideoManagement";
 import { getTableColumns, getScheduleVideoColumns } from "./VideoTableConfig";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment/moment";
 import Spinner from "../common/Spinner";
+// import VideoFormModal from "./VideoFormModal";
 
 const { Title } = Typography;
 

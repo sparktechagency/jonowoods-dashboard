@@ -5,12 +5,12 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { IoIosLogOut } from "react-icons/io";
 import {
   Dashboard,
-  SalesRepsmanagement,
+  SalesRepsManagement,
   Settings,
   Videomanagement,
   Inventorymanagement,
   LoyaltyProgram,
-  Subscriptionmanagement,
+  SubscriptionManagement,
   Usermanagement,
   LoginCredentials,
   ComingSoon,
@@ -101,7 +101,7 @@ const Sidebar = () => {
     },
     {
       key: "/category-management",
-      icon: renderIcon(SalesRepsmanagement, "/category-management"),
+      icon: renderIcon(SalesRepsManagement, "/category-management"),
       label: <Link to="/category-management">Category management</Link>,
     },
     {
@@ -131,7 +131,7 @@ const Sidebar = () => {
     },
     {
       key: "/loyalty-program",
-      icon: renderIcon(Subscriptionmanagement, "/loyalty-program"),
+      icon: renderIcon(SubscriptionManagement, "/loyalty-program"),
       label: <Link to="/loyalty-program">Subscription package</Link>,
       roles: ["SUPER_ADMIN"],
     },

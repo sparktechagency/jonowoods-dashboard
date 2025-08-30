@@ -36,8 +36,6 @@ import Spinner from "../common/Spinner";
 import { useGetCategoryQuery } from "../../redux/apiSlices/categoryApi";
 import VideoFormModal from "./VideoFormModal";
 import VideoDetailsModal from "./VideoDetailsModal";
-// import VideoDetailsModal from "./VideoDetailsModal";
-// import VideoFormModal from "../common/VideoUploadModal";
 
 const RetailerManageTable = () => {
   const navigate = useNavigate();

@@ -7,7 +7,7 @@ import Spinner from "../common/Spinner";
 
 const { Title } = Typography;
 
-const SubscriptionmanagementTable = () => {
+const SubscriptionManagementTable = () => {
   const [searchText, setSearchText] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -207,4 +207,4 @@ const SubscriptionmanagementTable = () => {
   );
 };
 
-export default SubscriptionmanagementTable;
+export default SubscriptionManagementTable;

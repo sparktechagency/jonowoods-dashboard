@@ -25,7 +25,7 @@ import {
   useUpdateQuotationMutation,
   useDeleteQuotationMutation,
   useToggleQuotationStatusMutation,
-} from "../../redux/apiSlices/quatationApi";
+} from "../../redux/apiSlices/quotationApi";
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
 

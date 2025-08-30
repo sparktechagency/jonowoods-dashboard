@@ -88,7 +88,7 @@ const Videomanagement = () => {
   );
 };
 
-const SalesRepsmanagement = () => {
+const SalesRepsManagement = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -158,7 +158,7 @@ const LoyaltyProgram = () => {
   );
 };
 
-const Subscriptionmanagement = () => {
+const SubscriptionManagement = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -324,9 +324,9 @@ export {
   LoyaltyProgram,
   Videomanagement,
   Salesmanagement,
-  SalesRepsmanagement,
+  SalesRepsManagement,
   Settings,
-  Subscriptionmanagement,
+  SubscriptionManagement,
   Filtering,
   FilteringIcon,
   LoginCredentials,

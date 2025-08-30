@@ -10,11 +10,12 @@ import {
 } from "../../../redux/apiSlices/subCategoryApi";
 import { getImageUrl } from "../../common/imageUrl";
 import Spinner from "../../common/Spinner";
-import SubCategoryTable from "./SubCategoryTable";
+// import SubCategoryTable from "./SubCategoryTable";
 import SubCategoryForm from "./SubCategoryForm";
 import { useGetSingleCategoryQuery } from "../../../redux/apiSlices/categoryApi";
+import SubCategoryTable from "./SubCategoryTable";
 
-const SubCategorymanagement = () => {
+const SubCategoryManagement = () => {
   const navigate = useNavigate();
   const { categoryId } = useParams();
   // console.log("Category ID:", categoryId);
@@ -232,9 +233,9 @@ const SubCategorymanagement = () => {
           <Button onClick={handleBackFromDetails} className="mr-2">
             Back
           </Button>
-          <div>
-            <h2>Course management</h2>
-          </div>
+          <h3 className="text-xl mb-2">
+            Category: {selectedCategory.name}
+          </h3>
         </div>
       </div>
 
@@ -244,27 +245,21 @@ const SubCategorymanagement = () => {
           <img
             src={getImageUrl(selectedCategory.thumbnail)}
             alt="Category"
-            className="w-full h-40 rounded"
+            className="w-full h-32 rounded-3xl"
           />
         </div>
-        <div className="ml-6">
-          <h3 className="text-xl mb-2">
-            Course Name: {selectedCategory.name}
-          </h3>
-          {/* <p>Category Type: {selectedCategory.categoryType}</p> */}
-          <p>Total Video: {selectedCategory.videoCount}</p>
-        </div>
+       
       </div>
 
       {/* Sub Category List Header */}
-      <div className="mb-4 flex justify-between items-center">
-        <Button
+      <div className="mb-4 flex justify-end items-center">
+        {/* <Button
           type="default"
           onClick={() => navigate(`/category-management/${selectedCategory._id}`)}
           className="bg-blue-500 text-white py-5 border-none"
         >
           ALL VIDEOS
-        </Button>
+        </Button> */}
         <Button
           type="primary"
           onClick={() => showSubCategoryModal()}
@@ -297,4 +292,4 @@ const SubCategorymanagement = () => {
   );
 };
 
-export default SubCategorymanagement;
+export default SubCategoryManagement;

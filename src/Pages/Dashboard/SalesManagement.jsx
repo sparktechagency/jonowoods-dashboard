@@ -1,12 +1,12 @@
 import React from 'react'
-import CardInfo from '../../components/salesMangement/Cardinfo'
-import SalesmanagementTable from '../../components/salesMangement/SalesmanagementTables'
+import CardInfo from '../../components/salesManagement/Cardinfo'
+import SalesManagementTable from '../../components/salesManagement/SalesManagementTables'
 
 const Salesmanagement = () => {
   return (
     <div>
       <CardInfo />
-      <SalesmanagementTable />
+      <SalesManagementTable />
     </div>
   )
 }

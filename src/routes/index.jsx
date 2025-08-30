@@ -20,30 +20,37 @@ import Notifications from "../Pages/Dashboard/Notifications";
 import SubCategory from "../Pages/Dashboard/SubCategory";
 import AdminProfile from "../Pages/Dashboard/AdminProfile/AdminProfile";
 import Retailer from "../Pages/Dashboard/Retailer";
-import ViewSalesReps from "../components/SalesRepsmanagement/detailsSalesReps/SubCategoryTable";
+import ViewSalesReps from "../components/SalesRepsManagement/detailsSalesReps/SubCategoryTable";
 import VideoManagement from "../components/SalesRepsManagement/detailsSalesReps/VideoManagement";
+import VideoManagementSystem from "../components/SalesRepsManagement/detailsSalesReps/VideoManagement";
 import Products from "../Pages/Dashboard/Products";
 import LoyaltyProgram from "../Pages/Dashboard/LoyaltyProgram";
-import OrdermanagementContainer from "../components/orderMangement/OrdermanagementContainer";
-import VideomanagementSystem from "../components/retailermanagement/RetailerManageTable";
-import Categorymanagement from "../components/SalesRepsmanagement/SalesRepsmanagement";
+import OrderManagementContainer from "../components/orderManagement/OrderManagementContainer";
+// import VideoManagementSystem from "../components/retailerManagement/RetailerManageTable";
+
+
+import CategoryManagement from "../components/SalesRepsManagement/SalesRepsManagement";
+import Subscriber from "../Pages/Dashboard/Subsciber";
 import Subsciber from "../Pages/Dashboard/Subsciber";
-import Subscriptionmanagements from "../components/subscriptionmanagement/Subscriptionmanagements";
-import Quotationmanagement from "../components/quatation/Quatationmanagement";
-import SubCategorymanagement from "../components/SalesRepsmanagement/detailsSalesReps/CategoryDetails";
+import QuotationManagement from "../components/quotation/QuotationManagement";
+import SubCategoryManagement from "../components/SalesRepsManagement/detailsSalesReps/CategoryDetails";
 import LoginCredentials from "../components/loginCredentials/LoginCredentials";
 import CommingSoonVideoPage from "../components/comingSoon/CommingSoonVideoPage";
 import TodayVideos from "../components/todayVideos/TodayVideos";
 import ChallengeDetails from "../components/todayVideos/ChallengeDetails";
-import CourseDetailsVideomanagement from "../components/retailermanagement/CourseDetailsVideomanagement";
+import CourseDetailsVideoManagement from "../components/retailerManagement/CourseDetailsVideoManagement";
+
 import DailyInspirationPage from "../components/comingSoon/DailyInspiration";
-import PostmanagementSystem from "../components/createPost/CreatePostmanagement";
-import Pagemanagement from "../Pages/Dashboard/LoginAndRegisterBG";
-import ContactmanagementTable from "../components/contactus/ContactUsUser";
-import SubscriptionmanagementTable from "../components/subscriptionUser/SubscriptionUser";
-import AllVideos from "../components/SalesRepsmanagement/AllVideos";
+import PostManagementSystem from "../components/createPost/CreatePostManagement";
+
+
+import PageManagement from "../Pages/Dashboard/LoginAndRegisterBG";
+import ContactManagement from "../components/contactus/ContactUsUser";
+import AllVideos from "../components/SalesRepsManagement/AllVideos";
+
 import PrivateRoute from "./ProtectedRoute";
-// import SalesRepsmanagementTable from "../components/SalesRepsmanagement/SalesRepsmanagement";
+import SubscriptionManagementTable from "../components/subscriptionUser/SubscriptionUser";
+import SubscriptionManagement from "../components/subscriptionmanagement/SubscriptionManagements";
 
 const router = createBrowserRouter([
   {
@@ -57,11 +64,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/user-management",
-        element: <OrdermanagementContainer />,
+        element: <OrderManagementContainer />,
       },
       {
         path: "/salesmanagement",
-        element: <VideomanagementSystem />,
+        element: <VideoManagementSystem />,
       },
       {
         path: "/video-management",
@@ -69,15 +76,16 @@ const router = createBrowserRouter([
       },
       {
         path: "/video-management/:subCategoryId",
-        element: <CourseDetailsVideomanagement />,
+        element: <CourseDetailsVideoManagement />,
       },
       {
         path: "/category-management",
-        element: <Categorymanagement />,
+        element: <CategoryManagement />,
       },
       {
         path: "/subcategory-management/:categoryId",
-        element: <SubCategorymanagement />,
+        element: <SubCategoryManagement />,
+
       },
       {
         path: "/category-management/:categoryId",
@@ -85,7 +93,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/inventory",
-        element: <Quotationmanagement />,
+        element: <QuotationManagement />,
       },
       {
         path: "/salesRepsManage/:id",
@@ -97,7 +105,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/loyalty-program",
-        element: <Subscriptionmanagements />,
+        element: <SubscriptionManagement />,
       },
       {
         path: "/coming-soon",
@@ -121,7 +129,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/create-post",
-        element: <PostmanagementSystem />,
+        element: <PostManagementSystem />,
       },
       {
         path: "/subsciption",
@@ -133,15 +141,15 @@ const router = createBrowserRouter([
       },
       {
         path: "/login-register",
-        element: <Pagemanagement />,
+        element: <PageManagement />,
       },
       {
         path: "/contactUs",
-        element: <ContactmanagementTable />,
+        element: <ContactManagement />,
       },
       {
         path: "/subcription-user",
-        element: <SubscriptionmanagementTable />,
+        element: <SubscriptionManagementTable />,
       },
       {
         path: "/banner",

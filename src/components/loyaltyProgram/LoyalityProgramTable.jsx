@@ -20,7 +20,7 @@ const FilteringIcon = () => (
   </svg>
 );
 
-export default function AllSubscriptionmanagement() {
+export default function AllSubscriptionManagement() {
   const [showRuleModal, setShowRuleModal] = useState(false);
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [subscriptionRules, setSubscriptionRules] = useState([
