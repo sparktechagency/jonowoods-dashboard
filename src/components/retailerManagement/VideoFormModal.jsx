@@ -350,52 +350,7 @@ const VideoFormModal = ({
           )} */}
         </div>
 
-      
-
-        <div className="grid grid-cols-2 gap-4 ">
-          <Form.Item label="Thumbnail" required={!isEditMode}>
-            <Dragger {...thumbnailProps}>
-              <InboxOutlined className="text-2xl mb-2" />
-              <p>Click or drag image to upload</p>
-            </Dragger>
-            {(thumbnailFile || currentVideo?.thumbnailUrl) && (
-              <div className="mt-2 text-center">
-                <Image
-                  src={
-                    thumbnailFile
-                      ? URL.createObjectURL(thumbnailFile)
-                      : getVideoAndThumbnail(currentVideo.thumbnailUrl)
-                  }
-                  width={400}
-                  height={200}
-                  style={{ objectFit: "cover" }}
-                />
-              </div>
-            )}
-          </Form.Item>
-
-          <Form.Item label="Video" required={!isEditMode}>
-            <Dragger {...videoProps}>
-              <InboxOutlined className="text-2xl mb-2" />
-              <p>Click or drag video to upload</p>
-            </Dragger>
-            {(videoFile || currentVideo?.videoUrl) && (
-              <div className="mt-2 text-center">
-                <video
-                  src={
-                    videoFile
-                      ? URL.createObjectURL(videoFile)
-                      : getVideoAndThumbnail(currentVideo.videoUrl)
-                  }
-                  controls
-                  style={{ width: 400, height: 200, objectFit: "cover" }}
-                />
-              </div>
-            )}
-          </Form.Item>
-        </div>
-
-          <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <Form.Item
             label="Duration"
             name="duration"
@@ -438,6 +393,49 @@ const VideoFormModal = ({
                 </div>
               )}
             </div>
+          </Form.Item>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 ">
+          <Form.Item label="Thumbnail" required={!isEditMode}>
+            <Dragger {...thumbnailProps}>
+              <InboxOutlined className="text-2xl mb-2" />
+              <p>Click or drag image to upload</p>
+            </Dragger>
+            {(thumbnailFile || currentVideo?.thumbnailUrl) && (
+              <div className="mt-2 text-center">
+                <Image
+                  src={
+                    thumbnailFile
+                      ? URL.createObjectURL(thumbnailFile)
+                      : getVideoAndThumbnail(currentVideo.thumbnailUrl)
+                  }
+                  width={400}
+                  height={200}
+                  style={{ objectFit: "cover" }}
+                />
+              </div>
+            )}
+          </Form.Item>
+
+          <Form.Item label="Video" required={!isEditMode}>
+            <Dragger {...videoProps}>
+              <InboxOutlined className="text-2xl mb-2" />
+              <p>Click or drag video to upload</p>
+            </Dragger>
+            {(videoFile || currentVideo?.videoUrl) && (
+              <div className="mt-2 text-center">
+                <video
+                  src={
+                    videoFile
+                      ? URL.createObjectURL(videoFile)
+                      : getVideoAndThumbnail(currentVideo.videoUrl)
+                  }
+                  controls
+                  style={{ width: 400, height: 200, objectFit: "cover" }}
+                />
+              </div>
+            )}
           </Form.Item>
         </div>
 
