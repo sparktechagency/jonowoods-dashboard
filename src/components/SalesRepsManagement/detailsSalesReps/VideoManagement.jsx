@@ -24,7 +24,7 @@ import {
 import VideoDetailsModal from "../../retailerManagement/VideoDetailsModal";
 import GradientButton from "../../common/GradiantButton";
 import DraggableVideoList from "../../retailerManagement/DraggableVideoList";
-import { useVideomanagement } from "../../retailerManagement/useVideomanagement";
+import { useVideoManagement } from "../../retailerManagement/useVideoManagement";
 import { getTableColumns, getScheduleVideoColumns } from "../../retailerManagement/VideoTableConfig";
 import { getVideoAndThumbnail } from "../../common/imageUrl";
 import moment from "moment/moment";
@@ -82,7 +82,7 @@ const VideoManagement = () => {
     handleDeleteVideo,
     handleStatusChange,
     handleTableChange,
-  } = useVideomanagement();
+  } = useVideoManagement();
 const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutation();
   console.log(subCategoryId);
   console.log("categoryId:", categoryId);
