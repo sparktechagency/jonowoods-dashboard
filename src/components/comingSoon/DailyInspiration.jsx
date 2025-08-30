@@ -414,25 +414,22 @@ const DailyInspirationPage = () => {
       //     </div>
       //   ),
       // },
-      {
-        title: "Publish Date",
-        dataIndex: "publishAt",
-        key: "publishAt",
-        align: "center",
-        render: (text) => moment(text).format("L"),
-      },
+      // {
+      //   title: "Publish Date",
+      //   dataIndex: "publishAt",
+      //   key: "publishAt",
+      //   align: "center",
+      //   render: (text) => moment(text).format("L"),
+      // },
       {
         title: "Status",
-        dataIndex: "status",
         key: "status",
         align: "center",
-        render: (status, record) => (
-          <Switch
-            size="small"
-            checked={status === "active"}
-            onChange={(checked) => handleStatusChange(checked, record)}
-          />
-        ),
+        render: (_, record) => (
+          <Tag color={record.status?.toLowerCase() === "active" ? "green" : "red"}>
+            {record.status?.toUpperCase() || "INACTIVE"}
+          </Tag>
+        )
       },
       {
         title: "Action",
@@ -440,6 +437,11 @@ const DailyInspirationPage = () => {
         align: "center",
         render: (_, record) => (
           <Space size="small">
+            <Switch
+              size="small"
+              checked={record.status === "active"}
+              onChange={(checked) => handleStatusChange(checked, record)}
+            />
             <Button
               type="text"
               icon={<EditOutlined style={{ color: "#f55" }} />}

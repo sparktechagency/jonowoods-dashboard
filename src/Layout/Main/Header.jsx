@@ -11,6 +11,7 @@ import { jwtDecode } from "jwt-decode";
 import NotificationPopover from "../../Pages/Dashboard/NotificationPopover";
 import { getImageUrl } from "../../components/common/imageUrl";
 import { useProfileQuery } from "../../redux/apiSlices/authSlice";
+import { useGetNotificationQuery } from "../../redux/apiSlices/notificationSlice";
 
 let decodedToken = null;
 const tokenStr = localStorage.getItem("token");
@@ -35,8 +36,20 @@ const Header = () => {
   const [socketConnected, setSocketConnected] = useState(false);
   const socketRef = useRef(null);
   const { data: getProfile } = useProfileQuery();
+  const { data: getNotification, refetch: refetchNotifications } = useGetNotificationQuery({ page: 1, limit: 20 });
   // console.log(getProfile)
   // console.log(getProfile?.data?._id)
+  
+  // Initialize notifications from API
+  useEffect(() => {
+    if (getNotification?.success && getNotification?.data) {
+      console.log("📥 Loading existing notifications from API:", getNotification.data);
+      setNotifications(getNotification.data);
+      const unreadNotifications = getNotification.data.filter(notification => !notification.read);
+      setUnreadCount(unreadNotifications.length);
+      console.log("📊 Initial unread count:", unreadNotifications.length);
+    }
+  }, [getNotification]);
   
   useEffect(() => {
     if (!decodedToken?.id || !getProfile?.data?._id) {
@@ -52,8 +65,8 @@ const Header = () => {
         }
 
         console.log("🔌 Attempting to connect to socket server...");
-        // socketRef.current = io("http://10.0.60.126:7000", {
-        socketRef.current = io("https://api.yogawithjen.life", {
+        socketRef.current = io("http://10.0.60.126:7000", {
+        // socketRef.current = io("https://api.yogawithjen.life", {
           auth: { token },
           transports: ["websocket"],
           reconnection: true,
@@ -123,24 +136,44 @@ const Header = () => {
               notification = {
                 message: data,
                 timestamp: new Date().toISOString(),
+                read: false,
+                _id: Date.now().toString() // temporary ID for new notifications
               };
             }
           }
 
+          // Ensure notification has required properties
+          if (!notification.hasOwnProperty('read')) {
+            notification.read = false;
+          }
+
           console.log("📬 Processing notification:", notification);
           setNotifications((prev) => {
+            // Check if notification already exists to avoid duplicates
+            const existingIndex = prev.findIndex(n => n._id === notification._id);
+            if (existingIndex !== -1) {
+              console.log("📬 Notification already exists, skipping duplicate");
+              return prev;
+            }
+            
             const newNotifications = [notification, ...prev];
             console.log("📬 Updated notifications list:", newNotifications);
             return newNotifications;
           });
 
-          setUnreadCount((prev) => {
-            const newCount = prev + 1;
-            console.log("📬 Updated unread count:", newCount);
-            return newCount;
-          });
+          // Only increment unread count if notification is unread
+          if (!notification.read) {
+            setUnreadCount((prev) => {
+              const newCount = prev + 1;
+              console.log("📬 Updated unread count:", newCount);
+              return newCount;
+            });
+          }
 
           message.info("New notification received");
+          
+          // Refetch notifications to get the latest from server
+          refetchNotifications();
         });
 
         console.log(
@@ -174,7 +207,8 @@ const Header = () => {
     console.log("📖 Marking all notifications as read");
     const readNotifications = notifications.map((n) => ({
       ...n,
-      isRead: true, // Changed from false to true
+      read: true, // Use 'read' property to match API response
+      isRead: true, // Keep for backward compatibility
     }));
     setNotifications(readNotifications);
     setUnreadCount(0);

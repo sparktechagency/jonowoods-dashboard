@@ -8,6 +8,9 @@ import EmptyNotification from "../../assets/EmptyNotification.png";
 
 const NotificationPopover = ({ onRead, notifications = [] }) => {
   const [loading, setLoading] = useState(false);
+  
+  // Show only the latest 2 notifications in the popover
+  const displayNotifications = notifications.slice(0, 2);
 
   const formatTime = (timestamp) =>
     timestamp ? moment(timestamp).fromNow() : "Just now";
@@ -46,11 +49,11 @@ const NotificationPopover = ({ onRead, notifications = [] }) => {
         <div className="p-4 text-center text-white">
           <Spin size="small" />
         </div>
-      ) : notifications && notifications.length > 0 ? (
+      ) : displayNotifications && displayNotifications.length > 0 ? (
         <>
           <div className="flex justify-between items-center px-4 py-2 border-b border-gray-700">
             <h3 className="text-black font-medium">Notifications</h3>
-            {notifications.some((item) => !item.isRead) && (
+            {displayNotifications.some((item) => !item.read && !item.isRead) && (
               <Button size="small" onClick={handleReadAll} className="text-xs">
                 Mark all as read
               </Button>
@@ -66,12 +69,12 @@ const NotificationPopover = ({ onRead, notifications = [] }) => {
               dark:[&::-webkit-scrollbar-track]:bg-neutral-700
               dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500"
           >
-            {notifications.map((item, index) => (
+            {displayNotifications.map((item, index) => (
               <div
                 key={item._id || index}
                 onClick={() => markAsRead(item._id || index)}
                 className={`w-full min-h-16 flex items-start justify-between gap-3 p-3 my-1 rounded-md cursor-pointer hover:bg-slate-100 ${
-                  !item.isRead ? "border border-quilocoD" : ""
+                  !item.read && !item.isRead ? "border border-quilocoD" : ""
                 }`}
               >
                 <div className="flex items-start gap-3 flex-1">
@@ -93,7 +96,7 @@ const NotificationPopover = ({ onRead, notifications = [] }) => {
                     <p className="text-gray-400 text-xs whitespace-pre-line">
                       {item.message || item.content}
                     </p>
-                    {item.isRead && (
+                    {(item.read || item.isRead) && (
                       <div className="flex items-center mt-1 text-xs text-green-800">
                         <CheckCircleOutlined className="mr-1" /> Read
                       </div>
@@ -108,7 +111,7 @@ const NotificationPopover = ({ onRead, notifications = [] }) => {
                     }}
                     className="text-gray-400 hover:text-white"
                     title="Mark as read"
-                    disabled={item.isRead}
+                    disabled={item.read || item.isRead}
                   >
                     <MdOutlineMarkEmailRead size={16} />
                   </button>
