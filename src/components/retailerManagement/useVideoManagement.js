@@ -16,7 +16,7 @@ import {
   useVideoAddInCategoryMutation,
 } from "../../redux/apiSlices/categoryApi";
 
-export const useVideomanagement = () => {
+export const useVideoManagement = () => {
   const { subCategoryId } = useParams();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -317,4 +317,4 @@ export const useVideomanagement = () => {
   };
 };
 
-export default useVideomanagement;
+export default useVideoManagement;
