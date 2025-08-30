@@ -47,9 +47,9 @@ const Header = () => {
       setNotifications(getNotification.data);
       const unreadNotifications = getNotification.data.filter(notification => !notification.read);
       setUnreadCount(unreadNotifications.length);
-      console.log("📊 Initial unread count:", unreadNotifications.length);
+      console.log("📊 Updated unread count from API:", unreadNotifications.length);
     }
-  }, [getNotification]);
+  }, [getNotification?.data, getNotification?.success]);
   
   useEffect(() => {
     if (!decodedToken?.id || !getProfile?.data?._id) {
@@ -65,8 +65,8 @@ const Header = () => {
         }
 
         console.log("🔌 Attempting to connect to socket server...");
-        socketRef.current = io("http://10.0.60.126:7000", {
-        // socketRef.current = io("https://api.yogawithjen.life", {
+        // socketRef.current = io("http://10.10.7.62:7000", {
+        socketRef.current = io("https://api.yogawithjen.life", {
           auth: { token },
           transports: ["websocket"],
           reconnection: true,
@@ -173,7 +173,9 @@ const Header = () => {
           message.info("New notification received");
           
           // Refetch notifications to get the latest from server
-          refetchNotifications();
+          setTimeout(() => {
+            refetchNotifications();
+          }, 500);
         });
 
         console.log(
@@ -195,10 +197,17 @@ const Header = () => {
         setSocketConnected(false);
       }
     };
-  }, [decodedToken, getProfile?.data?._id]); // Remove dependency on getProfile?.email to prevent constant reconnection
+  }, [decodedToken?.id, getProfile?.data?._id, token]); // Optimized dependencies to prevent unnecessary reconnections
 
-  // Debug logs for state changes
+  // Monitor notification changes and sync unread count
   useEffect(() => {
+    if (notifications.length > 0) {
+      const actualUnreadCount = notifications.filter(n => !n.read && !n.isRead).length;
+      if (actualUnreadCount !== unreadCount) {
+        console.log("🔄 Syncing unread count:", actualUnreadCount);
+        setUnreadCount(actualUnreadCount);
+      }
+    }
     console.log("🔔 Current notifications:", notifications);
     console.log("🔢 Current unread count:", unreadCount);
   }, [notifications, unreadCount]);
@@ -282,14 +291,16 @@ const Header = () => {
             onOpenChange={(visible) => {
               if (visible) {
                 console.log("🔔 Opening notification popover");
-                handleNotificationRead();
+                // Don't auto-mark as read when opening, let user manually mark
+                // handleNotificationRead();
               }
             }}
           >
             <div className="w-12 h-12 bg-primary text-white flex items-center justify-center rounded-full relative cursor-pointer">
               <FaRegBell size={30} className="text-smart" />
-              {unreadCount ? (
+              {unreadCount > 0 ? (
                 <Badge
+                  key={`badge-${unreadCount}`}
                   count={unreadCount}
                   overflowCount={5}
                   size="default"
