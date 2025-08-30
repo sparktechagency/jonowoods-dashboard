@@ -16,6 +16,7 @@ const SubscriptionManagementTable = () => {
   // API hook
   const { data: subscriptionsData, isLoading } =
     useGetAllSubscriptionsQuery(filters);
+  console.log(subscriptionsData);
 
   // Update filters when search or pagination changes
   useEffect(() => {
@@ -150,18 +151,19 @@ const SubscriptionManagementTable = () => {
       dataIndex: "trxId",
       key: "trxId",
       align: "center",
-      render: (trxId) => (
-        <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
-          {trxId}
-        </span>
-      ),
+      render: (trxId) =>
+        trxId ? (
+          <span className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">
+            {trxId}
+          </span>
+        ) : (
+          <span className="text-xs text-gray-500 italic">After Trial</span>
+        ),
     },
   ];
 
   if (isLoading) {
-    return (
-      <Spinner />
-    )
+    return <Spinner />;
   }
 
   return (
@@ -177,8 +179,7 @@ const SubscriptionManagementTable = () => {
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             onSearch={handleSearch}
-                      className="w-96"
-                     
+            className="w-96"
           />
         </div>
       </div>

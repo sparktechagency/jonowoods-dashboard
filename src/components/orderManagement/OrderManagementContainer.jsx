@@ -1,13 +1,14 @@
 import React from "react";
-import OrdermanagementTable from "./OrdermanagementTable";
+import OrderManagementTable from "./OrderManagementTable";
 
-const OrdermanagementContainer = () => {
+const OrderManagementContainer = () => {
   return (
     <div>
-      <OrdermanagementTable />
+      <OrderManagementTable />
 
     </div>
   );
 };
 
-export default OrdermanagementContainer;
+export default OrderManagementContainer;
+
