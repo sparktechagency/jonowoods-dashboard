@@ -76,6 +76,21 @@ const UsermanagementTable = () => {
       }?`,
       okText: "Yes",
       cancelText: "No",
+      okButtonProps: {
+        style: {
+          backgroundColor: "#CA3939", 
+          // borderColor: "#4CAF50",
+          color: "#fff",
+        },
+      },
+      cancelButtonProps: {
+        style: {
+          // backgroundColor: "#f44336", 
+          borderColor: "#000",
+          color: "#000",
+        },
+      },
+
       onOk: async () => {
         try {
           await updateUserStatus({

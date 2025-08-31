@@ -149,6 +149,21 @@ const Categorymanagement = () => {
       okText: "Yes",
       okType: "danger", // this makes the OK button red
       cancelText: "No",
+      okButtonProps: {
+        style: {
+          backgroundColor: "#CA3939", 
+          // borderColor: "#4CAF50",
+          color: "#fff",
+        },
+      },
+      cancelButtonProps: {
+        style: {
+          // backgroundColor: "#f44336", 
+          borderColor: "#000",
+          color: "#000",
+        },
+      },
+
       onOk: async () => {
         try {
           await toggleCategoryStatus({

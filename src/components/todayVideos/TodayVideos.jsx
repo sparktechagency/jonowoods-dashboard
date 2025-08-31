@@ -313,23 +313,50 @@ const TodayVideos = () => {
     }
   };
 
-  // Handle status toggle
-  const handleStatusToggle = async (challengeId, currentStatus) => {
-    try {
-      const newStatus = currentStatus === "active" ? "inactive" : "active";
-      
-      await updateDailyChallengeStatus({
-        id: challengeId,
-        data: { status: newStatus }
-      });
-      
-      message.success(`Challenge status updated to ${newStatus}`);
-      refetchChallenges();
-    } catch (error) {
-      console.error("Failed to update challenge status:", error);
-      message.error("Failed to update challenge status");
-    }
-  };
+
+
+const handleStatusToggle = async (challengeId, currentStatus) => {
+  const newStatus = currentStatus === "active" ? "inactive" : "active";
+
+  Modal.confirm({
+    title: `Are you sure you want to change the challenge status to ${newStatus}?`,
+    okText: "Yes",
+    cancelText: "No",
+    okButtonProps: {
+      style: {
+        backgroundColor: "#CA3939", 
+        // borderColor: "#4CAF50",
+        color: "#fff",
+      },
+    },
+    cancelButtonProps: {
+      style: {
+        // backgroundColor: "#f44336", 
+        borderColor: "#000",
+        color: "#000",
+      },
+    },
+  
+
+    onOk: async () => {
+      try {
+        await updateDailyChallengeStatus({
+          id: challengeId,
+          data: { status: newStatus },
+        });
+        message.success(`Challenge status updated to ${newStatus}`);
+        refetchChallenges();
+      } catch (error) {
+        console.error("Failed to update challenge status:", error);
+        message.error("Failed to update challenge status");
+      }
+    },
+    onCancel() {
+      console.log("Status update canceled");
+    },
+  });
+};
+
   
   const handleDeleteChallenge = async (id) => {
     Modal.confirm({

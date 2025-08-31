@@ -14,6 +14,11 @@ import {
   Usermanagement,
   LoginCredentials,
   ComingSoon,
+  subscriptionUser,
+  contactUs,
+  CreatePost,
+  DailyInspiration,
+  Challenge,
 } from "../../components/common/Svg";
 import image4 from "../../assets/image4.png"; // Logo image
 
@@ -116,17 +121,20 @@ const Sidebar = () => {
     },
     {
       key: "/today-video",
-      icon: renderIcon(Videomanagement, "/today-video"),
+      icon: renderIcon(Challenge, "/today-video"),
+
       label: <Link to="/today-video">Challenge management</Link>,
     },
     {
       key: "/daily-inspiration",
-      icon: renderIcon(Videomanagement, "/daily-inspiration"),
+      icon: renderIcon(DailyInspiration, "/daily-inspiration"),
+
       label: <Link to="/daily-inspiration"> Daily Inspiration</Link>,
     },
     {
       key: "/create-post",
-      icon: renderIcon(LoginCredentials, "/create-post"),
+      icon: renderIcon(CreatePost, "/create-post"),
+
       label: <Link to="/create-post">Create Post</Link>,
     },
     {
@@ -137,7 +145,8 @@ const Sidebar = () => {
     },
     {
       key: "/subcription-user",
-      icon: renderIcon(LoginCredentials, "/subcription-user"),
+      icon: renderIcon(subscriptionUser, "/subcription-user"),
+
       label: <Link to="/subcription-user">Subscription Users</Link>,
       roles: ["SUPER_ADMIN"],
     },
@@ -159,7 +168,8 @@ const Sidebar = () => {
     },
     {
       key: "/contactUs",
-      icon: renderIcon(LoginCredentials, "/contactUs"),
+      icon: renderIcon(contactUs, "/contactUs"),
+
       label: <Link to="/contactUs">Contact Us</Link>,
     },
     {

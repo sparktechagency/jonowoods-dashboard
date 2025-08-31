@@ -643,7 +643,7 @@ const videoDetails=videoDetail?.data
             // type={viewMode === "drag" ? "primary" : "default"}
             // classNames="bg-primary"
           >
-            {viewMode === "table" ? "Switch to Drag & Drop" : "Switch to Table"}
+            {viewMode === "table" ? "Do Shuffle" : "Table Mode"}
           </button>
           
           <GradientButton

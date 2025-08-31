@@ -247,19 +247,50 @@ const DailyInspirationPage = () => {
     setDetailsModalVisible(true);
   };
 
-  const handleStatusChange = async (checked, record) => {
-    try {
-      const status = checked ? 'active' : 'inactive';
-      await updateDailyInspirationStatus({
-        id: record._id,
-        status: status
-      });
-      message.success(`Video status updated to ${status}`);
-      await refetchScheduled();
-    } catch (error) {
-      message.error('Failed to update video status');
-    }
-  };
+
+
+const handleStatusChange = async (checked, record) => {
+  const newStatus = checked ? "active" : "inactive";
+
+  Modal.confirm({
+    title: `Are you sure you want to change the Daily Inspiration status to "${newStatus}"?`,
+
+    okText: "Yes ",
+    cancelText: "No",
+     okButtonProps: {
+      style: {
+        backgroundColor: "#CA3939", 
+        // borderColor: "#4CAF50",
+        color: "#fff",
+      },
+    },
+    cancelButtonProps: {
+      style: {
+        // backgroundColor: "#f44336", 
+        borderColor: "#000",
+        color: "#000",
+      },
+    },
+  
+    onOk: async () => {
+      try {
+        await updateDailyInspirationStatus({
+          id: record._id,
+          status: newStatus,
+        });
+        message.success(`Daily Inspiration status updated to ${newStatus}`);
+        await refetchScheduled();
+      } catch (error) {
+        message.error("Failed to update Daily Inspiration status");
+
+      }
+    },
+    onCancel() {
+      message.info("Status update canceled");
+    },
+  });
+};
+
 
   const handleDeleteItem = async (videoId) => {
     Modal.confirm({

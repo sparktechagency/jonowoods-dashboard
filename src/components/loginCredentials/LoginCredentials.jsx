@@ -36,21 +36,21 @@ export default function LoginCredentials() {
   const loginCredentials = data?.data || [];
   console.log("Login Credentials:", loginCredentials);
 
-  const handleStatusChange = async (record, checked) => {
-    try {
-      await toggleBackUpAdminStatus({
-        id: record._id,
-        status: checked,
-      }).unwrap();
-      message.success(
-        `Admin status ${checked ? "activated" : "deactivated"} successfully`
-      );
-      refetch();
-    } catch (error) {
-      message.error("Failed to update status");
-      console.error("Status toggle error:", error);
-    }
-  };
+  // const handleStatusChange = async (record, checked) => {
+  //   try {
+  //     await toggleBackUpAdminStatus({
+  //       id: record._id,
+  //       status: checked,
+  //     }).unwrap();
+  //     message.success(
+  //       `Admin status ${checked ? "activated" : "deactivated"} successfully`
+  //     );
+  //     refetch();
+  //   } catch (error) {
+  //     message.error("Failed to update status");
+  //     console.error("Status toggle error:", error);
+  //   }
+  // };
 
   const handleEdit = (record) => {
     setEditingAdmin(record);
@@ -225,14 +225,14 @@ export default function LoginCredentials() {
               justifyContent: "center",
             }}
           />
-          <Switch
+          {/* <Switch
             checked={record.status}
             onChange={(checked) =>
               handleStatusChange(record.originalData, checked)
             }
             size="small"
             loading={isToggling}
-          />
+          /> */}
         </Space>
       ),
     },

@@ -179,29 +179,43 @@ const PostmanagementSystem = () => {
   };
 
   const [updatePostStatus] = useUpdatePostStatusMutation();
+
+
 const handleStatusChange = async (id) => {
-  // Show the confirmation modal before proceeding
   Modal.confirm({
-    title: 'Are you sure you want to change the post status to active?',
-    okText: 'Yes',
-    cancelText: 'No',
+    title: "Are you sure you want to change the post status to active?",
+    okText: "Yes",
+    cancelText: "No",
+    okButtonProps: {
+      style: {
+        backgroundColor: "#CA3939", 
+        // borderColor: "#4CAF50",
+        color: "#fff",
+      },
+    },
+    cancelButtonProps: {
+      style: {
+        // backgroundColor: "#f44336", 
+        borderColor: "#000",
+        color: "#000",
+      },
+    },
     onOk: async () => {
       try {
-        // Proceed with the status update if confirmed
         await updatePostStatus({ id, status: "active" });
         message.success("Post status updated successfully");
-        refetch();  // Refresh the data after updating
+        refetch();
       } catch (error) {
         message.error("Failed to update post status");
         console.error("Error updating post status:", error);
       }
     },
     onCancel() {
-      // Handle cancel if needed, or just close the modal
-      console.log('Status update canceled');
-    }
+      console.log("Status update canceled");
+    },
   });
 };
+;
 
 
 
