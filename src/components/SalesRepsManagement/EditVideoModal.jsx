@@ -5,8 +5,12 @@ import {
   Input,
   Button,
   message,
+  Upload,
+  Image,
 } from "antd";
+import { UploadOutlined, InboxOutlined } from "@ant-design/icons";
 import { useUpdateVideoINCategoryAndSubcategoryMutation } from "../../redux/apiSlices/videoApi";
+import { getVideoAndThumbnail } from "../common/imageUrl";
 
 const { TextArea } = Input;
 
@@ -16,10 +20,14 @@ const EditVideoModal = ({
   onSuccess,
   currentVideo,
   onUpdateVideo,
-isLoading
+  isLoading
 }) => {
   const [form] = Form.useForm();
-  // const [updateVideoINCategoryAndSubcategory, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutation();
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [fileList, setFileList] = useState([]);
+  
+  console.log(currentVideo)
 
   // Initialize form data when modal opens or currentVideo changes
   useEffect(() => {
@@ -28,10 +36,73 @@ isLoading
         title: currentVideo.title || "",
         description: currentVideo.description || "",
       });
+      
+      // Reset thumbnail preview if there's a thumbnailUrl
+      if (currentVideo.thumbnailUrl) {
+        setThumbnailPreview(currentVideo.thumbnailUrl);
+      } else {
+        setThumbnailPreview(null);
+      }
+      
+      setThumbnailFile(null);
+      setFileList([]);
     } else if (visible) {
       form.resetFields();
+      setThumbnailPreview(null);
+      setThumbnailFile(null);
+      setFileList([]);
     }
   }, [visible, currentVideo, form]);
+
+  // Handle thumbnail upload - Fixed version
+  const handleThumbnailChange = ({ file, fileList }) => {
+    setFileList(fileList);
+    
+    if (file.status === 'removed') {
+      setThumbnailFile(null);
+      setThumbnailPreview(currentVideo?.thumbnailUrl || null);
+      return;
+    }
+
+    const selectedFile = file.originFileObj || file;
+    
+    if (selectedFile) {
+      setThumbnailFile(selectedFile);
+
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setThumbnailPreview(e.target.result);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
+  // Alternative method using beforeUpload
+  const beforeUpload = (file) => {
+    const isImage = file.type.startsWith('image/');
+    if (!isImage) {
+      message.error('You can only upload image files!');
+      return false;
+    }
+
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error('Image must be smaller than 2MB!');
+      return false;
+    }
+
+    setThumbnailFile(file);
+
+    // Create preview URL
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setThumbnailPreview(e.target.result);
+    };
+    reader.readAsDataURL(file);
+
+    return false; // Prevent automatic upload
+  };
 
   // Submit handler
   const handleSubmit = async (values) => {
@@ -41,14 +112,25 @@ isLoading
         return;
       }
 
+      // Create FormData for file upload
+      const formData = new FormData();
+      
+      // Add basic data
       const updateData = {
         title: values.title,
         description: values.description,
       };
+      
+      formData.append("data", JSON.stringify(updateData));
+      
+      // Add thumbnail if selected
+      if (thumbnailFile) {
+        formData.append("thumbnail", thumbnailFile);
+      }
 
       await onUpdateVideo({
         id: currentVideo._id,
-        updateData,
+        updateData: formData,
       }).unwrap();
 
       message.success("Video updated successfully");
@@ -84,6 +166,44 @@ isLoading
           rules={[{ required: true, message: "Please enter description" }]}
         >
           <TextArea rows={4} placeholder="Video description" />
+        </Form.Item>
+
+        <Form.Item
+          label="Thumbnail"
+          name="thumbnail"
+        >
+          <div className="flex flex-col gap-4">
+            {thumbnailPreview && (
+              <div className="mb-4">
+                <p className="mb-2">
+                  {thumbnailFile ? "New Thumbnail Preview:" : "Current Thumbnail:"}
+                </p>
+                <Image 
+                  src={thumbnailFile ? thumbnailPreview : getVideoAndThumbnail(thumbnailPreview)} 
+                  alt="Thumbnail Preview" 
+                  style={{ maxWidth: '300px', maxHeight: '200px', borderRadius: '8px' }} 
+                />
+              </div>
+            )}
+            <Upload
+              name="thumbnail"
+              fileList={fileList}
+              beforeUpload={beforeUpload}
+              onChange={handleThumbnailChange}
+              onRemove={() => {
+                setThumbnailFile(null);
+                setThumbnailPreview(currentVideo?.thumbnailUrl || null);
+                setFileList([]);
+              }}
+              maxCount={1}
+              accept="image/*"
+              listType="text"
+            >
+              <Button icon={<UploadOutlined />}>
+                {thumbnailFile ? "Change Thumbnail" : "Upload New Thumbnail"}
+              </Button>
+            </Upload>
+          </div>
         </Form.Item>
 
         <div className="flex justify-end gap-4 mt-6">

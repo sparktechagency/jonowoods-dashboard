@@ -428,19 +428,19 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
       dataIndex: "description",
       key: "description",
       ellipsis: true,
-      render: (text) => <p className="max-w-md truncate">{text}</p>,
+      render: (text) => <p className="max-w-lg truncate">{text.slice(0, 170)}</p>,
     },
-    {
-      title: "Status",
-      key: "status",
-      render: (_, record) => (
-        <div className="flex items-center space-x-2">
-          <Tag color={record.status === "active" ? "green" : "red"}>
-            {record.status || "inactive"}
-          </Tag>
-        </div>
-      ),
-    },
+    // {
+    //   title: "Status",
+    //   key: "status",
+    //   render: (_, record) => (
+    //     <div className="flex items-center space-x-2">
+    //       <Tag color={record.status === "active" ? "green" : "red"}>
+    //         {record.status || "inactive"}
+    //       </Tag>
+    //     </div>
+    //   ),
+    // },
     {
       title: "Actions",
       key: "actions",
@@ -458,12 +458,12 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
             icon={<EditOutlined />}
             onClick={() => handleEditChallenge(record)}
           />
-          <Switch
+          {/* <Switch
             checked={record.status === "active"}
             onChange={() => handleStatusToggle(record._id, record.status)}
             size="small"
             className="hover:bg-red-600 border-none hover:text-white text-red-500"
-          />
+          /> */}
           <Button
             className="hover:bg-red-600 border-none hover:text-white text-red-500"
             size="small"

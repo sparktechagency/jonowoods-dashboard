@@ -111,6 +111,17 @@ console.log(itemsData)
     return statusFilter?.charAt(0)?.toUpperCase() + statusFilter?.slice(1);
   };
 
+  // Status options for the new system
+  const statusOptions = [
+    { value: "coming-soon", label: "Coming Soon", color: "orange" },
+    { value: "its-here", label: "It's Here", color: "green" },
+    { value: "check-this-out", label: "Check This Out", color: "blue" }
+  ];
+
+  const getStatusConfig = (status) => {
+    return statusOptions.find(option => option.value === status) || statusOptions[0];
+  };
+
   const getPageTitle = () => {
     switch (pageType) {
       case "coming-soon":
@@ -194,12 +205,12 @@ console.log(itemsData)
     [deleteItem, refetch, getPageTitle]
   );
 
-  // Status change handler
+  // Status change handler for new status system
   const handleStatusChange = useCallback(
-    (checked, record) => {
-      const newStatus = checked ? "active" : "inactive";
+    (newStatus, record) => {
+      const statusConfig = getStatusConfig(newStatus);
       Modal.confirm({
-        title: `Are you sure you want to set the status to "${newStatus}"?`,
+        title: `Are you sure you want to set the status to "${statusConfig.label}"?`,
         okText: "Yes",
         cancelText: "No",
         okButtonProps: {
@@ -227,7 +238,7 @@ console.log(itemsData)
               
               await updateItem(updateParams);
             }
-            message.success(`Status updated to ${newStatus}`);
+            message.success(`Status updated to ${statusConfig.label}`);
             refetch();
           } catch (error) {
             message.error("Failed to update status");
@@ -308,6 +319,7 @@ console.log(itemsData)
         dataIndex: "category",
         key: "category",
         align: "center",
+        render: () => "Coming Soon", // Always show "Coming Soon" as category
       },
       {
         title: "Duration",
@@ -344,14 +356,9 @@ console.log(itemsData)
       },
       {
         title: "Status",
-        dataIndex: "status",
-        key: "status",
+        dataIndex: "isReady",
+        key: "isReady",
         align: "center",
-        render: (status) => (
-          <Tag color={status === "active" ? "success" : "error"}>
-            {status === "active" ? "Active" : "Inactive"}
-          </Tag>
-        ),
       },
       {
         title: "Action",

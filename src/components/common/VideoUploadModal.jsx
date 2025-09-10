@@ -106,31 +106,38 @@ const VideoFormModal = ({
     return editingItem ? `Edit ${pageTitle}` : `Add New ${pageTitle}`;
   };
 
-  // Initialize form when editing
+  // Initialize form when editing or opening modal
   useEffect(() => {
-    if (editingItem && visible) {
-      form.setFieldsValue({
-        title: editingItem.title,
-        category: editingItem.category,
-        timeDuration: editingItem.timeDuration || editingItem.duration,
-        description: editingItem.description,
-        // Parse publishAt as ISO string if it exists
-        publishAt: editingItem.publishAt ? moment(editingItem.publishAt) : null,
-        // Set isReady value if it exists for coming-soon videos
-        isReady: editingItem.isReady,
-        // Set redirectUrl if it exists for coming-soon videos
-        redirectUrl: editingItem.redirectUrl,
-      });
+    if (visible) {
+      if (editingItem) {
+        form.setFieldsValue({
+          title: editingItem.title,
+          category: pageType === "coming-soon" ? "Coming Soon" : editingItem.category,
+          timeDuration: editingItem.timeDuration || editingItem.duration,
+          description: editingItem.description,
+          // Parse publishAt as ISO string if it exists
+          publishAt: editingItem.publishAt ? moment(editingItem.publishAt) : null,
+          // Set isReady value if it exists for coming-soon videos
+          isReady: editingItem.isReady,
+          // Set redirectUrl if it exists for coming-soon videos
+          redirectUrl: editingItem.redirectUrl,
+        });
 
-      // Set equipments
-      if (editingItem.equipments || editingItem.equipment) {
-        const itemEquipments = editingItem.equipments || editingItem.equipment;
-        setEquipments(
-          Array.isArray(itemEquipments) ? itemEquipments : [itemEquipments]
-        );
+        // Set equipments
+        if (editingItem.equipments || editingItem.equipment) {
+          const itemEquipments = editingItem.equipments || editingItem.equipment;
+          setEquipments(
+            Array.isArray(itemEquipments) ? itemEquipments : [itemEquipments]
+          );
+        }
+      } else if (pageType === "coming-soon") {
+        // Set default category for new coming-soon items
+        form.setFieldsValue({
+          category: "Coming Soon"
+        });
       }
     }
-  }, [editingItem, visible, form]);
+  }, [editingItem, visible, form, pageType]);
 
   // Reset form when modal closes
   useEffect(() => {
@@ -391,16 +398,25 @@ const VideoFormModal = ({
           {/* Category */}
           <Form.Item
             name="category"
-            label="Select Category"
+            label="Category"
             rules={[{ required: true, message: "Please select a category" }]}
           >
-            <Select placeholder="Video/Picture" className="h-12">
-              {getCategories().map((category) => (
-                <Option key={category} value={category}>
-                  {category}
-                </Option>
-              ))}
-            </Select>
+            {pageType === "coming-soon" ? (
+              <Input 
+                value="Coming Soon" 
+                disabled 
+                className="h-12 bg-gray-100" 
+                placeholder="Coming Soon"
+              />
+            ) : (
+              <Select placeholder="Video/Picture" className="h-12">
+                {getCategories().map((category) => (
+                  <Option key={category} value={category}>
+                    {category}
+                  </Option>
+                ))}
+              </Select>
+            )}
           </Form.Item>
 
           {/* Time Duration */}
@@ -440,8 +456,9 @@ const VideoFormModal = ({
                 rules={[{ required: true, message: "Please select a status" }]}
               >
                 <Select placeholder="Select status" className="h-12">
-                  <Option value="arrived">Arrived </Option>
-                  <Option value="ready">Ready</Option>
+                  <Option value="comingSoon">Coming Soon</Option>
+                  <Option value="itsHere">It's Here</Option>
+                  <Option value="checkThisOut">Check This Out</Option>
                 </Select>
               </Form.Item>
               

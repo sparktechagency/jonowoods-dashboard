@@ -452,27 +452,27 @@ const handleStatusChange = async (checked, record) => {
       //   align: "center",
       //   render: (text) => moment(text).format("L"),
       // },
-      {
-        title: "Status",
-        key: "status",
-        align: "center",
-        render: (_, record) => (
-          <Tag color={record.status?.toLowerCase() === "active" ? "green" : "red"}>
-            {record.status?.toUpperCase() || "INACTIVE"}
-          </Tag>
-        )
-      },
+      // {
+      //   title: "Status",
+      //   key: "status",
+      //   align: "center",
+      //   render: (_, record) => (
+      //     <Tag color={record.status?.toLowerCase() === "active" ? "green" : "red"}>
+      //       {record.status?.toUpperCase() || "INACTIVE"}
+      //     </Tag>
+      //   )
+      // },
       {
         title: "Action",
         key: "action",
         align: "center",
         render: (_, record) => (
           <Space size="small">
-            <Switch
+            {/* <Switch
               size="small"
               checked={record.status === "active"}
               onChange={(checked) => handleStatusChange(checked, record)}
-            />
+            /> */}
             <Button
               type="text"
               icon={<EditOutlined style={{ color: "#f55" }} />}

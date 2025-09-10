@@ -125,31 +125,7 @@ const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutat
   return (
     <div style={{ padding: 24, minHeight: "100vh" }}>
       {/* Header Section */}
-      <Card className="mb-6">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <Title level={3} className="mb-2">
-              {videosData?.subCategoryId?.name || "Course"} Videos
-            </Title>
-            <div className="text-gray-600">
-              Total Videos: {paginationData.total || 0}
-            </div>
-          </div>
-
-          {/* Back Button */}
-          <Button
-            icon={<ArrowLeftOutlined />}
-            onClick={() => navigate(-1)}
-            style={{
-              borderRadius: "8px",
-              height: "40px",
-              padding: "0 16px",
-            }}
-          >
-            Back
-          </Button>
-        </div>
-      </Card>
+     
 
       {/* Controls */}
       <div

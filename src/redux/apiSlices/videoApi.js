@@ -123,6 +123,7 @@ const videoApi = api.injectEndpoints({
           url: `/admin/videos/management/update-by-admin/${id}`,
           method: "PUT",
           body: updateData,
+          formData: true, // Enable FormData support
         };
       },
       invalidatesTags: ["Videos"],

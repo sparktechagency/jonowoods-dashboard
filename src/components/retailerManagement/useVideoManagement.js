@@ -179,6 +179,9 @@ export const useVideoManagement = () => {
       console.log("Single video data:", scheduleData);
       await videoAddInCategory(scheduleData);
       message.success("Video added to subcategory successfully!");
+      
+      // Refresh the video list to show the newly added video
+      await refetch();
     } catch (error) {
       console.error("Failed to add video to subcategory:", error);
       message.error("Failed to add video to subcategory");
@@ -208,6 +211,9 @@ export const useVideoManagement = () => {
       setSelectedVideos([]);
       setSelectedRowKeys([]);
       setIsScheduleModalVisible(false);
+      
+      // Refresh the video list to show the newly added videos
+      await refetch();
     } catch (error) {
       console.error("Failed to add videos to subcategory:", error);
       message.error("Failed to add videos to subcategory");

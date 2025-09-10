@@ -360,7 +360,11 @@ const VideoFormModal = ({
           </Form.Item>
 
           {/* Equipment */}
-          <Form.Item label="Equipment">
+          <Form.Item
+            label="Equipment"
+            name="equipment"
+            rules={[{ required: true, message: "Please enter equipment" }]}
+          >
             <div className="space-y-2">
               <Input
                 placeholder="Add equipment and press Enter"
@@ -439,8 +443,12 @@ const VideoFormModal = ({
           </Form.Item>
         </div>
 
-        <Form.Item label="Description" name="description">
-          <TextArea rows={4} placeholder="Video description" />
+        <Form.Item label="Description" name="description"  rules={[{ required: true, message: "Please enter description" }]}>
+          <TextArea
+            rows={4}
+            placeholder="Min 10 Characters in Video description"
+             
+          />
         </Form.Item>
 
         <div className="flex justify-end gap-6">
