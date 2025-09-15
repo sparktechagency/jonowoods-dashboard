@@ -501,7 +501,7 @@ const handleStatusChange = async (checked, record) => {
       title: "Video",
       dataIndex: "title",
       key: "video",
-      width: "40%",
+      width: "70%",
       render: (_, record) => (
         <div className="flex items-center">
           {record.thumbnailUrl && (
@@ -520,20 +520,20 @@ const handleStatusChange = async (checked, record) => {
         </div>
       )
     },
-    {
-      title: "Status",
-      key: "status",
-      width: "20%",
-      render: (_, record) => (
-        <Tag color={record.status?.toLowerCase() === "active" ? "green" : "red"}>
-          {record.status?.toUpperCase() || "INACTIVE"}
-        </Tag>
-      )
-    },
+    // {
+    //   title: "Status",
+    //   key: "status",
+    //   width: "20%",
+    //   render: (_, record) => (
+    //     <Tag color={record.status?.toLowerCase() === "active" ? "green" : "red"}>
+    //       {record.status?.toUpperCase() || "INACTIVE"}
+    //     </Tag>
+    //   )
+    // },
     {
       title: "Actions",
       key: "actions",
-      width: "25%",
+      width: "30%",
       render: (_, record) => (
         <Button 
           type="primary"

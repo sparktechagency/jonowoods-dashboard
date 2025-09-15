@@ -342,17 +342,17 @@ const ChallengeDetails = () => {
         align: "center",
         render: (text) => moment(text).format("L"),
       },
-      {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        align: "center",
-        render: (status) => (
-          <Tag color={status === "active" ? "success" : "error"}>
-            {status === "active" ? "Active" : "Inactive"}
-          </Tag>
-        ),
-      },
+      // {
+      //   title: "Status",
+      //   dataIndex: "status",
+      //   key: "status",
+      //   align: "center",
+      //   render: (status) => (
+      //     <Tag color={status === "active" ? "success" : "error"}>
+      //       {status === "active" ? "Active" : "Inactive"}
+      //     </Tag>
+      //   ),
+      // },
       {
         title: "Action",
         key: "action",
@@ -477,7 +477,7 @@ const ChallengeDetails = () => {
       title: "Video",
       dataIndex: "title",
       key: "video",
-      width: "40%",
+      width: "20%",
       render: (_, record) => (
         <div className="flex items-center">
           {record.thumbnailUrl && (
@@ -488,28 +488,37 @@ const ChallengeDetails = () => {
               className="mr-3 rounded"
             />
           )}
-          <div>
-            <p className="font-medium">{record.title || "Untitled Video"}</p>
-            {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>}
-            {record.category && <p className="text-xs text-gray-500">Category: {record.category}</p>}
-          </div>
+ 
         </div>
       )
     },
-    {
-      title: "Status",
-      key: "status",
-      width: "20%",
+        {
+      title: "Title",
+      key: "title",
+      width: "40%",
       render: (_, record) => (
-        <Tag color={record.status?.toLowerCase() === "active" ? "green" : "red"}>
-          {record.status?.toUpperCase() || "INACTIVE"}
-        </Tag>
+        <div>
+            {record.title && <p className="text-xs text-gray-500">{record.title}</p>}
+           
+          </div>
       )
     },
     {
+      title: "Duration",
+      key: "duration",
+      width: "20%",
+      render: (_, record) => (
+        <div>
+            {record.duration && <p className="text-xs text-gray-500">{record.duration}</p>}
+           
+          </div>
+      )
+    },
+
+    {
       title: "Actions",
       key: "actions",
-      width: "25%",
+      width: "20%",
       render: (_, record) => (
         <Button 
           type="primary"

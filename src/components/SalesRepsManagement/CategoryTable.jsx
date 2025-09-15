@@ -78,17 +78,17 @@ const CategoryTable = ({
     //   key: "categoryType",
     //   align: "center",
     // },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      align: "center",
-      render: (status) => (
-        <Tag color={status.toLowerCase() === "active" ? "green" : "red"}>
-          {status}
-        </Tag>
-      ),
-    },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   align: "center",
+    //   render: (status) => (
+    //     <Tag color={status.toLowerCase() === "active" ? "green" : "red"}>
+    //       {status}
+    //     </Tag>
+    //   ),
+    // },
     {
       title: "Action",
       key: "action",
@@ -116,11 +116,11 @@ const CategoryTable = ({
             className="text-primary"
             title="View Videos"
           />
-          <Switch
+          {/* <Switch
             checked={record.status.toLowerCase() === "active"}
             size="small"
             onChange={(checked) => onStatusChange(checked, record)}
-          />
+          /> */}
           <Button
             type="text"
             icon={<DeleteOutlined />}
