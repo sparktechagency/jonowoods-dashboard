@@ -25,7 +25,10 @@ import VideoDetailsModal from "../../retailerManagement/VideoDetailsModal";
 import GradientButton from "../../common/GradiantButton";
 import DraggableVideoList from "../../retailerManagement/DraggableVideoList";
 import { useVideoManagement } from "../../retailerManagement/useVideoManagement";
-import { getTableColumns, getScheduleVideoColumns } from "../../retailerManagement/VideoTableConfig";
+import {
+  getTableColumns,
+  getScheduleVideoColumns,
+} from "../../retailerManagement/VideoTableConfig";
 import { getVideoAndThumbnail } from "../../common/imageUrl";
 import moment from "moment/moment";
 import Spinner from "../../common/Spinner";
@@ -36,7 +39,7 @@ const { Title } = Typography;
 
 const VideoManagement = () => {
   const navigate = useNavigate();
-  
+
   const {
     // State
     subCategoryId,
@@ -60,6 +63,11 @@ const VideoManagement = () => {
     isLoadingVideos,
     allVideosLoading,
     paginationData,
+    libraryPagination,
+    libraryPage,
+    libraryPageSize,
+    setLibraryPage,
+    setLibraryPageSize,
 
     // Setters
     setEquipmentTags,
@@ -83,7 +91,8 @@ const VideoManagement = () => {
     handleStatusChange,
     handleTableChange,
   } = useVideoManagement();
-const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutation();
+  const [updateVideo, { isLoading }] =
+    useUpdateVideoINCategoryAndSubcategoryMutation();
   console.log(subCategoryId);
   console.log("categoryId:", categoryId);
   console.log(categories);
@@ -125,7 +134,6 @@ const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutat
   return (
     <div style={{ padding: 24, minHeight: "100vh" }}>
       {/* Header Section */}
-     
 
       {/* Controls */}
       <div
@@ -133,7 +141,6 @@ const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutat
         style={{ marginBottom: 24 }}
       >
         <div></div> {/* Empty div for spacing */}
-
         <Space size="middle">
           <Button.Group>
             <Button
@@ -205,8 +212,9 @@ const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutat
               current: currentPage,
               pageSize: pageSize,
               total: paginationData.total || 0,
+              onChange: (page, pageSize) =>
+                handleTableChange({ current: page, pageSize }),
             }}
-            onChange={handleTableChange}
             rowKey="_id"
             bordered
             size="small"
@@ -232,15 +240,13 @@ const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutat
         </div>
       )}
 
-
-      <EditVideoModal 
-         visible={isFormModalVisible}
+      <EditVideoModal
+        visible={isFormModalVisible}
         onCancel={closeFormModal}
         onSuccess={handleFormSubmit}
         currentVideo={currentVideo}
         onUpdateVideo={updateVideo}
         isLoading={isLoading}
-
       />
 
       {/* Video Details Modal */}
@@ -252,7 +258,7 @@ const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutat
 
       {/* Schedule Videos Modal */}
       <Modal
-        title="Add Videos to Subcategory"
+        title="Add Videos to Course"
         open={isScheduleModalVisible}
         onCancel={closeScheduleModal}
         footer={
@@ -268,8 +274,8 @@ const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutat
               <Button onClick={closeScheduleModal} className="text-black h-10">
                 Cancel
               </Button>
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 onClick={handleAddSelectedVideos}
                 disabled={selectedVideos.length === 0}
                 icon={<PlusOutlined />}
@@ -282,12 +288,20 @@ const [updateVideo, { isLoading }] = useUpdateVideoINCategoryAndSubcategoryMutat
         }
         width={900}
       >
-        <Table 
+        <Table
           columns={scheduleVideoColumns}
           dataSource={TotalVideo}
           rowKey="_id"
           loading={allVideosLoading}
-          pagination={{ pageSize: 8 }}
+          pagination={{
+            current: libraryPagination.current,
+            pageSize: libraryPagination.pageSize,
+            total: libraryPagination.total,
+            onChange: (page, pageSize) => {
+              setLibraryPage(page);
+              setLibraryPageSize(pageSize);
+            },
+          }}
           locale={{ emptyText: "No videos found" }}
           rowSelection={rowSelection}
         />

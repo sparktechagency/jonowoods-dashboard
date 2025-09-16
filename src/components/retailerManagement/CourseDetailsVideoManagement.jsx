@@ -282,7 +282,7 @@ const CourseDetails = () => {
 
       {/* Schedule Videos Modal */}
       <Modal
-        title="Add Videos to Subcategory"
+        title="Add Videos to Course"
         open={isScheduleModalVisible}
         onCancel={closeScheduleModal}
         footer={

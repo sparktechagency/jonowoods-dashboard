@@ -90,7 +90,13 @@ export default function SubscriptionPackagesManagement() {
     // Check if discount percentage is valid (if provided)
     if (currentPackage.discountPercentage !== "") {
       const discount = Number(currentPackage.discountPercentage);
-      if (isNaN(discount) || discount < 0 || discount > 100) {
+
+      if (
+        !Number.isInteger(discount) ||
+        isNaN(discount) ||
+        discount < 0 ||
+        discount > 99
+      ) {
         return false;
       }
     }
@@ -488,12 +494,52 @@ export default function SubscriptionPackagesManagement() {
                       type="number"
                       name="discountPercentage"
                       value={currentPackage.discountPercentage}
-                      onChange={handlePackageChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        if (!/^\d*$/.test(value)) {
+                          Modal.error({
+                            title: "Invalid Input",
+                            content:
+                              "Fractional numbers (decimals) are not allowed.",
+                            okButtonProps: {
+                              style: {
+                                backgroundColor: "#ef4444",
+                                // borderColor: "#ef4444",
+                                color: "#fff",
+                              },
+                            },
+                          });
+                          return;
+                        }
+
+                        if (value.length > 2) {
+                          Modal.error({
+                            title: "Invalid Input",
+                            content:
+                              "Discount can only be up to 2 digits (0–99).",
+                            okButtonProps: {
+                              style: {
+                                backgroundColor: "#ef4444", 
+                                // borderColor: "#ef4444",
+                                color: "#fff",
+                              },
+                            },
+                          });
+                          return;
+                        }
+
+                        setCurrentPackage((prev) => ({
+                          ...prev,
+                          discountPercentage: value,
+                        }));
+                      }}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                       placeholder="e.g. 20 (for 20% off)"
                       min="0"
-                      max="100"
+                      max="99"
                     />
+
                     <p className="mt-1 text-xs text-gray-500">
                       Enter 0 for no discount, or any number from 1-100 for
                       percentage off. Backend will calculate the discounted
@@ -584,6 +630,6 @@ export default function SubscriptionPackagesManagement() {
       )}
     </div>
   );
-};
+}
 
 // export default SubscriptionPackagesManagement;

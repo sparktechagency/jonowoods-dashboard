@@ -1,24 +1,45 @@
 import React, { useState, useEffect } from "react";
-import { 
-  useCreateDailyInspirationMutation, 
-  useDeleteDailyInspirationMutation, 
-  useGetAllDailyInspirationQuery, 
-  useGetDailyInspirationByIdQuery, 
-  useUpdateDailyInspirationMutation, 
+import {
+  useCreateDailyInspirationMutation,
+  useDeleteDailyInspirationMutation,
+  useGetAllDailyInspirationQuery,
+  useGetDailyInspirationByIdQuery,
+  useUpdateDailyInspirationMutation,
   useUpdateDailyInspirationStatusMutation,
   useScheduleDailyInspirationMutation,
   useGetScheduledDailyInspirationQuery,
-
   useUpdateDailyInspirationOrderMutation,
-  useUpdateVideoInDailyInspirationMutation
+  useUpdateVideoInDailyInspirationMutation,
 } from "../../redux/apiSlices/dailyInspiraton";
 import VideoUploadSystem from "../common/VideoUploade";
-import { 
+import {
   useGetAllVideosQuery,
-  useScheduleVideoMutation
+  useScheduleVideoMutation,
 } from "../../redux/apiSlices/videoApi";
-import { Button, Modal, Form, Input, Select, DatePicker, Space, Table, message, Tag, Card, Popover, Switch } from "antd";
-import { PlusOutlined, CalendarOutlined, UploadOutlined, DeleteOutlined, EyeOutlined, EditOutlined, SaveOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Modal,
+  Form,
+  Input,
+  Select,
+  DatePicker,
+  Space,
+  Table,
+  message,
+  Tag,
+  Card,
+  Popover,
+  Switch,
+} from "antd";
+import {
+  PlusOutlined,
+  CalendarOutlined,
+  UploadOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+  EditOutlined,
+  SaveOutlined,
+} from "@ant-design/icons";
 import GradientButton from "../common/GradiantButton";
 import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
@@ -32,13 +53,14 @@ const DailyInspirationPage = () => {
   const [createDailyInspiration] = useCreateDailyInspirationMutation();
   const [updateDailyInspiration] = useUpdateDailyInspirationMutation();
   const [deleteDailyInspiration] = useDeleteDailyInspirationMutation();
-  const [updateDailyInspirationStatus] = useUpdateDailyInspirationStatusMutation();
-  const [updateDailyInspirationOrder] = useUpdateDailyInspirationOrderMutation(); // Add this
-
+  const [updateDailyInspirationStatus] =
+    useUpdateDailyInspirationStatusMutation();
+  const [updateDailyInspirationOrder] =
+    useUpdateDailyInspirationOrderMutation(); // Add this
 
   // Schedule API hooks
   const [scheduleDailyInspiration] = useScheduleDailyInspirationMutation();
-  
+
   // State for scheduling
   const [schedulingModalVisible, setSchedulingModalVisible] = useState(false);
   const [schedulingVideo, setSchedulingVideo] = useState(null);
@@ -46,40 +68,61 @@ const DailyInspirationPage = () => {
   const [scheduledVideoId, setScheduledVideoId] = useState(null);
   const [selectedVideos, setSelectedVideos] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
-  
+  const [isFormModalVisible, setIsFormModalVisible] = useState(false);
+
   // State for sorted videos and drag & drop
   const [localScheduledVideos, setLocalScheduledVideos] = useState([]);
   const [hasOrderChanges, setHasOrderChanges] = useState(false);
   const [viewMode, setViewMode] = useState("table"); // "table" or "drag"
-  
+
   // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  
+  const [modalCurrentPage, setModalCurrentPage] = useState(1);
+  const [modalPageSize, setModalPageSize] = useState(10);
+
   // State for modals and editing
   const [editingVideo, setEditingVideo] = useState(null);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [selectedVideoDetails, setSelectedVideoDetails] = useState(null);
-  
+
   // Get all videos and scheduled videos
-  const { data: allVideosData, isLoading: allVideosLoading, refetch: refetchAllVideos } = useGetAllVideosQuery();
-  const { data: scheduledData, isLoading: scheduledLoading, refetch: refetchScheduled } = useGetScheduledDailyInspirationQuery();
+  const {
+    data: allVideosData,
+    isLoading: allVideosLoading,
+    refetch: refetchAllVideos,
+  } = useGetAllVideosQuery([
+    { name: 'limit', value: modalPageSize },
+    { name: 'page', value: modalCurrentPage }
+  ]);
   
+  const {
+    data: scheduledData,
+    isLoading: scheduledLoading,
+    refetch: refetchScheduled,
+  } = useGetScheduledDailyInspirationQuery();
+
   const allVideos = allVideosData?.data || [];
+  const allVideosPagination = allVideosData?.pagination || {
+    total: 0,
+    current: 1,
+    pageSize: 10
+  };
   const scheduledVideos = scheduledData?.data || [];
-  const [updateVideoInDailyInspiration, { isLoading: updateLoading }] = useUpdateVideoInDailyInspirationMutation();
-
-
+  
+  const [updateVideoInDailyInspiration, { isLoading: updateLoading }] =
+    useUpdateVideoInDailyInspirationMutation();
 
   // Sort videos by publishAt date and update local state
   const sortedVideos = React.useMemo(() => {
-    const videosWithScheduleInfo = allVideos.map(video => {
-      const scheduledInfo = scheduledVideos.find(sv => sv.videoId === video._id);
+    const videosWithScheduleInfo = allVideos.map((video) => {
+      const scheduledInfo = scheduledVideos.find(
+        (sv) => sv.videoId === video._id
+      );
       return {
         ...video,
         isScheduled: video.publishAt ? true : false,
-        scheduledInfo: scheduledInfo
+        scheduledInfo: scheduledInfo,
       };
     });
 
@@ -89,16 +132,15 @@ const DailyInspirationPage = () => {
         const dateB = new Date(b.publishAt);
         return dateA - dateB;
       }
-      
+
       if (a.publishAt && !b.publishAt) return -1;
       if (!a.publishAt && b.publishAt) return 1;
-      
+
       return 0;
     });
   }, [allVideos, scheduledVideos]);
 
-
-    const showFormModal = (record = null) => {
+  const showFormModal = (record = null) => {
     if (record) {
       setEditingVideo(record);
     } else {
@@ -106,29 +148,49 @@ const DailyInspirationPage = () => {
     }
     setIsFormModalVisible(true);
   };
+
   useEffect(() => {
     if (scheduledVideos.length > 0) {
-      const sorted = [...scheduledVideos].sort((a, b) => (a.serial || 0) - (b.serial || 0));
+      const sorted = [...scheduledVideos].sort(
+        (a, b) => (a.serial || 0) - (b.serial || 0)
+      );
       setLocalScheduledVideos(sorted);
       setHasOrderChanges(false);
     }
   }, [scheduledVideos]);
 
-    const closeFormModal = () => {
+  const closeFormModal = () => {
     setIsFormModalVisible(false);
     setEditingVideo(null);
-
   };
-   const handleFormSubmit = async () => {
+
+  const handleFormSubmit = async () => {
     closeFormModal();
     await refetchAllVideos();
     await refetchScheduled();
   };
 
+  // Handle modal table pagination change
+  const handleModalPaginationChange = (page, size) => {
+    setModalCurrentPage(page);
+    setModalPageSize(size);
+    // Clear selections when page changes
+    setSelectedVideos([]);
+    setSelectedRowKeys([]);
+  };
+
   const categories = ["Daily Inspiration"];
 
   // VideoCard component for drag and drop view
-  const VideoCard = ({ video, onEdit, onView, onDelete, onStatusChange, isDragging, serialNumber }) => (
+  const VideoCard = ({
+    video,
+    onEdit,
+    onView,
+    onDelete,
+    onStatusChange,
+    isDragging,
+    serialNumber,
+  }) => (
     <div
       className={`bg-white rounded-lg shadow-md p-4 mb-4 border transition-all duration-200 ${
         isDragging ? "opacity-50 transform rotate-2" : "hover:shadow-lg"
@@ -143,7 +205,7 @@ const DailyInspirationPage = () => {
         <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-semibold text-blue-600">
           {serialNumber || "#"}
         </div>
-        
+
         {/* Thumbnail */}
         <div className="flex-shrink-0">
           <img
@@ -152,29 +214,36 @@ const DailyInspirationPage = () => {
             className="w-20 h-12 object-cover rounded"
           />
         </div>
-        
+
         {/* Video Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-medium text-gray-900 truncate">{video.title}</h3>
+          <h3 className="text-lg font-medium text-gray-900 truncate">
+            {video.title}
+          </h3>
           <p className="text-sm text-gray-500 truncate">Daily Inspiration</p>
           <div className="flex items-center space-x-4 text-sm text-gray-500">
             <span>Duration: {video.duration}</span>
             <span>Publish: {moment(video.publishAt).format("L")}</span>
           </div>
         </div>
-        
+
         {/* Equipment */}
         <div className="flex-shrink-0">
           <div className="flex flex-wrap gap-1">
-            {video.equipment && video.equipment.slice(0, 2).map((item, index) => (
-              <Tag key={index} color="blue" size="small">{item}</Tag>
-            ))}
+            {video.equipment &&
+              video.equipment.slice(0, 2).map((item, index) => (
+                <Tag key={index} color="blue" size="small">
+                  {item}
+                </Tag>
+              ))}
             {video.equipment && video.equipment.length > 2 && (
-              <Tag color="default" size="small">+{video.equipment.length - 2}</Tag>
+              <Tag color="default" size="small">
+                +{video.equipment.length - 2}
+              </Tag>
             )}
           </div>
         </div>
-        
+
         {/* Status */}
         <div className="flex-shrink-0">
           <Switch
@@ -183,7 +252,7 @@ const DailyInspirationPage = () => {
             onChange={(checked) => onStatusChange(checked, video)}
           />
         </div>
-        
+
         {/* Actions */}
         <div className="flex-shrink-0">
           <Space size="small">
@@ -220,10 +289,12 @@ const DailyInspirationPage = () => {
   // Handle actual order update to server
   const handleUpdateOrder = async (orderData) => {
     try {
-      const dataToSend = orderData || localScheduledVideos.map((video, index) => ({
-        _id: video._id,
-        serial: index + 1,
-      }));
+      const dataToSend =
+        orderData ||
+        localScheduledVideos.map((video, index) => ({
+          _id: video._id,
+          serial: index + 1,
+        }));
 
       await updateDailyInspirationOrder(dataToSend).unwrap();
 
@@ -238,7 +309,7 @@ const DailyInspirationPage = () => {
 
   // Handle functions for video management
   const handleEdit = (videoId) => {
-    const video = scheduledVideos.find(v => v._id === videoId);
+    const video = scheduledVideos.find((v) => v._id === videoId);
     setEditingVideo(video);
   };
 
@@ -247,50 +318,42 @@ const DailyInspirationPage = () => {
     setDetailsModalVisible(true);
   };
 
+  const handleStatusChange = async (checked, record) => {
+    const newStatus = checked ? "active" : "inactive";
 
-
-const handleStatusChange = async (checked, record) => {
-  const newStatus = checked ? "active" : "inactive";
-
-  Modal.confirm({
-    title: `Are you sure you want to change the Daily Inspiration status to "${newStatus}"?`,
-
-    okText: "Yes ",
-    cancelText: "No",
-     okButtonProps: {
-      style: {
-        backgroundColor: "#CA3939", 
-        // borderColor: "#4CAF50",
-        color: "#fff",
+    Modal.confirm({
+      title: `Are you sure you want to change the Daily Inspiration status to "${newStatus}"?`,
+      okText: "Yes ",
+      cancelText: "No",
+      okButtonProps: {
+        style: {
+          backgroundColor: "#CA3939",
+          color: "#fff",
+        },
       },
-    },
-    cancelButtonProps: {
-      style: {
-        // backgroundColor: "#f44336", 
-        borderColor: "#000",
-        color: "#000",
+      cancelButtonProps: {
+        style: {
+          borderColor: "#000",
+          color: "#000",
+        },
       },
-    },
-  
-    onOk: async () => {
-      try {
-        await updateDailyInspirationStatus({
-          id: record._id,
-          status: newStatus,
-        });
-        message.success(`Daily Inspiration status updated to ${newStatus}`);
-        await refetchScheduled();
-      } catch (error) {
-        message.error("Failed to update Daily Inspiration status");
-
-      }
-    },
-    onCancel() {
-      message.info("Status update canceled");
-    },
-  });
-};
-
+      onOk: async () => {
+        try {
+          await updateDailyInspirationStatus({
+            id: record._id,
+            status: newStatus,
+          });
+          message.success(`Daily Inspiration status updated to ${newStatus}`);
+          await refetchScheduled();
+        } catch (error) {
+          message.error("Failed to update Daily Inspiration status");
+        }
+      },
+      onCancel() {
+        message.info("Status update canceled");
+      },
+    });
+  };
 
   const handleDeleteItem = async (videoId) => {
     Modal.confirm({
@@ -302,10 +365,10 @@ const handleStatusChange = async (checked, record) => {
       onOk: async () => {
         try {
           await deleteDailyInspiration(videoId);
-          message.success('Video deleted successfully');
+          message.success("Video deleted successfully");
           await refetchScheduled();
         } catch (error) {
-          message.error('Failed to delete video');
+          message.error("Failed to delete video");
         }
       },
     });
@@ -321,16 +384,19 @@ const handleStatusChange = async (checked, record) => {
 
       const scheduleData = {
         videoId: video._id,
-        ...(schedulingDate && { publishAt: schedulingDate.toISOString() })
+        ...(schedulingDate && { publishAt: schedulingDate.toISOString() }),
       };
 
       await scheduleDailyInspiration(scheduleData);
       message.success("Daily Inspiration video scheduled successfully!");
-      
+
       setSchedulingVideo(null);
       setSchedulingDate(null);
       setScheduledVideoId(video._id);
       await refetchScheduled();
+      
+      // Refetch all videos to update the list after scheduling
+      await refetchAllVideos();
     } catch (error) {
       console.error("Failed to schedule Daily Inspiration:", error);
       message.error("Failed to schedule Daily Inspiration video");
@@ -346,19 +412,24 @@ const handleStatusChange = async (checked, record) => {
 
     try {
       const scheduleData = {
-        videoIds: selectedVideos.map(video => video._id),
-        publishAt: schedulingDate ? schedulingDate.toISOString() : undefined
+        videoIds: selectedVideos.map((video) => video._id),
+        publishAt: schedulingDate ? schedulingDate.toISOString() : undefined,
       };
 
       await scheduleDailyInspiration(scheduleData);
-      message.success(`${selectedVideos.length} videos scheduled successfully!`);
-      
+      message.success(
+        `${selectedVideos.length} videos scheduled successfully!`
+      );
+
       // Reset states
       setSelectedVideos([]);
       setSelectedRowKeys([]);
       setSchedulingDate(null);
       setSchedulingModalVisible(false);
       await refetchScheduled();
+      
+      // Refetch all videos to update the list after scheduling
+      await refetchAllVideos();
     } catch (error) {
       console.error("Failed to schedule videos:", error);
       message.error("Failed to schedule videos");
@@ -366,8 +437,9 @@ const handleStatusChange = async (checked, record) => {
   };
 
   // Library videos filtered to only show non-scheduled videos
-  const availableVideos = allVideos.filter(video => 
-    !scheduledVideos.some(scheduled => scheduled.videoId === video._id)
+  const availableVideos = allVideos.filter(
+    (video) =>
+      !scheduledVideos.some((scheduled) => scheduled.videoId === video._id)
   );
 
   // Row selection configuration
@@ -382,7 +454,7 @@ const handleStatusChange = async (checked, record) => {
       name: record.title,
     }),
   };
-  
+
   // Scheduled Videos Table Columns
   const scheduledVideoColumns = React.useMemo(
     () => [
@@ -404,9 +476,9 @@ const handleStatusChange = async (checked, record) => {
         render: (_, record) => (
           <div className="flex justify-center">
             {record.thumbnailUrl && (
-              <img 
-                src={getVideoAndThumbnail(record.thumbnailUrl)} 
-                alt={record.title || "Thumbnail"} 
+              <img
+                src={getVideoAndThumbnail(record.thumbnailUrl)}
+                alt={record.title || "Thumbnail"}
                 style={{ width: 80, height: 45, objectFit: "cover" }}
                 className="mr-3 rounded"
               />
@@ -416,63 +488,26 @@ const handleStatusChange = async (checked, record) => {
               {/* {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>} */}
             </div>
           </div>
-        )
+        ),
       },
       {
         title: "Title",
         dataIndex: "title",
         key: "title",
         align: "center",
-      
       },
       {
         title: "Duration",
         dataIndex: "duration",
         key: "duration",
         align: "center",
-      
       },
-      // {
-      //   title: "Equipment",
-      //   dataIndex: "equipment",
-      //   key: "equipment",
-      //   align: "center",
-      //   render: (equipment) => (
-      //     <div>
-      //       {equipment && equipment.map((item, index) => (
-      //         <Tag key={index} color="blue">{item}</Tag>
-      //       ))}
-      //     </div>
-      //   ),
-      // },
-      // {
-      //   title: "Publish Date",
-      //   dataIndex: "publishAt",
-      //   key: "publishAt",
-      //   align: "center",
-      //   render: (text) => moment(text).format("L"),
-      // },
-      // {
-      //   title: "Status",
-      //   key: "status",
-      //   align: "center",
-      //   render: (_, record) => (
-      //     <Tag color={record.status?.toLowerCase() === "active" ? "green" : "red"}>
-      //       {record.status?.toUpperCase() || "INACTIVE"}
-      //     </Tag>
-      //   )
-      // },
       {
         title: "Action",
         key: "action",
         align: "center",
         render: (_, record) => (
           <Space size="small">
-            {/* <Switch
-              size="small"
-              checked={record.status === "active"}
-              onChange={(checked) => handleStatusChange(checked, record)}
-            /> */}
             <Button
               type="text"
               icon={<EditOutlined style={{ color: "#f55" }} />}
@@ -505,47 +540,45 @@ const handleStatusChange = async (checked, record) => {
       render: (_, record) => (
         <div className="flex items-center">
           {record.thumbnailUrl && (
-            <img 
-              src={getVideoAndThumbnail(record.thumbnailUrl)} 
-              alt={record.title || "Thumbnail"} 
+            <img
+              src={getVideoAndThumbnail(record.thumbnailUrl)}
+              alt={record.title || "Thumbnail"}
               style={{ width: 80, height: 45, objectFit: "cover" }}
               className="mr-3 rounded"
             />
           )}
           <div>
             <p className="font-medium">{record.title || "Untitled Video"}</p>
-            {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>}
-            {record.category && <p className="text-xs text-gray-500">Category: {record.category}</p>}
+            {record.duration && (
+              <p className="text-xs text-gray-500">
+                Duration: {record.duration}
+              </p>
+            )}
+            {record.category && (
+              <p className="text-xs text-gray-500">
+                Category: {record.category}
+              </p>
+            )}
           </div>
         </div>
-      )
+      ),
     },
-    // {
-    //   title: "Status",
-    //   key: "status",
-    //   width: "20%",
-    //   render: (_, record) => (
-    //     <Tag color={record.status?.toLowerCase() === "active" ? "green" : "red"}>
-    //       {record.status?.toUpperCase() || "INACTIVE"}
-    //     </Tag>
-    //   )
-    // },
     {
       title: "Actions",
       key: "actions",
       width: "30%",
       render: (_, record) => (
-        <Button 
+        <Button
           type="primary"
           size="small"
           icon={<PlusOutlined />}
           onClick={() => handleScheduleSingleVideo(record)}
           className="bg-primary text-white h-10"
         >
-          Schedule Video
+          Add Video
         </Button>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -583,13 +616,13 @@ const handleStatusChange = async (checked, record) => {
             {viewMode === "table" ? " Do Shuffle" : "Table Mode"}
           </button>
         </div>
-        
-        <GradientButton 
+
+        <GradientButton
           onClick={() => setSchedulingModalVisible(true)}
           icon={<CalendarOutlined />}
           className="ml-2"
         >
-          Schedule Video
+          Video Library
         </GradientButton>
       </div>
 
@@ -609,7 +642,7 @@ const handleStatusChange = async (checked, record) => {
               setPageSize(size);
             },
           }}
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: "max-content" }}
           className="custom-table"
         />
       ) : (
@@ -631,10 +664,10 @@ const handleStatusChange = async (checked, record) => {
           )}
         />
       )}
-      
+
       {/* Schedule Videos Modal */}
       <Modal
-        title="Schedule Daily Inspiration Videos"
+        title="Video Library Daily Inspiration"
         open={schedulingModalVisible}
         onCancel={() => {
           setSchedulingModalVisible(false);
@@ -643,29 +676,42 @@ const handleStatusChange = async (checked, record) => {
           setScheduledVideoId(null);
           setSelectedVideos([]);
           setSelectedRowKeys([]);
+          // Reset modal pagination to first page when closing
+          setModalCurrentPage(1);
         }}
         footer={
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               {/* Optional Date Picker */}
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Schedule Date (Optional):</span>
-                <DatePicker 
-                  showTime 
+                <span className="text-sm text-gray-600">
+                  Schedule Date (Optional):
+                </span>
+                <DatePicker
+                  showTime
                   value={schedulingDate}
                   onChange={setSchedulingDate}
                   placeholder="Select date & time"
                   className="w-48"
                   format="YYYY-MM-DD HH:mm:ss"
-                  disabledDate={(current) => current && current < moment().startOf('day')}
+                  disabledDate={(current) =>
+                    current && current < moment().startOf("day")
+                  }
                   disabledTime={(current) => {
                     if (!current) return {};
                     const now = moment();
-                    if (current.isSame(now, 'day')) {
+                    if (current.isSame(now, "day")) {
                       return {
                         disabledHours: () => [...Array(now.hour()).keys()],
-                        disabledMinutes: () => current.hour() === now.hour() ? [...Array(now.minute()).keys()] : [],
-                        disabledSeconds: () => current.hour() === now.hour() && current.minute() === now.minute() ? [...Array(now.second()).keys()] : [],
+                        disabledMinutes: () =>
+                          current.hour() === now.hour()
+                            ? [...Array(now.minute()).keys()]
+                            : [],
+                        disabledSeconds: () =>
+                          current.hour() === now.hour() &&
+                          current.minute() === now.minute()
+                            ? [...Array(now.second()).keys()]
+                            : [],
                       };
                     }
                     return {};
@@ -679,7 +725,7 @@ const handleStatusChange = async (checked, record) => {
               )}
             </div>
             <Space>
-              <Button 
+              <Button
                 onClick={() => {
                   setSchedulingModalVisible(false);
                   setSchedulingVideo(null);
@@ -687,127 +733,67 @@ const handleStatusChange = async (checked, record) => {
                   setScheduledVideoId(null);
                   setSelectedVideos([]);
                   setSelectedRowKeys([]);
-                }} 
+                  // Reset modal pagination to first page when closing
+                  setModalCurrentPage(1);
+                }}
                 className="text-black h-10"
               >
                 Cancel
               </Button>
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 onClick={handleScheduleSelectedVideos}
                 disabled={selectedVideos.length === 0}
                 icon={<PlusOutlined />}
                 className="bg-primary text-white h-10"
               >
-                Schedule Selected Videos ({selectedVideos.length})
+                Video Library Selected Videos ({selectedVideos.length})
               </Button>
             </Space>
           </div>
         }
         width={1200}
       >
-        <div style={{ width: '100%' }}>
-          <Table 
+        <div style={{ width: "100%" }}>
+          <Table
             columns={videoColumns}
             dataSource={availableVideos}
             rowKey="_id"
             loading={allVideosLoading}
-            pagination={{ pageSize: 8 }}
+            pagination={{
+              current: modalCurrentPage,
+              pageSize: modalPageSize,
+              total: allVideosPagination.total,
+              onChange: handleModalPaginationChange,
+              onShowSizeChange: handleModalPaginationChange,
+            
+            }}
             locale={{ emptyText: "No videos available" }}
             rowSelection={rowSelection}
-            scroll={{ x: 'max-content' }}
-            style={{ width: '100%' }}
+            scroll={{ x: "max-content" }}
+            style={{ width: "100%" }}
             tableLayout="auto"
           />
         </div>
       </Modal>
 
-      <VideoDetailsModal 
+      <VideoDetailsModal
         visible={detailsModalVisible}
         onCancel={() => {
           setDetailsModalVisible(false);
           setSelectedVideoDetails(null);
         }}
         currentVideo={selectedVideoDetails}
-       />
+      />
 
-      <EditVideoModal 
+      <EditVideoModal
         visible={isFormModalVisible}
         onCancel={closeFormModal}
         onSuccess={handleFormSubmit}
         currentVideo={editingVideo}
-
         onUpdateVideo={updateVideoInDailyInspiration}
         isLoading={updateLoading}
       />
-
-      {/* Video Details Modal */}
-      {/* <Modal
-        title="Video Details"
-        open={detailsModalVisible}
-        onCancel={() => {
-          setDetailsModalVisible(false);
-          setSelectedVideoDetails(null);
-        }}
-        footer={[
-          <Button key="close" onClick={() => {
-            setDetailsModalVisible(false);
-            setSelectedVideoDetails(null);
-          }}>
-            Close
-          </Button>
-        ]}
-        width={800}
-      >
-        {selectedVideoDetails && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-semibold mb-2">Video Information</h3>
-                <p><strong>Title:</strong> {selectedVideoDetails.title}</p>
-                <p><strong>Category:</strong> Daily Inspiration</p>
-                <p><strong>Duration:</strong> {selectedVideoDetails.duration}</p>
-                <p><strong>Status:</strong> 
-                  <Tag color={selectedVideoDetails.status === "active" ? "success" : "error"}>
-                    {selectedVideoDetails.status === "active" ? "Active" : "Inactive"}
-                  </Tag>
-                </p>
-                <p><strong>Publish Date:</strong> {moment(selectedVideoDetails.publishAt).format("LLLL")}</p>
-                <p><strong>Created:</strong> {moment(selectedVideoDetails.createdAt).format("LLLL")}</p>
-                <p><strong>Updated:</strong> {moment(selectedVideoDetails.updatedAt).format("LLLL")}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Equipment</h3>
-                <div className="mb-4">
-                  {selectedVideoDetails.equipment && selectedVideoDetails.equipment.map((item, index) => (
-                    <Tag key={index} color="blue" className="mb-1">{item}</Tag>
-                  ))}
-                </div>
-                <h3 className="font-semibold mb-2">Thumbnail</h3>
-                <img
-                  src={getVideoAndThumbnail(selectedVideoDetails.thumbnailUrl)}
-                  alt="thumbnail"
-                  style={{
-                    width: "100%",
-                    maxWidth: 300,
-                    height: "auto",
-                    objectFit: "cover",
-                  }}
-                  className="rounded-lg"
-                />
-              </div>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-gray-600">{selectedVideoDetails.description}</p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Video URL</h3>
-              <p className="text-sm text-gray-500 break-all">{selectedVideoDetails.videoUrl}</p>
-            </div>
-          </div>
-        )}
-      </Modal> */}
     </div>
   );
 };

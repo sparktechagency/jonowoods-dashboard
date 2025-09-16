@@ -45,7 +45,7 @@ const ChallengeDetails = () => {
   const [selectedVideos, setSelectedVideos] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [schedulingDate, setSchedulingDate] = useState(null);
-   const [currentVideo, setCurrentVideo] = useState(null);
+  const [currentVideo, setCurrentVideo] = useState(null);
   
   // State for sorted videos
   const [sortedVideos, setSortedVideos] = useState([]);
@@ -54,11 +54,15 @@ const ChallengeDetails = () => {
   const [localChallengeVideos, setLocalChallengeVideos] = useState([]);
   const [hasOrderChanges, setHasOrderChanges] = useState(false);
   const [viewMode, setViewMode] = useState("table"); 
-    const [isFormModalVisible, setIsFormModalVisible] = useState(false);
+  const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   
-  // State for pagination
+  // State for pagination - Updated for both tables
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  
+  // New state for modal table pagination
+  const [modalCurrentPage, setModalCurrentPage] = useState(1);
+  const [modalPageSize, setModalPageSize] = useState(10);
   
   // State for modals and editing
   const [editingVideo, setEditingVideo] = useState(null);
@@ -72,16 +76,24 @@ const ChallengeDetails = () => {
   
   const challengeDetails = challenge || challengeData?.data;
   
-  // Get all videos from library
-  const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
+  // Get all videos from library with pagination parameters
+  const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery([
+    { name: 'limit', value: modalPageSize },
+    { name: 'page', value: modalCurrentPage }
+  ]);
+  
   const allVideos = allVideosData?.data || [];
+  const allVideosPagination = allVideosData?.pagination || {
+    total: 0,
+    current: 1,
+    pageSize: 10
+  };
+  
   const [createChallengeWithVideos] = useCreateChallengeWithVideosMutation();
 
   const {data:challengeVideos,isLoading:challengeVideosLoading, refetch: refetchChallengeVideos} = useGetDailyChallengeVideosQuery(id);
   const challengeVideo = challengeVideos?.data || [];
   const [updateVideoInChallenge,{isLoading:updateVideoInChallengeLoading}] = useUpdateVideoInChallengeMutation();
-
-
 
   // Update local challenge videos and sorted videos when challengeVideo changes
   useEffect(() => {
@@ -201,22 +213,21 @@ const ChallengeDetails = () => {
     }
   };
 
-   const closeFormModal = () => {
+  const closeFormModal = () => {
     setIsFormModalVisible(false);
- 
   };
 
-    const handleFormSubmit = async () => {
+  const handleFormSubmit = async () => {
     closeFormModal();
     // await refetch();
   };
-    const showFormModal = (record = null) => {
+  
+  const showFormModal = (record = null) => {
     if (record) {
       setEditingVideo(record);
       // currentVideo & equipmentTags will update automatically via useEffect above
     } else {
       setEditingVideo(null);
-
     }
     setIsFormModalVisible(true);
   };
@@ -342,17 +353,6 @@ const ChallengeDetails = () => {
         align: "center",
         render: (text) => moment(text).format("L"),
       },
-      // {
-      //   title: "Status",
-      //   dataIndex: "status",
-      //   key: "status",
-      //   align: "center",
-      //   render: (status) => (
-      //     <Tag color={status === "active" ? "success" : "error"}>
-      //       {status === "active" ? "Active" : "Inactive"}
-      //     </Tag>
-      //   ),
-      // },
       {
         title: "Action",
         key: "action",
@@ -362,7 +362,7 @@ const ChallengeDetails = () => {
             <Button
               type="text"
               icon={<EditOutlined style={{ color: "#f55" }} />}
-                onClick={() => showFormModal(record)}
+              onClick={() => showFormModal(record)}
             />
             <Button
               type="text"
@@ -488,19 +488,17 @@ const ChallengeDetails = () => {
               className="mr-3 rounded"
             />
           )}
- 
         </div>
       )
     },
-        {
+    {
       title: "Title",
       key: "title",
       width: "40%",
       render: (_, record) => (
         <div>
-            {record.title && <p className="text-xs text-gray-500">{record.title}</p>}
-           
-          </div>
+          {record.title && <p className="text-xs text-gray-500">{record.title}</p>}
+        </div>
       )
     },
     {
@@ -509,12 +507,10 @@ const ChallengeDetails = () => {
       width: "20%",
       render: (_, record) => (
         <div>
-            {record.duration && <p className="text-xs text-gray-500">{record.duration}</p>}
-           
-          </div>
+          {record.duration && <p className="text-xs text-gray-500">{record.duration}</p>}
+        </div>
       )
     },
-
     {
       title: "Actions",
       key: "actions",
@@ -532,6 +528,21 @@ const ChallengeDetails = () => {
       )
     }
   ];
+
+  // Handle main table pagination change
+  const handleTablePaginationChange = (page, size) => {
+    setCurrentPage(page);
+    setPageSize(size);
+  };
+
+  // Handle modal table pagination change
+  const handleModalPaginationChange = (page, size) => {
+    setModalCurrentPage(page);
+    setModalPageSize(size);
+    // Clear selections when page changes
+    setSelectedVideos([]);
+    setSelectedRowKeys([]);
+  };
 
   if (challengeLoading) {
     return <div>Loading challenge details...</div>;
@@ -609,10 +620,12 @@ const ChallengeDetails = () => {
             current: currentPage,
             pageSize: pageSize,
             total: sortedVideos.length,
-            onChange: (page, size) => {
-              setCurrentPage(page);
-              setPageSize(size);
-            },
+            onChange: handleTablePaginationChange,
+            // showSizeChanger: true,
+            // showQuickJumper: true,
+            // pageSizeOptions: ['5', '10', '20', '50', '100'],
+            // showTotal: (total, range) => 
+            //   `${range[0]}-${range[1]} of ${total} items`,
           }}
           scroll={{ x: 'max-content' }}
           className="custom-table"
@@ -639,13 +652,16 @@ const ChallengeDetails = () => {
       
       {/* Schedule Videos Modal */}
       <Modal
-        title="select Videos for Challenge"
+        title="Select Videos for Challenge"
         open={schedulingModalVisible}
         onCancel={() => {
           setSchedulingModalVisible(false);
           setSelectedVideos([]);
           setSelectedRowKeys([]);
           setSchedulingDate(null);
+          // Reset modal pagination when closing
+          setModalCurrentPage(1);
+          setModalPageSize(10);
         }}
         footer={
           <div className="flex justify-between items-center">
@@ -674,6 +690,8 @@ const ChallengeDetails = () => {
                   setSelectedVideos([]);
                   setSelectedRowKeys([]);
                   setSchedulingDate(null);
+                  setModalCurrentPage(1);
+                  setModalPageSize(10);
                 }} 
                 className="text-black h-10"
               >
@@ -699,7 +717,17 @@ const ChallengeDetails = () => {
             dataSource={availableVideos}
             rowKey="_id"
             loading={allVideosLoading}
-            pagination={{ pageSize: 8 }}
+            pagination={{
+              current: modalCurrentPage,
+              pageSize: modalPageSize,
+              total: allVideosPagination.total,
+              onChange: handleModalPaginationChange,
+              // showSizeChanger: true,
+              // showQuickJumper: true,
+              // pageSizeOptions: ['5', '10', '20', '50'],
+              // showTotal: (total, range) => 
+              //   `${range[0]}-${range[1]} of ${total} items`,
+            }}
             locale={{ emptyText: "No videos available" }}
             rowSelection={rowSelection}
             scroll={{ x: 'max-content' }}
@@ -707,99 +735,27 @@ const ChallengeDetails = () => {
             tableLayout="auto"
           />
         </div>
-        </Modal>
+      </Modal>
 
-        <VideoDetailsModal 
-          visible={detailsModalVisible}
-           onCancel={() => {
-            setDetailsModalVisible(false);
-            setSelectedVideoDetails(null);
-          }}
-          currentVideo={selectedVideoDetails}
+      <VideoDetailsModal 
+        visible={detailsModalVisible}
+        onCancel={() => {
+          setDetailsModalVisible(false);
+          setSelectedVideoDetails(null);
+        }}
+        currentVideo={selectedVideoDetails}
+      />
 
-        />
+      <EditVideoModal 
+        visible={isFormModalVisible}
+        onCancel={closeFormModal}
+        onSuccess={handleFormSubmit}
+        currentVideo={editingVideo}
+        onUpdateVideo={updateVideoInChallenge}
+        isLoading={updateVideoInChallengeLoading}
+      />
+    </div>
+  );
+};
 
-        <EditVideoModal 
-          visible={isFormModalVisible}
-          onCancel={closeFormModal}
-          onSuccess={handleFormSubmit}
-          currentVideo={editingVideo}
-
-          onUpdateVideo={updateVideoInChallenge}
-          isLoading={updateVideoInChallengeLoading}
-        />
-
-
-        {/* Video Details Modal */}
-        {/* <Modal
-          title="Video Details"
-          open={detailsModalVisible}
-          onCancel={() => {
-            setDetailsModalVisible(false);
-            setSelectedVideoDetails(null);
-          }}
-          footer={[
-            <Button key="close" onClick={() => {
-              setDetailsModalVisible(false);
-              setSelectedVideoDetails(null);
-            }}>
-              Close
-            </Button>
-          ]}
-          width={800}
-        >
-          {selectedVideoDetails && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Video Information</h3>
-                  <p><strong>Title:</strong> {selectedVideoDetails.title}</p>
-                  <p><strong>Challenge:</strong> {selectedVideoDetails.challengeName}</p>
-                  <p><strong>Duration:</strong> {selectedVideoDetails.duration}</p>
-                  <p><strong>Serial:</strong> {selectedVideoDetails.serial}</p>
-                  <p><strong>Status:</strong> 
-                    <Tag color={selectedVideoDetails.status === "active" ? "success" : "error"}>
-                      {selectedVideoDetails.status === "active" ? "Active" : "Inactive"}
-                    </Tag>
-                  </p>
-                  <p><strong>Publish Date:</strong> {moment(selectedVideoDetails.publishAt).format("LLLL")}</p>
-                  <p><strong>Created:</strong> {moment(selectedVideoDetails.createdAt).format("LLLL")}</p>
-                  <p><strong>Updated:</strong> {moment(selectedVideoDetails.updatedAt).format("LLLL")}</p>
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-2">Equipment</h3>
-                  <div className="mb-4">
-                    {selectedVideoDetails.equipment && selectedVideoDetails.equipment.map((item, index) => (
-                      <Tag key={index} color="blue" className="mb-1">{item}</Tag>
-                    ))}
-                  </div>
-                  <h3 className="font-semibold mb-2">Thumbnail</h3>
-                  <img
-                    src={getVideoAndThumbnail(selectedVideoDetails.thumbnailUrl)}
-                    alt="thumbnail"
-                    style={{
-                      width: "100%",
-                      maxWidth: 300,
-                      height: "auto",
-                      objectFit: "cover",
-                    }}
-                    className="rounded-lg"
-                  />
-                </div>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Description</h3>
-                <p className="text-gray-600">{selectedVideoDetails.description}</p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Video URL</h3>
-                <p className="text-sm text-gray-500 break-all">{selectedVideoDetails.videoUrl}</p>
-              </div>
-            </div>
-          )}
-        </Modal> */}
-      </div>
-    );
-  };
-
-    export default ChallengeDetails;
+export default ChallengeDetails;

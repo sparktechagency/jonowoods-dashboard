@@ -33,6 +33,9 @@ export const useVideoManagement = () => {
   // Video selection states
   const [selectedVideos, setSelectedVideos] = useState([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [libraryPage, setLibraryPage] = useState(1);
+const [libraryPageSize, setLibraryPageSize] = useState(10);
+
 
   // View mode state
   const [viewMode, setViewMode] = useState("table");
@@ -50,8 +53,18 @@ export const useVideoManagement = () => {
   const categories = categoryData?.data || [];
 
   const { data: allVideosData, isLoading: allVideosLoading } =
-    useGetAllVideosQuery();
-  const TotalVideo = allVideosData?.data || [];
+  useGetAllVideosQuery([
+    { name: "page", value: libraryPage },
+    { name: "limit", value: libraryPageSize },
+  ]);
+
+const TotalVideo = allVideosData?.data || [];
+const libraryPagination = allVideosData?.pagination || {
+  total: 0,
+  current: 1,
+  pageSize: 10,
+};
+
 
   const {
     data: videosData,
@@ -266,10 +279,16 @@ export const useVideoManagement = () => {
     });
   };
 
-  // Table pagination
-  const handleTableChange = (paginationConfig) => {
-    setCurrentPage(paginationConfig.current);
-    setPageSize(paginationConfig.pageSize);
+  // Table pagination with backend support
+  const handleTableChange = async (paginationConfig) => {
+    const page = paginationConfig.current;
+    const limit = paginationConfig.pageSize;
+    
+    setCurrentPage(page);
+    setPageSize(limit);
+    
+    // Refetch data with new pagination parameters
+    await refetch({ subCategoryId, page, limit });
   };
 
   return {
@@ -290,11 +309,18 @@ export const useVideoManagement = () => {
     currentPage,
     pageSize,
     categories,
-    TotalVideo,
+   
     videosData,
     isLoadingVideos,
     allVideosLoading,
     paginationData,
+    TotalVideo,
+  allVideosLoading,
+  libraryPagination,
+  libraryPage,
+  libraryPageSize,
+  setLibraryPage,
+  setLibraryPageSize,
 
     // Setters
     setEquipmentTags,

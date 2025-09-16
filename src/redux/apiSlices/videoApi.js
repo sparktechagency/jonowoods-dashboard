@@ -198,20 +198,36 @@ const videoApi = api.injectEndpoints({
 
     // NEW: Get subcategory by ID
     getSubCategoryById: builder.query({
-      query: (id) => {
-        // const params = new URLSearchParams();
-        // if (args) {
-        //   args.forEach((arg) => {
-        //     params.append(arg.name, arg.value);
-        //   });
-        // }
+      query: (arg) => {
+        // Check if arg is an object with pagination parameters or just an ID
+        let id, page, limit;
+        
+        if (typeof arg === 'object') {
+          id = arg.subCategoryId;
+          page = arg.page || 1;
+          limit = arg.limit || 10;
+        } else {
+          id = arg;
+          page = 1;
+          limit = 10;
+        }
+        
         return {
           url: `/admin/videos/management/get-all-videos-by-course/${id}`,
           method: "GET",
-          
+          params: { page, limit }
         };
       },
-     
+      transformResponse: (response) => {
+        return {
+          data: response.data || [],
+          pagination: response.pagination || {
+            total: 0,
+            current: 1,
+            pageSize: 10,
+          },
+        };
+      },
       providesTags: ["SubCategories"],
     }),
     

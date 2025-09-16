@@ -10,6 +10,8 @@ import {
   Menu,
   message,
   Tag,
+  Input,
+  Select,
 } from "antd";
 import {
   EditOutlined,
@@ -19,6 +21,7 @@ import {
   PlusOutlined,
   CalendarOutlined,
   SaveOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import moment from "moment/moment";
 import { useDeleteCategoryVideoMutation, useGetByCategoryAllVideosQuery, useGetCategoryQuery, useGetCategoryVideoDetailsQuery, useUpdateVideoOrderInCategoryMutation, useVideoAddInCategoryMutation } from "../../redux/apiSlices/categoryApi";
@@ -31,6 +34,9 @@ import EditVideoModal from "./EditVideoModal";
 import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
 import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
+
+const { Search } = Input;
+const { Option } = Select;
 
 const AllVideos = () => {
   const { categoryId } = useParams();
@@ -51,11 +57,17 @@ const AllVideos = () => {
   const [hasOrderChanges, setHasOrderChanges] = useState(false);
   const [viewMode, setViewMode] = useState("table"); // "table" or "drag"
 
-  // Filters and pagination
+  // Filters and pagination for main table
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Modal filters and pagination
+  const [modalCurrentPage, setModalCurrentPage] = useState(1);
+  const [modalPageSize, setModalPageSize] = useState(10);
+  const [modalSearchTerm, setModalSearchTerm] = useState("");
+  const [modalCategoryFilter, setModalCategoryFilter] = useState("all");
 
   // API calls
   const {
@@ -65,8 +77,30 @@ const AllVideos = () => {
     } = useGetByCategoryAllVideosQuery(categoryId);
     const { data: categoryData } = useGetCategoryQuery();
     const categories = categoryData?.data || [];
-    const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery();
+    
+    // Enhanced API call for all videos with pagination and filters
+    const queryParams = [
+      { name: 'limit', value: modalPageSize },
+      { name: 'page', value: modalCurrentPage },
+    ];
+    
+    if (modalSearchTerm) {
+      queryParams.push({ name: 'search', value: modalSearchTerm });
+    }
+    
+    if (modalCategoryFilter !== "all") {
+      queryParams.push({ name: 'category', value: modalCategoryFilter });
+    }
+    
+    const { data: allVideosData, isLoading: allVideosLoading } = useGetAllVideosQuery(queryParams);
+    
     const TotalVideo = allVideosData?.data || [];
+    const allVideosPagination = allVideosData?.pagination || {
+      total: 0,
+      current: 1,
+      pageSize: 10
+    };
+
   // Schedule API
   const [videoAddInCategory] = useVideoAddInCategoryMutation();
 
@@ -88,7 +122,6 @@ const AllVideos = () => {
     return statusMatch && typeMatch;
   });
 
-
   // Paginate filtered videos
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
@@ -105,7 +138,6 @@ const videoDetails=videoDetail?.data
   const [updateVideoINCategoryAndSubcategory, {isLoading}] = useUpdateVideoINCategoryAndSubcategoryMutation();
 
   const [updateVideoOrderInCategory] = useUpdateVideoOrderInCategoryMutation();
-
 
   // Update currentVideo and equipmentTags whenever videoDetails or editingId changes
   useEffect(() => {
@@ -134,6 +166,11 @@ const videoDetails=videoDetail?.data
       setHasOrderChanges(false);
     }
   }, [allVideos]);
+
+  // Reset modal pagination when filters change
+  useEffect(() => {
+    setModalCurrentPage(1);
+  }, [modalSearchTerm, modalCategoryFilter]);
 
   console.log("Filtered Videos:", paginatedVideos);
 
@@ -195,14 +232,14 @@ const videoDetails=videoDetail?.data
               onClick={() => onView(video)}
               title="View Video Details"
             />
-            <Switch
+            {/* <Switch
               size="small"
               checked={video.status === "active"}
               onChange={(checked) => onStatusChange(checked, video)}
               style={{
                 backgroundColor: video.status === "active" ? "red" : "gray",
               }}
-            />
+            /> */}
             <Button
               type="text"
               icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
@@ -253,6 +290,11 @@ const videoDetails=videoDetail?.data
     setIsScheduleModalVisible(false);
     setSelectedVideos([]);
     setSelectedRowKeys([]);
+    // Reset modal filters and pagination
+    setModalCurrentPage(1);
+    setModalPageSize(10);
+    setModalSearchTerm("");
+    setModalCategoryFilter("all");
   };
 
   // After form submission, close modal and refresh list
@@ -379,15 +421,40 @@ const videoDetails=videoDetail?.data
     }
   };
 
-  // Pagination handler
+  // Pagination handler for main table
   const handleTableChange = (paginationConfig) => {
     setCurrentPage(paginationConfig.current);
     setPageSize(paginationConfig.pageSize);
   };
 
+  // Pagination handler for modal table
+  const handleModalPaginationChange = (page, size) => {
+    setModalCurrentPage(page);
+    setModalPageSize(size);
+    // Clear selections when page changes
+    setSelectedVideos([]);
+    setSelectedRowKeys([]);
+  };
+
   // Filter handlers
   const handleStatusFilter = (status) => setStatusFilter(status.toLowerCase());
   const handleTypeFilter = (type) => setTypeFilter(type.toLowerCase());
+
+  // Modal filter handlers
+  const handleModalSearch = (value) => {
+    setModalSearchTerm(value);
+  };
+
+  const handleModalCategoryFilter = (value) => {
+    setModalCategoryFilter(value);
+  };
+
+  // Clear all modal filters
+  const clearModalFilters = () => {
+    setModalSearchTerm("");
+    setModalCategoryFilter("all");
+    setModalCurrentPage(1);
+  };
 
   // Filter menus
   const statusMenu = (
@@ -403,8 +470,6 @@ const videoDetails=videoDetail?.data
       </Menu.Item>
     </Menu>
   );
-
-
 
   // Row selection configuration for schedule modal
   const rowSelection = {
@@ -425,6 +490,7 @@ const videoDetails=videoDetail?.data
       title: "Video",
       dataIndex: "title",
       key: "video",
+      width: "30%",
       render: (_, record) => (
         <div className="flex items-center">
           {record.thumbnailUrl && (
@@ -435,17 +501,33 @@ const videoDetails=videoDetail?.data
               className="mr-3 rounded"
             />
           )}
-          <div>
-            <p className="font-medium">{record.title || "Untitled Video"}</p>
-            {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>}
-            {record.category && <p className="text-xs text-gray-500">Category: {record.category}</p>}
-          </div>
         </div>
+      )
+    },
+    {
+      title: "Title",
+      key: "title",
+      width: "30%",
+      render: (_, record) => (
+        <div>
+          <p className="font-medium">{record.title || "Untitled Video"}</p>
+          {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>}
+        </div>
+      )
+    },
+    {
+      title: "Category",
+      dataIndex: "category",
+      key: "category",
+      width: "25%",
+      render: (category) => (
+        <Tag color="blue">{category || "No Category"}</Tag>
       )
     },
     {
       title: "Actions",
       key: "actions",
+      width: "15%",
       render: (_, record) => (
         <Button 
           type="primary"
@@ -453,7 +535,6 @@ const videoDetails=videoDetail?.data
           icon={<PlusOutlined />}
           onClick={() => handleAddToSchedule(record)}
           className="bg-primary text-white h-10"
-
         >
           Add Video
         </Button>
@@ -505,8 +586,6 @@ const videoDetails=videoDetail?.data
       key: "category",
       align: "center",
     },
-  
-   
     {
       title: "Created Date",
       dataIndex: "createdAt",
@@ -544,14 +623,14 @@ const videoDetails=videoDetail?.data
             onClick={() => showDetailsModal(record)}
             title="View Video Details"
           />
-          <Switch
+          {/* <Switch
             size="small"
             checked={record.status === "active"}
             onChange={(checked) => handleStatusChange(checked, record)}
             style={{
               backgroundColor: record.status === "active" ? "red" : "gray",
             }}
-          />
+          /> */}
           <Button
             type="text"
             icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}
@@ -598,7 +677,6 @@ const videoDetails=videoDetail?.data
         }
       `}</style>
 
-          {/* <h2 style={{ marginBottom: 16 }}> Videos</h2> */}
       <div className="flex justify-end gap-6 mb-6">
         <Space size="small" className="flex gap-4">
           <Dropdown
@@ -617,31 +695,12 @@ const videoDetails=videoDetail?.data
               </Space>
             </Button>
           </Dropdown>
-{/* 
-          <Dropdown
-            overlay={typeMenu}
-            trigger={["click"]}
-            placement="bottomLeft"
-          >
-            <Button
-              className="py-5 mr-2 text-white bg-red-600 hover:bg-red-800 hover:text-white hover:icon-black"
-              style={{ border: "none" }}
-            >
-              <Space>
-                <Filtering className="filtering-icon" />
-                <span className="filter-text">{getTypeDisplayText()}</span>
-                <DownOutlined />
-              </Space>
-            </Button>
-          </Dropdown> */}
         </Space>
 
         <Space>
           <button
             onClick={() => setViewMode(viewMode === "table" ? "drag" : "table")}
             className="py-2 rounded-md px-4 border-none mr-2 bg-primary text-white hover:bg-secondary"
-            // type={viewMode === "drag" ? "primary" : "default"}
-            // classNames="bg-primary"
           >
             {viewMode === "table" ? "Do Shuffle" : "Table Mode"}
           </button>
@@ -654,19 +713,8 @@ const videoDetails=videoDetail?.data
           >
              Video Library
           </GradientButton>
-          
-          {/* <GradientButton
-            type="primary"
-            onClick={() => showFormModal()}
-            className="py-5"
-            icon={<PlusOutlined />}
-          >
-            Upload New Video
-          </GradientButton> */}
         </Space>
       </div>
-
-  
 
       {viewMode === "table" ? (
         <Table
@@ -677,11 +725,6 @@ const videoDetails=videoDetail?.data
           pagination={{
             current: currentPage,
             pageSize: pageSize,
-            //   total: filteredVideos.length,
-            //   showSizeChanger: true,
-            //   showQuickJumper: true,
-            //   showTotal: (total, range) =>
-            //     `${range[0]}-${range[1]} of ${total} videos`,
           }}
           onChange={handleTableChange}
           bordered
@@ -741,9 +784,7 @@ const videoDetails=videoDetail?.data
               )}
             </div>
             <Space>
-              <Button onClick={closeScheduleModal} className=" text-black h-10">
-
-
+              <Button onClick={closeScheduleModal} className="text-black h-10">
                 Cancel
               </Button>
               <Button 
@@ -752,23 +793,36 @@ const videoDetails=videoDetail?.data
                 disabled={selectedVideos.length === 0}
                 icon={<PlusOutlined />}
                 className="bg-primary text-white h-10"
-
               >
                 Add Selected Videos ({selectedVideos.length})
               </Button>
             </Space>
           </div>
         }
-        width={900}
+        width={1200}
       >
+        {/* Modal Filters */}
+    
+
         <Table 
           columns={scheduleVideoColumns}
           dataSource={TotalVideo}
           rowKey="_id"
-          loading={isLoadingVideos}
-          pagination={{ pageSize: 8 }}
+          loading={allVideosLoading}
+          pagination={{
+            current: modalCurrentPage,
+            pageSize: modalPageSize,
+            total: allVideosPagination.total,
+            onChange: handleModalPaginationChange,
+            // showSizeChanger: true,
+            // showQuickJumper: true,
+            // pageSizeOptions: ['5', '10', '20', '50'],
+            // showTotal: (total, range) => 
+            //   `${range[0]}-${range[1]} of ${total} items`,
+          }}
           locale={{ emptyText: "No videos found" }}
           rowSelection={rowSelection}
+          scroll={{ x: 'max-content' }}
         />
       </Modal>
     </div>
