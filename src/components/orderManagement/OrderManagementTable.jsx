@@ -132,29 +132,29 @@ const UsermanagementTable = () => {
       key: "email",
       align: "center",
     },
-    {
-      title: "Phone Number",
-      dataIndex: "phone",
-      key: "phone",
-      align: "center",
-      render: (text) => (
-        <span>{text && text.length > 14 ? `${text.slice(0, 14)}...` : text || "N/A"}</span>
-      ),
-    },
+    // {
+    //   title: "Phone Number",
+    //   dataIndex: "phone",
+    //   key: "phone",
+    //   align: "center",
+    //   render: (text) => (
+    //     <span>{text && text.length > 14 ? `${text.slice(0, 14)}...` : text || "N/A"}</span>
+    //   ),
+    // },
     
-    {
-      title: "Joining Date",
-      dataIndex: "joinDate",
-      key: "joinDate",
-      render: (text) => <span>{moment(text).format("L")} </span>,
-    },
-    {
-      title: "Subscription",
-      dataIndex: "isSubscribed",
-      key: "isSubscribed",
-      align: "center",
-      render: (text) => <span>{text ? "yes" : "No"} </span>,
-    },
+    // {
+    //   title: "Joining Date",
+    //   dataIndex: "joinDate",
+    //   key: "joinDate",
+    //   render: (text) => <span>{moment(text).format("L")} </span>,
+    // },
+    // {
+    //   title: "Subscription",
+    //   dataIndex: "isSubscribed",
+    //   key: "isSubscribed",
+    //   align: "center",
+    //   render: (text) => <span>{text ? "yes" : "No"} </span>,
+    // },
     {
       title: "Plan Running",
       dataIndex: "packageName",

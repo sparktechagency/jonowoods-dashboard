@@ -376,6 +376,7 @@ const DailyInspirationPage = () => {
 
   // Handle single video scheduling
   const handleScheduleSingleVideo = async (video) => {
+    console.log(video)
     try {
       if (!video) {
         message.error("Video is required");
@@ -383,7 +384,7 @@ const DailyInspirationPage = () => {
       }
 
       const scheduleData = {
-        videoId: video._id,
+        videoIds: [video._id],
         ...(schedulingDate && { publishAt: schedulingDate.toISOString() }),
       };
 

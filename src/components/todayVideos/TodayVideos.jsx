@@ -401,6 +401,7 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
     {
       title: "Challenge Name",
       key: "challengeName",
+      width:250,
       render: (_, record) => (
         <div className="flex items-center">
           <p className="font-medium">{record.name || "Untitled Challenge"}</p>
@@ -427,6 +428,7 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
       title: "Description",
       dataIndex: "description",
       key: "description",
+      width:350,
       ellipsis: true,
       render: (text) => <p className="max-w-lg truncate">{text.slice(0, 170)}</p>,
     },

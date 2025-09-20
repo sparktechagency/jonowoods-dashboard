@@ -301,7 +301,7 @@ console.log(itemsData)
       {
         title: "SL",
         key: "id",
-        width: 70,
+        width: 50,
         align: "center",
         render: (text, record, index) => {
           const actualIndex = (currentPage - 1) * pageSize + index + 1;
@@ -313,14 +313,15 @@ console.log(itemsData)
         dataIndex: "title",
         key: "title",
         align: "center",
+        width: 300
       },
-      {
-        title: "Category",
-        dataIndex: "category",
-        key: "category",
-        align: "center",
-        render: () => "Coming Soon", // Always show "Coming Soon" as category
-      },
+      // {
+      //   title: "Category",
+      //   dataIndex: "category",
+      //   key: "category",
+      //   align: "center",
+      //   render: () => "Coming Soon", // Always show "Coming Soon" as category
+      // },
       {
         title: "Duration",
         dataIndex: "duration",
@@ -347,13 +348,13 @@ console.log(itemsData)
           </div>
         ),
       },
-      {
-        title: "Publish Date",
-        dataIndex: "publishAt",
-        key: "publishAt",
-        align: "center",
-        render: (text) => moment(text).format("L"),
-      },
+      // {
+      //   title: "Publish Date",
+      //   dataIndex: "publishAt",
+      //   key: "publishAt",
+      //   align: "center",
+      //   render: (text) => moment(text).format("L"),
+      // },
       {
         title: "Status",
         dataIndex: "isReady",
@@ -376,14 +377,14 @@ console.log(itemsData)
               icon={<EyeOutlined style={{ color: "#55f" }} />}
               onClick={() => showDetailsModal(record)}
             />
-            {/* <Switch
+            <Switch
               size="small"
               checked={record.status === "active"}
               onChange={(checked) => handleStatusChange(checked, record)}
               style={{
                 backgroundColor: record.status === "active" ? "red" : "gray",
               }}
-            /> */}
+            />
             <Button
               type="text"
               icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}

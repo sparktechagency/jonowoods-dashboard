@@ -289,7 +289,7 @@ const Categorymanagement = () => {
               </Button>
             </Dropdown> */}
 
-            <Dropdown overlay={statusMenu} trigger={["click"]}>
+            {/* <Dropdown overlay={statusMenu} trigger={["click"]}>
               <Button
                 className="mr-2 bg-red-600 text-white py-5"
                 style={{ border: "none" }}
@@ -300,7 +300,7 @@ const Categorymanagement = () => {
                   <DownOutlined />
                 </Space>
               </Button>
-            </Dropdown>
+            </Dropdown> */}
           </div>
           <div>
             <GradientButton type="primary" onClick={() => showModal()}>

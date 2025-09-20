@@ -258,6 +258,7 @@ const RetailerManageTable = () => {
       dataIndex: "title",
       key: "title",
       align: "center",
+      width: 300,
     },
     {
       title: "Thumbnail",
@@ -295,30 +296,25 @@ const RetailerManageTable = () => {
     //   render: (text) => (text ? text : "N/A"), 
     // },
     
-    {
-      title: "Upload Date",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      align: "center",
-      render: (text) => moment(text).format("L"),
-    },
+    // {
+    //   title: "Upload Date",
+    //   dataIndex: "createdAt",
+    //   key: "createdAt",
+    //   align: "center",
+    //   render: (text) => moment(text).format("L"),
+    // },
     {
       title: "Duration",
       dataIndex: "duration",
       key: "duration",
       align: "center",
     },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      align: "center",
-      // render: (status) => (
-      //   <Tag color={status === "active" ? "success" : "error"}>
-      //     {status === "active" ? "Active" : "Inactive"}
-      //   </Tag>
-      // ),
-    },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   align: "center"
+    // },
     {
       title: "Action",
       key: "action",
@@ -396,7 +392,7 @@ const RetailerManageTable = () => {
             </Button>
           </Dropdown> */}
 
-          <Dropdown
+          {/* <Dropdown
             overlay={statusMenu}
             trigger={["click"]}
             placement="bottomLeft"
@@ -411,7 +407,7 @@ const RetailerManageTable = () => {
                 <DownOutlined />
               </Space>
             </Button>
-          </Dropdown>
+          </Dropdown> */}
 
           {/* <Dropdown
             overlay={typeMenu}

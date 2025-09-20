@@ -573,6 +573,7 @@ const videoDetails=videoDetail?.data
       dataIndex: "title",
       key: "title",
       align: "center",
+      width:300,
     },
     {
       title: "Duration",
@@ -586,29 +587,30 @@ const videoDetails=videoDetail?.data
       key: "category",
       align: "center",
     },
-    {
-      title: "Created Date",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      align: "center",
-      render: (createdAt) => moment(createdAt).format("L"),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      align: "center",
-      render: (status) => (
-        <Tag color={status.toLowerCase() === "active" ? "green" : "red"}>
-          {status.toUpperCase()}
-        </Tag>
-      ),
-    },
+    // {
+    //   title: "Created Date",
+    //   dataIndex: "createdAt",
+    //   key: "createdAt",
+    //   align: "center",
+      
+    //   render: (createdAt) => moment(createdAt).format("L"),
+    // },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   align: "center",
+    //   render: (status) => (
+    //     <Tag color={status.toLowerCase() === "active" ? "green" : "red"}>
+    //       {status.toUpperCase()}
+    //     </Tag>
+    //   ),
+    // },
     {
       title: "Action",
       key: "action",
       align: "center",
-      width: 200,
+      // width: 200,
       render: (_, record) => (
         <Space size="small">
           <Button
@@ -678,7 +680,7 @@ const videoDetails=videoDetail?.data
       `}</style>
 
       <div className="flex justify-end gap-6 mb-6">
-        <Space size="small" className="flex gap-4">
+        {/* <Space size="small" className="flex gap-4">
           <Dropdown
             overlay={statusMenu}
             trigger={["click"]}
@@ -695,7 +697,7 @@ const videoDetails=videoDetail?.data
               </Space>
             </Button>
           </Dropdown>
-        </Space>
+        </Space> */}
 
         <Space>
           <button

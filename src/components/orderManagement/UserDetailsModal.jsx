@@ -282,26 +282,26 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
           style={cardStyle}
         >
           <Row gutter={[24, 16]}>
-            <Col span={12}>
+            <Col span={8}>
               <Text style={labelStyle}>Subscription Status:</Text>
               <br />
               <Tag color={userDetails.isSubscribed ? "success" : "default"}>
                 {userDetails.isSubscribed ? "Subscribed" : "Not Subscribed"}
               </Tag>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Text style={labelStyle}>Package:</Text>
               <br />
               <Text style={valueStyle}>{userDetails.packageName || "N/A"}</Text>
             </Col>
-            <Col span={12}>
+            {/* <Col span={12}>
               <Text style={labelStyle}>Subscription Title:</Text>
               <br />
               <Text style={valueStyle}>
                 {userDetails.subscriptionTitle || "N/A"}
               </Text>
-            </Col>
-            {/* <Col span={12}>
+            </Col> */}
+            <Col span={8}>
               <Text style={labelStyle}>Stripe Customer ID:</Text>
               <br />
               <Text
@@ -310,7 +310,7 @@ const UserDetailsModal = ({ visible, onClose, userDetails }) => {
               >
                 {userDetails.stripeCustomerId || "N/A"}
               </Text>
-            </Col> */}
+            </Col>
           </Row>
 
           {userDetails.isFreeTrial && (

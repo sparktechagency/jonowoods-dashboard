@@ -30,6 +30,7 @@ export const getTableColumns = ({
     dataIndex: "title",
     key: "title",
     align: "center",
+    width: 350
   },
   {
     title: "Thumbnail",
@@ -51,30 +52,30 @@ export const getTableColumns = ({
       </div>
     ),
   },
-  {
-    title: "Upload Date",
-    dataIndex: "createdAt",
-    key: "createdAt",
-    align: "center",
-    render: (text) => moment(text).format("L"),
-  },
+  // {
+  //   title: "Upload Date",
+  //   dataIndex: "createdAt",
+  //   key: "createdAt",
+  //   align: "center",
+  //   render: (text) => moment(text).format("L"),
+  // },
   {
     title: "Duration",
     dataIndex: "duration",
     key: "duration",
     align: "center",
   },
-  {
-    title: "Status",
-    dataIndex: "status",
-    key: "status",
-    align: "center",
-    render: (status) => (
-      <Tag color={status === "active" ? "success" : "error"}>
-        {status === "active" ? "Active" : "Inactive"}
-      </Tag>
-    ),
-  },
+  // {
+  //   title: "Status",
+  //   dataIndex: "status",
+  //   key: "status",
+  //   align: "center",
+  //   render: (status) => (
+  //     <Tag color={status === "active" ? "success" : "error"}>
+  //       {status === "active" ? "Active" : "Inactive"}
+  //     </Tag>
+  //   ),
+  // },
   {
     title: "Action",
     key: "action",
@@ -91,14 +92,14 @@ export const getTableColumns = ({
           icon={<EyeOutlined style={{ color: "#55f" }} />}
           onClick={() => showDetailsModal(record)}
         />
-        <Switch
+        {/* <Switch
           size="small"
           checked={record.status === "active"}
           onChange={(checked) => handleStatusChange(checked, record)}
           style={{
             backgroundColor: record.status === "active" ? "red" : "gray",
           }}
-        />
+        /> */}
         <Button
           type="text"
           icon={<DeleteOutlined style={{ color: "#ff4d4f" }} />}

@@ -59,17 +59,17 @@ const SubCategoryTable = ({
     //   align: "center",
     // },
 
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      align: "center",
-      render: (status) => (
-        <Tag color={status.toLowerCase() === "active" ? "green" : "red"}>
-          {status}
-        </Tag>
-      ),
-    },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   align: "center",
+    //   render: (status) => (
+    //     <Tag color={status.toLowerCase() === "active" ? "green" : "red"}>
+    //       {status}
+    //     </Tag>
+    //   ),
+    // },
     {
       title: "Action",
       key: "action",
