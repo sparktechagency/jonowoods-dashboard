@@ -75,7 +75,7 @@ const AllVideos = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(2);
+  const [pageSize, setPageSize] = useState(10);
 
   // Modal filters and pagination
   const [modalCurrentPage, setModalCurrentPage] = useState(1);
