@@ -73,15 +73,19 @@ const categorySlice = api.injectEndpoints({
       },
     }),
 
-    getByCategoryAllVideos: (builder).query({
-      query: (id) => {
-        return {
-          url: `/admin/category/category-all-videos/${id}`,
-          method:"GET"
-        };
-      }  ,
-      providesTags:["Categories"],
-    }),
+getByCategoryAllVideos: builder.query({
+  query: ({ id, page = 1, limit = 10 }) => {
+    return {
+      url: `/admin/category/category-all-videos/${id}`,
+      method: "GET",
+      params: {
+        limit: limit,
+        page: page,
+      },
+    };
+  },
+  providesTags: ["Categories"],
+}),
 
     // Single category endpoint
     getSingleCategory: builder.query({
