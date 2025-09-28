@@ -81,10 +81,10 @@ const ChallengeDetails = () => {
     { name: 'limit', value: modalPageSize },
     { name: 'page', value: modalCurrentPage }
   ]);
-  
+  console.log("allVideosData:", allVideosData);
   const allVideos = allVideosData?.data || [];
   const allVideosPagination = allVideosData?.pagination || {
-    total: 0,
+    total: allVideosData?.pagination?.total || 0,
     current: 1,
     pageSize: 10
   };

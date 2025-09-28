@@ -111,7 +111,7 @@ const AllVideos = () => {
     limit: 10,
     totalPage: 1,
   };
-
+console.log(paginationData.total)
   // Use localVideos if available, otherwise use allVideos
   const videosToUse = localVideos.length > 0 ? localVideos : allVideos;
   
@@ -126,6 +126,8 @@ const AllVideos = () => {
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const paginatedVideos = filteredVideos.slice(startIndex, endIndex);
+  console.log(paginatedVideos)
+  // const totalVideos = paginatedVideos;
 
   // Fetch single video data when editingId is set
   const { data: videoDetail } = useGetCategoryVideoDetailsQuery(editingId, {
@@ -425,6 +427,8 @@ const videoDetails=videoDetail?.data
   const handleTableChange = (paginationConfig) => {
     setCurrentPage(paginationConfig.current);
     setPageSize(paginationConfig.pageSize);
+    // Refetch data when pagination changes
+    refetch();
   };
 
   // Pagination handler for modal table
@@ -726,6 +730,7 @@ const videoDetails=videoDetail?.data
           loading={isLoadingVideos}
           pagination={{
             current: currentPage,
+            total: paginationData.total,
             pageSize: pageSize,
           }}
           onChange={handleTableChange}

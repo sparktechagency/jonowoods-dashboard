@@ -16,15 +16,15 @@ export const getTableColumns = ({
   handleStatusChange,
   handleDeleteVideo,
 }) => [
-  {
-    title: "Serial",
-    dataIndex: "serial",
-    key: "serial",
-    align: "center",
-    render: (text) => {
-      return `# ${text}`;
-    },
+{
+  title: "Serial",
+  dataIndex: "serial",
+  key: "serial",
+  align: "center",
+  render: (text, record, index) => {
+    return `# ${index + 1}`;
   },
+},
   {
     title: "Video Title",
     dataIndex: "title",

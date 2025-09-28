@@ -32,5 +32,5 @@ export const api = createApi({
   endpoints: () => ({}),
 });
 
-// export const imageUrl = "http://10.10.7.62:7000";
-export const imageUrl = "https://api.yogawithjen.life";
+export const imageUrl = "http://10.10.7.62:7000";
+// export const imageUrl = "https://api.yogawithjen.life";

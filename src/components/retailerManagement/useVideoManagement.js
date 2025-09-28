@@ -70,24 +70,29 @@ const libraryPagination = allVideosData?.pagination || {
     data: videosData,
     isLoading: isLoadingVideos,
     refetch,
-  } = useGetSubCategoryByIdQuery(subCategoryId);
+  } = useGetSubCategoryByIdQuery({
+    subCategoryId: subCategoryId,
+    page: currentPage,
+    limit: pageSize
+  });
 
   const { data: videoDetails } = useCourserVideoDetailsQuery(editingId, {
     skip: !editingId,
   });
-
+console.log("videoDetails:", videosData);
   const [deleteVideoByCategoryANdSubCategory] = useDeleteVideoByCategoryANdSubCategoryMutation();
   const [updateVideoStatus] = useUpdateVideoStatusMutation();
   const [updateVideoOrder] = useUpdateVideoOrderMutation();
   const [videoAddInCategory] = useVideoAddInCategoryMutation();
 
   const videos = videosData?.data || [];
+  console.log("videos:", videos);
   const paginationData = videosData?.pagination || {
-    total: 0,
-    current: 1,
-    pageSize: 10,
+    total: videosData?.meta?.total || 0,
+    current: videosData?.meta?.currentPage || 1,
+    pageSize: videosData?.meta?.perPage || 10,
   };
-
+console.log("paginationData:333",paginationData)
   // Sort videos by serial number and update local state
   useEffect(() => {
     if (videos.length > 0) {

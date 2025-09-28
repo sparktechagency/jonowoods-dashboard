@@ -87,6 +87,8 @@ const CourseDetails = () => {
   console.log("categoryId:", categoryId);
   console.log(categories);
   console.log(videosData);
+  console.log("paginationData:", paginationData);
+  console.log("Total video",TotalVideo);
 
   // Row selection configuration for schedule modal
   const rowSelection = {

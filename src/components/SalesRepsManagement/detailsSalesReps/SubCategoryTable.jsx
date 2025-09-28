@@ -89,11 +89,11 @@ const SubCategoryTable = ({
             className="text-green-500"
             title="View Sub Categories"
           />
-          <Switch
+          {/* <Switch
             checked={record.status.toLowerCase() === "active"}
             size="small"
             onChange={(checked) => onStatusChange(checked, record)}
-          />
+          /> */}
           <Button
             type="text"
             icon={<DeleteOutlined />}

@@ -195,6 +195,8 @@ const RetailerManageTable = () => {
   const handleTableChange = (paginationConfig) => {
     setCurrentPage(paginationConfig.current);
     setPageSize(paginationConfig.pageSize);
+    // Refetch data when pagination changes
+    refetch();
   };
 
   // Filter handlers

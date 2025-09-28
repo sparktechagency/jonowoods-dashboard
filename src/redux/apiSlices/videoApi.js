@@ -31,16 +31,16 @@ const videoApi = api.injectEndpoints({
           params,
         };
       },
-      transformResponse: (response) => {
-        return {
-          data: response.data || [],
-          pagination: response.pagination || {
-            total: 0,
-            current: 1,
-            pageSize: 10,
-          },
-        };
-      },
+      // transformResponse: (response) => {
+      //   return {
+      //     data: response.data || [],
+      //     pagination: response.pagination || {
+      //       total: 0,
+      //       current: 1,
+      //       pageSize: 10,
+      //     },
+      //   };
+      // },
       providesTags: ["Videos"],
     }),
 
@@ -198,38 +198,17 @@ const videoApi = api.injectEndpoints({
 
     // NEW: Get subcategory by ID
     getSubCategoryById: builder.query({
-      query: (arg) => {
-        // Check if arg is an object with pagination parameters or just an ID
-        let id, page, limit;
-        
-        if (typeof arg === 'object') {
-          id = arg.subCategoryId;
-          page = arg.page || 1;
-          limit = arg.limit || 10;
-        } else {
-          id = arg;
-          page = 1;
-          limit = 10;
-        }
-        
-        return {
-          url: `/admin/videos/management/get-all-videos-by-course/${id}`,
-          method: "GET",
-          params: { page, limit }
-        };
-      },
-      transformResponse: (response) => {
-        return {
-          data: response.data || [],
-          pagination: response.pagination || {
-            total: 0,
-            current: 1,
-            pageSize: 10,
-          },
-        };
-      },
-      providesTags: ["SubCategories"],
-    }),
+  query: (arg) => {
+    const { subCategoryId, page = 1, limit = 10 } = arg;
+    
+    return {
+      url: `/admin/videos/management/get-all-videos-by-course/${subCategoryId}`,
+      method: "GET",
+      params: { page, limit }
+    };
+  },
+  providesTags: ["SubCategories"],
+}),
     
     // NEW: Get all videos in the library
     getLibraryVideos: builder.query({
