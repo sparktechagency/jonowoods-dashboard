@@ -408,6 +408,10 @@ console.log(itemsData)
     return <Spinner />;
   }
 
+  const handleTurnOffComingSoon = () => {
+    setStatusFilter("inactive");
+  };
+
   return (
     <div>
       {/* Header with filters and add button */}
@@ -435,6 +439,9 @@ console.log(itemsData)
         </div>
 
         <div className="flex items-center">
+          <button className="py-2 rounded-md px-4  mr-2 text-white bg-secondary hover:bg-secondary hover:text-white hover:icon-black">
+            Turn off Coming soon
+          </button>
           <GradientButton
             type="primary"
             onClick={showFormModal}

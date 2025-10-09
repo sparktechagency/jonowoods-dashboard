@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { Pencil, Trash2, X, Plus, ChevronDown } from "lucide-react";
 import JoditEditor from "jodit-react";
-import { Modal, Dropdown, Menu, Button } from "antd"; // Import Modal from Ant Design
+import { Modal, Dropdown, Menu, Button } from "antd";
 
-// Custom Filter Icon SVG component (copied from Videomanagement)
 const FilteringIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -36,38 +35,33 @@ export default function AllSubscriptionManagement() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingRuleIndex, setEditingRuleIndex] = useState(null);
 
-  // For package editing
   const [subscriptionPlans, setSubscriptionPlans] = useState([
     {
       period: "1 Month",
       price: "$60.99",
       trialDays: 7,
-      description:
-        "Get more access to entire yoga with jen library of classes, meditations and courses.",
+      description: "Get more access to entire yoga with jen library of classes, meditations and courses.",
       type: "Web App",
     },
     {
       period: "6 Month",
       price: "$60.99",
       trialDays: 7,
-      description:
-        "Get more access to entire yoga with jen library of classes, meditations and courses.",
+      description: "Get more access to entire yoga with jen library of classes, meditations and courses.",
       type: "Application",
     },
     {
       period: "1 Years",
       price: "$100.99",
       trialDays: 7,
-      description:
-        "Get more access to entire yoga with jen library of classes, meditations and courses.",
+      description: "Get more access to entire yoga with jen library of classes, meditations and courses.",
       type: "Application",
     },
     {
       period: "1 Year",
       price: "$60.99",
       trialDays: 7,
-      description:
-        "Get more access to entire yoga with jen library of classes, meditations and courses.",
+      description: "Get more access to entire yoga with jen library of classes, meditations and courses.",
       type: "Web App",
     },
   ]);
@@ -81,31 +75,25 @@ export default function AllSubscriptionManagement() {
   const [editingPackageIndex, setEditingPackageIndex] = useState(null);
   const [selectedType, setSelectedType] = useState("Web App");
 
-  // Rule functions
   const addSubscriptionRule = () => {
     if (isEditing && editingRuleIndex !== null) {
-      // Update existing rule
       const updatedRules = [...subscriptionRules];
       updatedRules[editingRuleIndex] = currentRule;
       setSubscriptionRules(updatedRules);
     } else {
-      // Add new rule
-      setSubscriptionRules([
-        ...subscriptionRules,
-        currentRule || "Price dropped! Save on your favorite items.",
-      ]);
+      setSubscriptionRules([...subscriptionRules, currentRule || "Price dropped! Save on your favorite items."]);
     }
     setShowRuleModal(false);
-    setCurrentRule(""); // Clear the rule after adding
-    setIsEditing(false); // Reset editing flag
-    setEditingRuleIndex(null); // Reset index
+    setCurrentRule("");
+    setIsEditing(false);
+    setEditingRuleIndex(null);
   };
 
   const editSubscriptionRule = (index) => {
     setCurrentRule(subscriptionRules[index]);
     setIsEditing(true);
     setEditingRuleIndex(index);
-    setShowRuleModal(true); // Open modal to edit the rule
+    setShowRuleModal(true);
   };
 
   const handleDeleteRule = (index) => {
@@ -116,7 +104,6 @@ export default function AllSubscriptionManagement() {
       okType: "danger",
       cancelText: "Cancel",
       onOk: () => {
-        // Proceed with deletion if confirmed
         deleteSubscriptionRule(index);
       },
     });
@@ -128,17 +115,14 @@ export default function AllSubscriptionManagement() {
   };
 
   const handleRuleChange = (newContent) => {
-    setCurrentRule(newContent); // Update the current rule content
+    setCurrentRule(newContent);
   };
 
-  // Package functions
   const openPackageModal = (index = null) => {
     if (index !== null) {
-      // Edit existing
       setCurrentPackage({ ...subscriptionPlans[index] });
       setEditingPackageIndex(index);
     } else {
-      // Add new
       setCurrentPackage({
         period: "",
         price: "",
@@ -153,12 +137,10 @@ export default function AllSubscriptionManagement() {
 
   const savePackage = () => {
     if (editingPackageIndex !== null) {
-      // Update existing package
       const updatedPlans = [...subscriptionPlans];
       updatedPlans[editingPackageIndex] = currentPackage;
       setSubscriptionPlans(updatedPlans);
     } else {
-      // Add new package
       setSubscriptionPlans([...subscriptionPlans, currentPackage]);
     }
     setShowPackageModal(false);
@@ -174,17 +156,28 @@ export default function AllSubscriptionManagement() {
 
   const handlePackageChange = (e) => {
     const { name, value } = e.target;
+    let formattedValue = value;
+    
+    if (name === "price") {
+      const numericValue = value.replace(/[^0-9.]/g, "");
+      
+      if (numericValue && !isNaN(parseFloat(numericValue))) {
+        const num = parseFloat(numericValue);
+        formattedValue = `$${num.toFixed(2)}`;
+      } else if (numericValue === "") {
+        formattedValue = "";
+      } else {
+        formattedValue = value;
+      }
+    }
+    
     setCurrentPackage((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: formattedValue,
     }));
   };
 
-  // Filter packages based on selected type
-  const filteredPlans =
-    selectedType === "All"
-      ? subscriptionPlans
-      : subscriptionPlans.filter((plan) => plan.type === selectedType);
+  const filteredPlans = selectedType === "All" ? subscriptionPlans : subscriptionPlans.filter((plan) => plan.type === selectedType);
 
   const joditConfig = {
     readonly: false,
@@ -193,286 +186,142 @@ export default function AllSubscriptionManagement() {
     height: 200,
   };
 
-  // Filter menu items
   const typeFilterMenu = (
     <Menu>
-      <Menu.Item key="all" onClick={() => setSelectedType("All")}>
-        All Types
-      </Menu.Item>
-      <Menu.Item key="webapp" onClick={() => setSelectedType("Web App")}>
-        Web App
-      </Menu.Item>
-      <Menu.Item
-        key="application"
-        onClick={() => setSelectedType("Application")}
-      >
-        Application
-      </Menu.Item>
+      <Menu.Item key="all" onClick={() => setSelectedType("All")}>All Types</Menu.Item>
+      <Menu.Item key="webapp" onClick={() => setSelectedType("Web App")}>Web App</Menu.Item>
+      <Menu.Item key="application" onClick={() => setSelectedType("Application")}>Application</Menu.Item>
     </Menu>
   );
 
   return (
     <div className="">
-      {/* Type Filter */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
           <Dropdown overlay={typeFilterMenu} trigger={["click"]}>
-            <Button
-              className="py-5 mr-2 text-white bg-red-600 hover:text-black"
-              style={{ border: "none" }}
-            >
+            <Button className="py-5 mr-2 text-white bg-red-600 hover:text-black" style={{ border: "none" }}>
               <div className="flex items-center">
                 <FilteringIcon />
-                <span>
-                  {selectedType === "All" ? "All Types" : selectedType}
-                </span>
+                <span>{selectedType === "All" ? "All Types" : selectedType}</span>
                 <ChevronDown className="ml-2" size={14} />
               </div>
             </Button>
           </Dropdown>
         </div>
 
-        {/* Add Package Button */}
-        <button
-          className="flex items-center gap-2 px-4 py-2 text-white bg-red-500 rounded-md"
-          onClick={() => openPackageModal()}
-        >
+        <button className="flex items-center gap-2 px-4 py-2 text-white bg-red-500 rounded-md" onClick={() => openPackageModal()}>
           <Plus size={18} />
           Add Subscription Package
         </button>
       </div>
 
-      {/* Subscription Plans */}
       <div className="grid grid-cols-4 gap-16 mb-8">
         {filteredPlans.map((plan, index) => {
-          // Find the actual index in the original array
           const originalIndex = subscriptionPlans.findIndex((p) => p === plan);
           return (
-            <div
-              key={originalIndex}
-              className="relative flex-1 p-10 border rounded-lg min-w-64"
-            >
-              {/* Type Label - Rotated and positioned at top left */}
-              <div
-                className="absolute top-0 px-3 py-1 text-xs text-black bg-gray-100 rounded-md -left-8"
-                style={{
-                  transform: "rotate(-50deg)",
-                  transformOrigin: "top right",
-                }}
-              >
+            <div key={originalIndex} className="relative flex-1 p-10 border rounded-lg min-w-64">
+              <div className="absolute top-0 px-3 py-1 text-xs text-black bg-gray-100 rounded-md -left-8" style={{ transform: "rotate(-50deg)", transformOrigin: "top right" }}>
                 {plan.type}
               </div>
 
-              <button
-                className="absolute top-4 right-4"
-                onClick={() => openPackageModal(originalIndex)}
-              >
+              <button className="absolute top-4 right-4" onClick={() => openPackageModal(originalIndex)}>
                 <Pencil size={18} />
               </button>
               <div className="mb-3 text-sm text-center">For {plan.period}</div>
-              <div className="mb-3 text-6xl font-bold text-center">
-                {plan.price}
-              </div>
-              <div className="mb-2 text-xs text-center">
-                {plan.trialDays}-Days Free Trial
-              </div>
+              <div className="mb-3 text-6xl font-bold text-center">{plan.price}</div>
+              <div className="mb-2 text-xs text-center">{plan.trialDays}-Days Free Trial</div>
               <p className="mb-8 text-xs text-center">{plan.description}</p>
-              <button className="w-full py-2 text-white bg-red-500 rounded-md">
-                Subscribe
-              </button>
+              <button className="w-full py-2 text-white bg-red-500 rounded-md">Subscribe</button>
             </div>
           );
         })}
       </div>
 
-      {/* Add Subscription Rules Button */}
       <div className="flex justify-end mb-4">
-        <button
-          className="flex items-center px-4 py-2 text-white bg-red-500 rounded-md"
-          onClick={() => {
-            setShowRuleModal(true);
-            setIsEditing(false);
-            setCurrentRule("");
-          }}
-        >
+        <button className="flex items-center px-4 py-2 text-white bg-red-500 rounded-md" onClick={() => { setShowRuleModal(true); setIsEditing(false); setCurrentRule(""); }}>
           Add Subscription Rules
         </button>
       </div>
 
-      {/* Subscription Rules List */}
       <div className="mb-8 border-t-8 border-red-500 rounded-lg">
-        <h2 className="p-2 text-lg text-white bg-red-500">
-          Subscription Rules
-        </h2>
+        <h2 className="p-2 text-lg text-white bg-red-500">Subscription Rules</h2>
         <div className="bg-white">
           {subscriptionRules.map((rule, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-3 border-b"
-            >
+            <div key={index} className="flex items-center justify-between p-3 border-b">
               <div className="flex items-center">
-                <span className="inline-flex items-center justify-center w-6 h-6 mr-3 text-xs bg-gray-100 rounded-full">
-                  {index + 1}
-                </span>
+                <span className="inline-flex items-center justify-center w-6 h-6 mr-3 text-xs bg-gray-100 rounded-full">{index + 1}</span>
                 <span dangerouslySetInnerHTML={{ __html: rule }}></span>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => editSubscriptionRule(index)}>
-                  <Pencil size={16} />
-                </button>
-                <button onClick={() => handleDeleteRule(index)}>
-                  <Trash2 size={16} className="text-red-500" />
-                </button>
+                <button onClick={() => editSubscriptionRule(index)}><Pencil size={16} /></button>
+                <button onClick={() => handleDeleteRule(index)}><Trash2 size={16} className="text-red-500" /></button>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Add/Edit Subscription Rule Modal */}
       {showRuleModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="w-full max-w-2xl overflow-hidden bg-white rounded-lg shadow-lg">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-2xl font-bold text-red-500">
-                {isEditing
-                  ? "Edit Subscription Rule"
-                  : "Add New Subscription Rule"}
-              </h2>
-              <button onClick={() => setShowRuleModal(false)}>
-                <X size={24} />
-              </button>
+              <h2 className="text-2xl font-bold text-red-500">{isEditing ? "Edit Subscription Rule" : "Add New Subscription Rule"}</h2>
+              <button onClick={() => setShowRuleModal(false)}><X size={24} /></button>
             </div>
 
-            {/* Modal Body */}
             <div className="p-4 min-h-64">
-              {/* Jodit Editor */}
-              <JoditEditor
-                value={currentRule}
-                config={joditConfig}
-                onChange={handleRuleChange}
-              />
+              <JoditEditor value={currentRule} config={joditConfig} onChange={handleRuleChange} />
             </div>
 
-            {/* Modal Footer */}
             <div className="p-4">
-              <button
-                className="w-full py-3 font-medium text-white bg-red-500 rounded-md"
-                onClick={addSubscriptionRule}
-              >
-                Save
-              </button>
+              <button className="w-full py-3 font-medium text-white bg-red-500 rounded-md" onClick={addSubscriptionRule}>Save</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Add/Edit Subscription Package Modal */}
       {showPackageModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="w-full max-w-2xl overflow-hidden bg-white rounded-lg shadow-lg">
-            {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-2xl font-bold text-red-500">
-                {editingPackageIndex !== null
-                  ? "Edit Subscription Package"
-                  : "Add New Subscription Package"}
-              </h2>
-              <button onClick={() => setShowPackageModal(false)}>
-                <X size={24} />
-              </button>
+              <h2 className="text-2xl font-bold text-red-500">{editingPackageIndex !== null ? "Edit Subscription Package" : "Add New Subscription Package"}</h2>
+              <button onClick={() => setShowPackageModal(false)}><X size={24} /></button>
             </div>
 
-            {/* Modal Body */}
             <div className="p-4">
-              <form className="space-y-4">
-                {/* Period */}
+              <div className="space-y-4">
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Period
-                  </label>
-                  <input
-                    type="text"
-                    name="period"
-                    value={currentPackage.period}
-                    onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="e.g. 1 Month, 6 Month, 1 Year"
-                  />
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Period</label>
+                  <input type="text" name="period" value={currentPackage.period} onChange={handlePackageChange} className="w-full p-2 border border-gray-300 rounded-md" placeholder="e.g. 1 Month, 6 Month, 1 Year" />
                 </div>
 
-                {/* Price */}
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Price
-                  </label>
-                  <input
-                    type="text"
-                    name="price"
-                    value={currentPackage.price}
-                    onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="e.g. $60.99"
-                  />
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Price</label>
+                  <input type="text" name="price" value={currentPackage.price} onChange={handlePackageChange} className="w-full p-2 border border-gray-300 rounded-md" placeholder="e.g. $60.99" />
                 </div>
 
-                {/* Trial Days */}
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Free Trial Days
-                  </label>
-                  <input
-                    type="number"
-                    name="trialDays"
-                    value={currentPackage.trialDays}
-                    onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="e.g. 7"
-                  />
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Free Trial Days</label>
+                  <input type="number" name="trialDays" value={currentPackage.trialDays} onChange={handlePackageChange} className="w-full p-2 border border-gray-300 rounded-md" placeholder="e.g. 7" />
                 </div>
 
-                {/* Type */}
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Type
-                  </label>
-                  <select
-                    name="type"
-                    value={currentPackage.type}
-                    onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                  >
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Type</label>
+                  <select name="type" value={currentPackage.type} onChange={handlePackageChange} className="w-full p-2 border border-gray-300 rounded-md">
                     <option value="Web App">Web App</option>
                     <option value="Application">Application</option>
                   </select>
                 </div>
 
-                {/* Description */}
                 <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Description
-                  </label>
-                  <textarea
-                    name="description"
-                    value={currentPackage.description}
-                    onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    rows="4"
-                    placeholder="Enter package description"
-                  ></textarea>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Description</label>
+                  <textarea name="description" value={currentPackage.description} onChange={handlePackageChange} className="w-full p-2 border border-gray-300 rounded-md" rows="4" placeholder="Enter package description"></textarea>
                 </div>
-              </form>
+              </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="p-4">
-              <button
-                className="w-full py-3 font-medium text-white bg-red-500 rounded-md"
-                onClick={savePackage}
-              >
-                Save
-              </button>
+              <button className="w-full py-3 font-medium text-white bg-red-500 rounded-md" onClick={savePackage}>Save</button>
             </div>
           </div>
         </div>

@@ -97,11 +97,19 @@ const dailyInspirationApi = api.injectEndpoints({
 
     // NEW: Get scheduled Daily Inspiration
     getScheduledDailyInspiration: builder.query({
-      query: (params) => ({
-        url: "/admin/dailyInspiration",
-        method: "GET",
-        params,
-      }),
+      query: (args) => {
+        const params = new URLSearchParams();
+        if (args) {
+          args.forEach((arg) => {
+            params.append(arg.name, arg.value);
+          });
+        }
+        return {
+          url: "/admin/dailyInspiration",
+          method: "GET",
+          params,
+        };
+      },
       transformResponse: (response) => {
         return {
           data: response.data || [],
@@ -132,8 +140,11 @@ const dailyInspirationApi = api.injectEndpoints({
           body: updateData,
         };
       },
-      invalidatesTags: ["DailyInspiration", "DailyInspirationScheduled", "Videos"],
-
+      invalidatesTags: [
+        "DailyInspiration",
+        "DailyInspirationScheduled",
+        "Videos",
+      ],
     }),
   }),
 });
@@ -151,5 +162,4 @@ export const {
   useGetScheduledDailyInspirationQuery,
   useUpdateDailyInspirationOrderMutation,
   useUpdateVideoInDailyInspirationMutation,
-
 } = dailyInspirationApi;

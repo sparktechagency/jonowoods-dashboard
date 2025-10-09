@@ -85,6 +85,10 @@ const DailyInspirationPage = () => {
   const [editingVideo, setEditingVideo] = useState(null);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [selectedVideoDetails, setSelectedVideoDetails] = useState(null);
+  const queryParams = [
+    { name: 'limit', value: pageSize },
+    { name: 'page', value: currentPage }
+  ]
 
   // Get all videos and scheduled videos
   const {
@@ -95,12 +99,14 @@ const DailyInspirationPage = () => {
     { name: 'limit', value: modalPageSize },
     { name: 'page', value: modalCurrentPage }
   ]);
+  console.log(allVideosData)
   
   const {
     data: scheduledData,
     isLoading: scheduledLoading,
     refetch: refetchScheduled,
-  } = useGetScheduledDailyInspirationQuery();
+  } = useGetScheduledDailyInspirationQuery(queryParams);
+  console.log(scheduledData)
 
   const allVideos = allVideosData?.data || [];
   const allVideosPagination = allVideosData?.pagination || {
@@ -637,7 +643,7 @@ const DailyInspirationPage = () => {
           pagination={{
             current: currentPage,
             pageSize: pageSize,
-            total: localScheduledVideos.length,
+            total: scheduledData?.pagination?.total || 0,
             onChange: (page, size) => {
               setCurrentPage(page);
               setPageSize(size);
