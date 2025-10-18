@@ -18,7 +18,7 @@ import {
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import JoditEditor from "jodit-react";
-import GradientButton from "../common/GradiantButton";
+// import GradientButton from "../common/GradientButton";
 import {
   useGetAllQuotationsQuery,
   useCreateQuotationMutation,
@@ -28,21 +28,39 @@ import {
 } from "../../redux/apiSlices/quotationApi";
 import { Filtering } from "../common/Svg";
 import Spinner from "../common/Spinner";
+import GradientButton from "../common/GradiantButton";
 
 const Quotationmanagement = () => {
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editRecord, setEditRecord] = useState(null);
   const [selectedStatus, setSelectedStatus] = useState("All");
-  const [filteredData, setFilteredData] = useState([]);
   const [loadingStatusChange, setLoadingStatusChange] = useState(false);
   const [quotationContent, setQuotationContent] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const editor = useRef(null);
 
-  // RTK Query hooks
-  const { data: quotations, isLoading, refetch } = useGetAllQuotationsQuery();
+  // Build query arguments for API
+  const buildQueryArgs = () => {
+    const args = [
+      { name: "page", value: currentPage },
+      { name: "limit", value: pageSize },
+    ];
+    
+    // Only add status filter if not "All"
+    if (selectedStatus !== "All") {
+      args.push({ name: "status", value: selectedStatus });
+    }
+    
+    return args;
+  };
+
+  // RTK Query hooks with dynamic arguments
+  const { data: quotations, isLoading, refetch } = useGetAllQuotationsQuery(
+    buildQueryArgs()
+  );
+  
   const [createQuotation] = useCreateQuotationMutation();
   const [updateQuotation] = useUpdateQuotationMutation();
   const [deleteQuotation] = useDeleteQuotationMutation();
@@ -51,26 +69,17 @@ const Quotationmanagement = () => {
   const quotationsData = quotations?.data;
   const paginationInfo = quotations?.pagination;
 
-  // Set filtered data when quotations data or filter changes
-  useEffect(() => {
-    if (quotationsData) {
-      const formattedData = quotationsData.map((item, index) => ({
-        key: item._id || index.toString(),
-        quotation: item.quotation,
-        date: dayjs(item.releaseAt), // <-- dayjs object here
-        status: item.status || "Active",
-        _id: item._id,
-      }));
+  console.log("quotationsData", quotationsData);
+  console.log("paginationInfo", paginationInfo);
 
-      if (selectedStatus === "All") {
-        setFilteredData(formattedData);
-      } else {
-        setFilteredData(
-          formattedData.filter((item) => item.status === selectedStatus)
-        );
-      }
-    }
-  }, [quotationsData, selectedStatus]);
+  // Format data for table
+  const formattedData = quotationsData?.map((item, index) => ({
+    key: item._id || index.toString(),
+    quotation: item.quotation,
+    date: dayjs(item.releaseAt),
+    status: item.status || "Active",
+    _id: item._id,
+  })) || [];
 
   // Function to disable past dates
   const disablePastDates = (current) => {
@@ -147,7 +156,6 @@ const Quotationmanagement = () => {
   const handleEdit = (record) => {
     setEditRecord(record);
     showModal();
-    // record.date is already a dayjs object
     form.setFieldsValue({
       date: record.date,
     });
@@ -163,7 +171,7 @@ const Quotationmanagement = () => {
 
   const handleStatusChange = (status) => {
     setSelectedStatus(status);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const handleStatusToggle = async (checked, record) => {
@@ -230,7 +238,7 @@ const Quotationmanagement = () => {
       width: "35%",
       render: (text) => (
         <div
-          className=" max-w-[300px] overflow-hidden text-center"
+          className="max-w-[300px] overflow-hidden text-center"
           dangerouslySetInnerHTML={{ __html: text }}
         />
       ),
@@ -329,19 +337,14 @@ const Quotationmanagement = () => {
       <div>
         <Table
           columns={columns}
-          dataSource={filteredData}
+          dataSource={formattedData}
           pagination={{
             current: currentPage,
             pageSize: pageSize,
-            total: paginationInfo?.total || filteredData.length,
-            onChange: (page, size) => {
-              setCurrentPage(page);
-              setPageSize(size);
-            },
-            onShowSizeChange: (current, size) => {
-              setCurrentPage(1);
-              setPageSize(size);
-            },
+            total: paginationInfo?.total || 0,
+            // showSizeChanger: true,
+            // showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+            // pageSizeOptions: ['10', '20', '50', '100'],
           }}
           onChange={handleTableChange}
           loading={isLoading}
@@ -359,7 +362,6 @@ const Quotationmanagement = () => {
           className: "bg-primary hover:bg-primary/80 border-primary text-white",
         }}
         width={800}
-        height={500}
       >
         <Form form={form} layout="vertical" name="quotation_form">
           <Form.Item label="Quotation">
@@ -368,7 +370,7 @@ const Quotationmanagement = () => {
               value={quotationContent}
               tabIndex={1}
               onBlur={(newContent) => setQuotationContent(newContent)}
-              onChange={() => {}} // typing চলাকালীন কিছু করবে না
+              onChange={() => {}}
             />
           </Form.Item>
 

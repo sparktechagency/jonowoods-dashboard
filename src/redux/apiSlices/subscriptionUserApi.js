@@ -7,19 +7,9 @@ const subscriptionApi = api.injectEndpoints({
       query: (args) => {
         const params = new URLSearchParams();
 
-        // Default pagination
-        params.append("page", "1");
-        params.append("limit", "10");
-
-        if (args && args.length > 0) {
+       if (args) {
           args.forEach((arg) => {
-            if (
-              arg.value !== undefined &&
-              arg.value !== null &&
-              arg.value !== ""
-            ) {
-              params.append(arg.name, arg.value);
-            }
+            params.append(arg.name, arg.value);
           });
         }
 
