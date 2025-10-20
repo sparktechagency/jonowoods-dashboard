@@ -41,11 +41,21 @@ const challengeApi = api.injectEndpoints({
     }),
 
     getDailyChallengeVideos: builder.query({
-      query: (id) => ({
-        url: `/admin/challenge/get-challenges-videos/${id}`,
-        method: "GET",
-      }),
-      providesTags: (result, error, id) => [{ type: "DailyChallenge", id }],
+      query: ({ id, params }) => {
+        const urlParams = new URLSearchParams();
+        if (params) {
+          params.forEach((arg) => {
+            urlParams.append(arg.name, arg.value);
+          });
+        }
+
+        return {
+          url: `/admin/challenge/get-challenges-videos/${id}`,
+          method: "GET",
+          params: urlParams,
+        };
+      },
+      providesTags: (result, error, { id }) => [{ type: "DailyChallenge", id }],
     }),
 
     // GET: Get Challenge Videos
@@ -96,7 +106,6 @@ const challengeApi = api.injectEndpoints({
       ],
     }),
     updateVideoInChallenge: builder.mutation({
-
       query: ({ id, updateData }) => {
         return {
           url: `/admin/challenge/${id}`,
@@ -105,7 +114,6 @@ const challengeApi = api.injectEndpoints({
         };
       },
       invalidatesTags: ["DailyChallenge", "Videos"],
-
     }),
 
     // DELETE: Delete a Challenge
@@ -217,5 +225,4 @@ export const {
   useUpdateChallengeOrderMutation,
   useUpdateChallengeVideoOrderMutation,
   useUpdateVideoInChallengeMutation,
-
 } = challengeApi;
