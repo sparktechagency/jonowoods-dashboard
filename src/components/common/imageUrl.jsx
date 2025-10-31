@@ -1,3 +1,6 @@
+import { isProduction } from "../../redux/api/baseApi";
+import { getBaseUrl } from "../../redux/api/baseUrl";
+
 export const getImageUrl = (path) => {
   if (
     typeof path === "string" &&
@@ -5,8 +8,8 @@ export const getImageUrl = (path) => {
   ) {
     return path;
   } else if (typeof path === "string" && path.trim() !== "") {
-    // const baseUrl = "http://10.10.7.62:7000";
-    const baseUrl = "https://api.yogawithjen.life";
+    const baseUrl = getBaseUrl(isProduction);
+    // const baseUrl = "https://api.yogawithjen.life";
     return `${baseUrl}/${path}`;
   } else {
     return "";

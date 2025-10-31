@@ -1,11 +1,11 @@
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { getConfigUrl } from "./src/redux/api/baseUrl";
 
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: "69.62.67.86",
-    // host: "10.10.7.48",
+    host: getConfigUrl(),
     port: 3007,
   },
 });

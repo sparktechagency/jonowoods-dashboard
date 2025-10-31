@@ -22,13 +22,14 @@ import {
   TrophyOutlined,
   HeartOutlined,
 } from "@ant-design/icons";
-import { getImageUrl, getVideoAndThumbnail } from "../common/imageUrl";
+import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
+import UniversalVideoPlayer from "../UniversalVideoPlayer/UniversalVideoPlayer";
 
 const { Title, Text, Paragraph } = Typography;
 
 const VideoDetailsModal = ({ visible, onCancel, currentVideo, type = "video" }) => {
-  console.log(currentVideo);
+  const getYear = new Date().getFullYear()
 
   const [form] = Form.useForm();
 
@@ -77,7 +78,7 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo, type = "video" }) 
 
   const InfoItem = ({ icon, label, children, span = 24, hidden = false }) => {
     if (hidden) return null;
-    
+
     return (
       <Col span={span}>
         <Card
@@ -181,9 +182,9 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo, type = "video" }) 
           {/* Basic Info Grid */}
           <Row gutter={[12, 0]} style={{ marginBottom: 20 }}>
             {/* Category */}
-            <InfoItem 
-              icon={<FolderOutlined />} 
-              label="CATEGORY" 
+            <InfoItem
+              icon={<FolderOutlined />}
+              label="CATEGORY"
               span={12}
               hidden={!currentVideo?.category && !currentVideo?.categoryId}
             >
@@ -204,35 +205,35 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo, type = "video" }) 
               icon={<FolderOutlined />}
               label={
                 currentVideo?.subCategory ? "SUB CATEGORY" :
-                currentVideo?.challengeName ? "CHALLENGE" :
-                "STATUS"
+                  currentVideo?.challengeName ? "CHALLENGE" :
+                    "STATUS"
               }
               span={12}
             >
               <Tag
                 color={
-                  currentVideo?.subCategory || currentVideo?.challengeName 
-                    ? "#DE5555" 
+                  currentVideo?.subCategory || currentVideo?.challengeName
+                    ? "#DE5555"
                     : getStatusInfo(currentVideo?.status).color
                 }
                 style={{
                   fontWeight: 500,
                   color: "white",
-                  borderColor: 
-                    currentVideo?.subCategory || currentVideo?.challengeName 
-                      ? "#DE5555" 
+                  borderColor:
+                    currentVideo?.subCategory || currentVideo?.challengeName
+                      ? "#DE5555"
                       : getStatusInfo(currentVideo?.status).color,
                 }}
                 icon={
-                  !currentVideo?.subCategory && !currentVideo?.challengeName 
-                    ? getStatusInfo(currentVideo?.status).icon 
+                  !currentVideo?.subCategory && !currentVideo?.challengeName
+                    ? getStatusInfo(currentVideo?.status).icon
                     : null
                 }
               >
-                {currentVideo?.subCategory || 
-                 currentVideo?.challengeName || 
-                 currentVideo?.status?.toUpperCase() || 
-                 "ACTIVE"}
+                {currentVideo?.subCategory ||
+                  currentVideo?.challengeName ||
+                  currentVideo?.status?.toUpperCase() ||
+                  "ACTIVE"}
               </Tag>
             </InfoItem>
 
@@ -249,9 +250,9 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo, type = "video" }) 
             </InfoItem>
 
             {/* Equipment */}
-            <InfoItem 
-              icon={<ToolOutlined />} 
-              label="EQUIPMENT" 
+            <InfoItem
+              icon={<ToolOutlined />}
+              label="EQUIPMENT"
               span={12}
               hidden={!currentVideo?.equipment || currentVideo?.equipment.length === 0}
             >
@@ -330,7 +331,7 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo, type = "video" }) 
                 <div
                   style={{
                     width: "100%",
-                    height: 200,
+                    height: 175,
                     backgroundColor: "#f5f5f5",
                     display: "flex",
                     justifyContent: "center",
@@ -370,22 +371,25 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo, type = "video" }) 
               <MediaSection title="🎥 Video Preview">
                 <div style={{ textAlign: "center" }}>
                   {currentVideo?.videoUrl ? (
-                    <video
-                      src={getVideoAndThumbnail(currentVideo.videoUrl)}
-                      controls
-                      preload="metadata"
-                      style={{
-                        width: "100%",
-                        maxWidth: "350px",
-                        height: "200px",
-                        objectFit: "contain",
-                        borderRadius: 8,
-                        boxShadow: "0 4px 12px rgba(202, 57, 57, 0.2)",
+                    <UniversalVideoPlayer
+                      video={currentVideo}
+                      autoplay={false}
+                      aspectRatio="16:9"
+                      watermark={{
+                        text: `© ${getYear} Yoga With Jen`,
+                        position: "top-right"
                       }}
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        e.target.nextSibling.style.display = "flex";
+                      onSecurityViolation={(type) => {
+                        // Log to backend
+                        fetch('/api/security-log', {
+                          method: 'POST',
+                          body: JSON.stringify({
+                            videoId: currentVideo._id,
+                            violationType: type,
+                          })
+                        });
                       }}
+                      onPlay={() => console.log('Playing')}
                     />
                   ) : (
                     <div
@@ -402,8 +406,8 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo, type = "video" }) 
                       <Text type="secondary">No video available</Text>
                     </div>
                   )}
-                  <div 
-                    style={{ 
+                  <div
+                    style={{
                       height: 200,
                       display: "none",
                       alignItems: "center",

@@ -16,11 +16,17 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     if (profile && !user) {
-     
+
       setUser(profile);
     }
-  }, [profile, user]); 
+  }, [profile, user]);
 
+  // useEffect(() => {
+  //   const disableRightClick = (e) => e.preventDefault();
+  //   document.addEventListener("contextmenu", disableRightClick);
+  //   return () => document.removeEventListener("contextmenu", disableRightClick);
+  // }, [])
+  
   return (
     <UserContext.Provider value={{ user, setUser }}>
       {children}

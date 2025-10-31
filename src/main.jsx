@@ -9,7 +9,7 @@ import "./index.css";
 import { Provider } from "react-redux";
 import store from "./redux/store.js"
 import { Toaster } from 'react-hot-toast';
-import {UserProvider} from "./provider/User.jsx"
+import { UserProvider } from "./provider/User.jsx"
 import { ConfigProvider } from "antd";
 
 
@@ -31,37 +31,38 @@ i18next.init({
 });
 
 ReactDOM.createRoot(document.getElementById("root")).render(
+
   <React.StrictMode>
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: "#4E9DAB",
-          colorBorder: "#4E9DAB", // Default border color
-          colorText: "rgba(0, 0, 0, 0.88)", // Default text color
-          colorTextPlaceholder: "#bfbfbf", // Placeholder color
-          colorBgContainer: "#ffffff", // Background color
-          controlOutline: "rgba(232, 80, 91, 0.1)", // Focus outline color (based on your primary color)
+  <ConfigProvider
+    theme={{
+      token: {
+        colorPrimary: "#4E9DAB",
+        colorBorder: "#4E9DAB", // Default border color
+        colorText: "rgba(0, 0, 0, 0.88)", // Default text color
+        colorTextPlaceholder: "#bfbfbf", // Placeholder color
+        colorBgContainer: "#ffffff", // Background color
+        controlOutline: "rgba(232, 80, 91, 0.1)", // Focus outline color (based on your primary color)
+      },
+      components: {
+        Input: {
+          activeBorderColor: "#4E9DAB", // Active border color
+          hoverBorderColor: "#4E9DAB", // Hover border color
+          activeShadow: "0 0 0 2px rgba(232, 80, 91, 0.1)", // Focus shadow
         },
-        components: {
-          Input: {
-            activeBorderColor: "#4E9DAB", // Active border color
-            hoverBorderColor: "#4E9DAB", // Hover border color
-            activeShadow: "0 0 0 2px rgba(232, 80, 91, 0.1)", // Focus shadow
-          },
-        },
-        Button: {
-          colorPrimary: "#4E9DAB",
-        },
-      }}
-    >
-      <I18nextProvider i18n={i18next}>
-        <Provider store={store}>
-          <UserProvider>
-            <App />
-          </UserProvider>
-          <Toaster />
-        </Provider>
-      </I18nextProvider>
-    </ConfigProvider>
-  </React.StrictMode>
+      },
+      Button: {
+        colorPrimary: "#4E9DAB",
+      },
+    }}
+  >
+    <I18nextProvider i18n={i18next}>
+      <Provider store={store}>
+        <UserProvider>
+          <App />
+        </UserProvider>
+        <Toaster />
+      </Provider>
+    </I18nextProvider>
+  </ConfigProvider>
+</React.StrictMode >
 );
