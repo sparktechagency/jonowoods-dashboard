@@ -5,7 +5,8 @@ import { getConfigUrl } from "./src/redux/api/baseUrl";
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: getConfigUrl(),
-    port: 3007,
+    // host: getConfigUrl(),
+    host: "69.62.67.86",
+    // port: 3007,
   },
 });
