@@ -24,8 +24,8 @@ import {
 } from "@ant-design/icons";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
-import UniversalVideoPlayerSystem from "../UniversalVideoPlayer/UniversalVideoPlayer";
-// import UniversalVideoPlayer from "../UniversalVideoPlayer/UniversalVideoPlayer";
+import UniversalVideoPlayerSystem from "../universalVideoPlayer/UniversalVideoPlayerSystem";
+
 
 const { Title, Text, Paragraph } = Typography;
 
