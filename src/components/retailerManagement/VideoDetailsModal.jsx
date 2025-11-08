@@ -24,7 +24,8 @@ import {
 } from "@ant-design/icons";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
-import UniversalVideoPlayer from "../UniversalVideoPlayer/UniversalVideoPlayer";
+import UniversalVideoPlayerSystem from "../UniversalVideoPlayer/UniversalVideoPlayer";
+// import UniversalVideoPlayer from "../UniversalVideoPlayer/UniversalVideoPlayer";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -371,7 +372,7 @@ const VideoDetailsModal = ({ visible, onCancel, currentVideo, type = "video" }) 
               <MediaSection title="🎥 Video Preview">
                 <div style={{ textAlign: "center" }}>
                   {currentVideo?.videoUrl ? (
-                    <UniversalVideoPlayer
+                    <UniversalVideoPlayerSystem
                       video={currentVideo}
                       autoplay={false}
                       aspectRatio="16:9"

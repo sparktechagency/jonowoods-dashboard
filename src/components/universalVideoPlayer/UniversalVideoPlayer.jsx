@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Spin } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 
-const UniversalVideoPlayer = ({
+const UniversalVideoPlayerSystem = ({
     video,
     autoplay = false,
     showControls = true,
@@ -361,4 +361,4 @@ const UniversalVideoPlayer = ({
     );
 };
 
-export default UniversalVideoPlayer;
+export default UniversalVideoPlayerSystem;
