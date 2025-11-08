@@ -1,44 +1,28 @@
 import React, { useState, useEffect } from "react";
 import {
-  useCreateDailyInspirationMutation,
   useDeleteDailyInspirationMutation,
-  useGetAllDailyInspirationQuery,
-  useGetDailyInspirationByIdQuery,
-  useUpdateDailyInspirationMutation,
-  useUpdateDailyInspirationStatusMutation,
-  useScheduleDailyInspirationMutation,
   useGetScheduledDailyInspirationQuery,
   useUpdateDailyInspirationOrderMutation,
   useUpdateVideoInDailyInspirationMutation,
+  useScheduleDailyInspirationMutation,
 } from "../../redux/apiSlices/dailyInspiraton";
-import VideoUploadSystem from "../common/VideoUploade";
 import {
   useGetAllVideosQuery,
-  useScheduleVideoMutation,
 } from "../../redux/apiSlices/videoApi";
 import {
   Button,
   Modal,
-  Form,
-  Input,
-  Select,
-  DatePicker,
   Space,
   Table,
   message,
   Tag,
-  Card,
-  Popover,
   Switch,
 } from "antd";
 import {
-  PlusOutlined,
   CalendarOutlined,
-  UploadOutlined,
   DeleteOutlined,
   EyeOutlined,
   EditOutlined,
-  SaveOutlined,
 } from "@ant-design/icons";
 import GradientButton from "../common/GradiantButton";
 import DragDropList from "../common/DragDropList";
@@ -46,28 +30,17 @@ import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
 import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
 import EditVideoModal from "../SalesRepsManagement/EditVideoModal";
-
-const { Option } = Select;
+import VideoLibraryModal from "../common/VideoLibraryModal"; // Import the new reusable component
 
 const DailyInspirationPage = () => {
-  const [createDailyInspiration] = useCreateDailyInspirationMutation();
-  const [updateDailyInspiration] = useUpdateDailyInspirationMutation();
   const [deleteDailyInspiration] = useDeleteDailyInspirationMutation();
-  const [updateDailyInspirationStatus] =
-    useUpdateDailyInspirationStatusMutation();
-  const [updateDailyInspirationOrder] =
-    useUpdateDailyInspirationOrderMutation(); // Add this
-
-  // Schedule API hooks
+  const [updateDailyInspirationOrder] = useUpdateDailyInspirationOrderMutation();
   const [scheduleDailyInspiration] = useScheduleDailyInspirationMutation();
+  const [updateVideoInDailyInspiration, { isLoading: updateLoading }] =
+    useUpdateVideoInDailyInspirationMutation();
 
-  // State for scheduling
+  // State for scheduling modal
   const [schedulingModalVisible, setSchedulingModalVisible] = useState(false);
-  const [schedulingVideo, setSchedulingVideo] = useState(null);
-  const [schedulingDate, setSchedulingDate] = useState(null);
-  const [scheduledVideoId, setScheduledVideoId] = useState(null);
-  const [selectedVideos, setSelectedVideos] = useState([]);
-  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
 
   // State for sorted videos and drag & drop
@@ -85,10 +58,11 @@ const DailyInspirationPage = () => {
   const [editingVideo, setEditingVideo] = useState(null);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [selectedVideoDetails, setSelectedVideoDetails] = useState(null);
+
   const queryParams = [
-    { name: 'limit', value: pageSize },
-    { name: 'page', value: currentPage }
-  ]
+    { name: "limit", value: pageSize },
+    { name: "page", value: currentPage },
+  ];
 
   // Get all videos and scheduled videos
   const {
@@ -96,64 +70,29 @@ const DailyInspirationPage = () => {
     isLoading: allVideosLoading,
     refetch: refetchAllVideos,
   } = useGetAllVideosQuery([
-    { name: 'limit', value: modalPageSize },
-    { name: 'page', value: modalCurrentPage }
+    { name: "limit", value: modalPageSize },
+    { name: "page", value: modalCurrentPage },
   ]);
-  console.log(allVideosData)
-  
+
   const {
     data: scheduledData,
     isLoading: scheduledLoading,
     refetch: refetchScheduled,
   } = useGetScheduledDailyInspirationQuery(queryParams);
-  console.log(scheduledData)
 
   const allVideos = allVideosData?.data || [];
   const allVideosPagination = allVideosData?.pagination || {
     total: 0,
     current: 1,
-    pageSize: 10
+    pageSize: 10,
   };
   const scheduledVideos = scheduledData?.data || [];
-  
-  const [updateVideoInDailyInspiration, { isLoading: updateLoading }] =
-    useUpdateVideoInDailyInspirationMutation();
 
-  // Sort videos by publishAt date and update local state
-  const sortedVideos = React.useMemo(() => {
-    const videosWithScheduleInfo = allVideos.map((video) => {
-      const scheduledInfo = scheduledVideos.find(
-        (sv) => sv.videoId === video._id
-      );
-      return {
-        ...video,
-        isScheduled: video.publishAt ? true : false,
-        scheduledInfo: scheduledInfo,
-      };
-    });
-
-    return videosWithScheduleInfo.sort((a, b) => {
-      if (a.publishAt && b.publishAt) {
-        const dateA = new Date(a.publishAt);
-        const dateB = new Date(b.publishAt);
-        return dateA - dateB;
-      }
-
-      if (a.publishAt && !b.publishAt) return -1;
-      if (!a.publishAt && b.publishAt) return 1;
-
-      return 0;
-    });
-  }, [allVideos, scheduledVideos]);
-
-  const showFormModal = (record = null) => {
-    if (record) {
-      setEditingVideo(record);
-    } else {
-      setEditingVideo(null);
-    }
-    setIsFormModalVisible(true);
-  };
+  // Filter available videos (not yet scheduled)
+  const availableVideos = allVideos.filter(
+    (video) =>
+      !scheduledVideos.some((scheduled) => scheduled.videoId === video._id)
+  );
 
   useEffect(() => {
     if (scheduledVideos.length > 0) {
@@ -164,6 +103,15 @@ const DailyInspirationPage = () => {
       setHasOrderChanges(false);
     }
   }, [scheduledVideos]);
+
+  const showFormModal = (record = null) => {
+    if (record) {
+      setEditingVideo(record);
+    } else {
+      setEditingVideo(null);
+    }
+    setIsFormModalVisible(true);
+  };
 
   const closeFormModal = () => {
     setIsFormModalVisible(false);
@@ -180,12 +128,7 @@ const DailyInspirationPage = () => {
   const handleModalPaginationChange = (page, size) => {
     setModalCurrentPage(page);
     setModalPageSize(size);
-    // Clear selections when page changes
-    setSelectedVideos([]);
-    setSelectedRowKeys([]);
   };
-
-  const categories = ["Daily Inspiration"];
 
   // VideoCard component for drag and drop view
   const VideoCard = ({
@@ -329,7 +272,7 @@ const DailyInspirationPage = () => {
 
     Modal.confirm({
       title: `Are you sure you want to change the Daily Inspiration status to "${newStatus}"?`,
-      okText: "Yes ",
+      okText: "Yes",
       cancelText: "No",
       okButtonProps: {
         style: {
@@ -381,8 +324,7 @@ const DailyInspirationPage = () => {
   };
 
   // Handle single video scheduling
-  const handleScheduleSingleVideo = async (video) => {
-    console.log(video)
+  const handleAddSingleVideo = async (video, schedulingDate) => {
     try {
       if (!video) {
         message.error("Video is required");
@@ -397,12 +339,7 @@ const DailyInspirationPage = () => {
       await scheduleDailyInspiration(scheduleData);
       message.success("Daily Inspiration video scheduled successfully!");
 
-      setSchedulingVideo(null);
-      setSchedulingDate(null);
-      setScheduledVideoId(video._id);
       await refetchScheduled();
-      
-      // Refetch all videos to update the list after scheduling
       await refetchAllVideos();
     } catch (error) {
       console.error("Failed to schedule Daily Inspiration:", error);
@@ -411,12 +348,7 @@ const DailyInspirationPage = () => {
   };
 
   // Handle multiple videos scheduling
-  const handleScheduleSelectedVideos = async () => {
-    if (selectedVideos.length === 0) {
-      message.warning("Please select at least one video");
-      return;
-    }
-
+  const handleAddMultipleVideos = async (selectedVideos, schedulingDate) => {
     try {
       const scheduleData = {
         videoIds: selectedVideos.map((video) => video._id),
@@ -428,38 +360,13 @@ const DailyInspirationPage = () => {
         `${selectedVideos.length} videos scheduled successfully!`
       );
 
-      // Reset states
-      setSelectedVideos([]);
-      setSelectedRowKeys([]);
-      setSchedulingDate(null);
       setSchedulingModalVisible(false);
       await refetchScheduled();
-      
-      // Refetch all videos to update the list after scheduling
       await refetchAllVideos();
     } catch (error) {
       console.error("Failed to schedule videos:", error);
       message.error("Failed to schedule videos");
     }
-  };
-
-  // Library videos filtered to only show non-scheduled videos
-  const availableVideos = allVideos.filter(
-    (video) =>
-      !scheduledVideos.some((scheduled) => scheduled.videoId === video._id)
-  );
-
-  // Row selection configuration
-  const rowSelection = {
-    selectedRowKeys,
-    onChange: (selectedRowKeys, selectedRows) => {
-      setSelectedRowKeys(selectedRowKeys);
-      setSelectedVideos(selectedRows);
-    },
-    getCheckboxProps: (record) => ({
-      disabled: false,
-      name: record.title,
-    }),
   };
 
   // Scheduled Videos Table Columns
@@ -490,10 +397,6 @@ const DailyInspirationPage = () => {
                 className="mr-3 rounded"
               />
             )}
-            <div>
-              {/* <p className="font-medium">{record.title || "Untitled Video"}</p> */}
-              {/* {record.duration && <p className="text-xs text-gray-500">Duration: {record.duration}</p>} */}
-            </div>
           </div>
         ),
       },
@@ -537,57 +440,6 @@ const DailyInspirationPage = () => {
     [currentPage, pageSize]
   );
 
-  // Videos Table Columns for the modal
-  const videoColumns = [
-    {
-      title: "Video",
-      dataIndex: "title",
-      key: "video",
-      width: "70%",
-      render: (_, record) => (
-        <div className="flex items-center">
-          {record.thumbnailUrl && (
-            <img
-              src={getVideoAndThumbnail(record.thumbnailUrl)}
-              alt={record.title || "Thumbnail"}
-              style={{ width: 80, height: 45, objectFit: "cover" }}
-              className="mr-3 rounded"
-            />
-          )}
-          <div>
-            <p className="font-medium">{record.title || "Untitled Video"}</p>
-            {record.duration && (
-              <p className="text-xs text-gray-500">
-                Duration: {record.duration}
-              </p>
-            )}
-            {record.category && (
-              <p className="text-xs text-gray-500">
-                Category: {record.category}
-              </p>
-            )}
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      width: "30%",
-      render: (_, record) => (
-        <Button
-          type="primary"
-          size="small"
-          icon={<PlusOutlined />}
-          onClick={() => handleScheduleSingleVideo(record)}
-          className="bg-primary text-white h-10"
-        >
-          Add Video
-        </Button>
-      ),
-    },
-  ];
-
   return (
     <div className="w-full">
       <style jsx>{`
@@ -620,7 +472,7 @@ const DailyInspirationPage = () => {
             onClick={() => setViewMode(viewMode === "table" ? "drag" : "table")}
             className="py-2 rounded-md px-4 border-none mr-2 bg-primary text-white hover:bg-secondary"
           >
-            {viewMode === "table" ? " Do Shuffle" : "Table Mode"}
+            {viewMode === "table" ? "Do Shuffle" : "Table Mode"}
           </button>
         </div>
 
@@ -672,117 +524,29 @@ const DailyInspirationPage = () => {
         />
       )}
 
-      {/* Schedule Videos Modal */}
-      <Modal
-        title="Video Library Daily Inspiration"
-        open={schedulingModalVisible}
+      {/* Reusable Video Library Modal */}
+      <VideoLibraryModal
+        visible={schedulingModalVisible}
         onCancel={() => {
           setSchedulingModalVisible(false);
-          setSchedulingVideo(null);
-          setSchedulingDate(null);
-          setScheduledVideoId(null);
-          setSelectedVideos([]);
-          setSelectedRowKeys([]);
-          // Reset modal pagination to first page when closing
           setModalCurrentPage(1);
         }}
-        footer={
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              {/* Optional Date Picker */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">
-                  Schedule Date (Optional):
-                </span>
-                <DatePicker
-                  showTime
-                  value={schedulingDate}
-                  onChange={setSchedulingDate}
-                  placeholder="Select date & time"
-                  className="w-48"
-                  format="YYYY-MM-DD HH:mm:ss"
-                  disabledDate={(current) =>
-                    current && current < moment().startOf("day")
-                  }
-                  disabledTime={(current) => {
-                    if (!current) return {};
-                    const now = moment();
-                    if (current.isSame(now, "day")) {
-                      return {
-                        disabledHours: () => [...Array(now.hour()).keys()],
-                        disabledMinutes: () =>
-                          current.hour() === now.hour()
-                            ? [...Array(now.minute()).keys()]
-                            : [],
-                        disabledSeconds: () =>
-                          current.hour() === now.hour() &&
-                          current.minute() === now.minute()
-                            ? [...Array(now.second()).keys()]
-                            : [],
-                      };
-                    }
-                    return {};
-                  }}
-                />
-              </div>
-              {selectedVideos.length > 0 && (
-                <span className="text-sm text-gray-600">
-                  {selectedVideos.length} video(s) selected
-                </span>
-              )}
-            </div>
-            <Space>
-              <Button
-                onClick={() => {
-                  setSchedulingModalVisible(false);
-                  setSchedulingVideo(null);
-                  setSchedulingDate(null);
-                  setScheduledVideoId(null);
-                  setSelectedVideos([]);
-                  setSelectedRowKeys([]);
-                  // Reset modal pagination to first page when closing
-                  setModalCurrentPage(1);
-                }}
-                className="text-black h-10"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="primary"
-                onClick={handleScheduleSelectedVideos}
-                disabled={selectedVideos.length === 0}
-                icon={<PlusOutlined />}
-                className="bg-primary text-white h-10"
-              >
-                Video Library Selected Videos ({selectedVideos.length})
-              </Button>
-            </Space>
-          </div>
-        }
-        width={1200}
-      >
-        <div style={{ width: "100%" }}>
-          <Table
-            columns={videoColumns}
-            dataSource={availableVideos}
-            rowKey="_id"
-            loading={allVideosLoading}
-            pagination={{
-              current: modalCurrentPage,
-              pageSize: modalPageSize,
-              total: allVideosPagination.total,
-              onChange: handleModalPaginationChange,
-              onShowSizeChange: handleModalPaginationChange,
-            
-            }}
-            locale={{ emptyText: "No videos available" }}
-            rowSelection={rowSelection}
-            scroll={{ x: "max-content" }}
-            style={{ width: "100%" }}
-            tableLayout="auto"
-          />
-        </div>
-      </Modal>
+        onAddSingleVideo={handleAddSingleVideo}
+        onAddMultipleVideos={handleAddMultipleVideos}
+        availableVideos={availableVideos}
+        loading={allVideosLoading}
+        pagination={{
+          current: modalCurrentPage,
+          pageSize: modalPageSize,
+          total: allVideosPagination.total,
+        }}
+        onPaginationChange={handleModalPaginationChange}
+        title="Video Library Daily Inspiration"
+        showDatePicker={true}
+        enableMultiSelect={true}
+        addButtonText="Add Video"
+        addMultipleButtonText="Add Selected Videos"
+      />
 
       <VideoDetailsModal
         visible={detailsModalVisible}

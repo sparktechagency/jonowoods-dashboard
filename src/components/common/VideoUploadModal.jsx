@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   Form,
@@ -9,11 +9,14 @@ import {
   message,
   Tag,
   Image,
-  DatePicker,
 } from "antd";
-import { InboxOutlined, DeleteOutlined, CalendarOutlined } from "@ant-design/icons";
+import { InboxOutlined, DeleteOutlined } from "@ant-design/icons";
 import { getVideoAndThumbnail } from "./imageUrl";
-import moment from "moment";
+import VideoLibraryModal from "./VideoLibraryModal";
+import ChallengeLibraryModal from "./ChallengeLibraryModal";
+import { useGetAllVideosQuery } from "../../redux/apiSlices/videoApi";
+import { useGetDailyChallengeQuery } from "../../redux/apiSlices/dailyChallangeApi";
+// import { useGetAllChallengesQuery } from "../../redux/apiSlices/challengeApi";
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -26,128 +29,158 @@ const VideoFormModal = ({
   editingItem,
   pageType,
   loading = false,
-  apiHooks,
 }) => {
   const [form] = Form.useForm();
   const [thumbnailFile, setThumbnailFile] = useState(null);
-  const [videoFile, setVideoFile] = useState(null);
   const [equipments, setEquipments] = useState([]);
   const [equipmentInput, setEquipmentInput] = useState("");
-  const [videoDuration, setVideoDuration] = useState("");
+  
+  // Video Library Modal States
+  const [libraryModalVisible, setLibraryModalVisible] = useState(false);
+  const [selectedLibraryVideo, setSelectedLibraryVideo] = useState(null);
+  const [libraryCurrentPage, setLibraryCurrentPage] = useState(1);
+  const [libraryPageSize, setLibraryPageSize] = useState(10);
 
-  console.log(pageType);
-  console.log(editingItem);
+  // Challenge Library Modal States
+  const [challengeModalVisible, setChallengeModalVisible] = useState(false);
+  const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [challengeCurrentPage, setChallengeCurrentPage] = useState(1);
+  const [challengePageSize, setChallengePageSize] = useState(10);
+
+  // Fetch videos for library
+  const {
+    data: libraryVideosData,
+    isLoading: libraryLoading,
+  } = useGetAllVideosQuery([
+    { name: "limit", value: libraryPageSize },
+    { name: "page", value: libraryCurrentPage },
+  ]);
+
+  // Fetch challenges for library
+  const {
+    data: challengesData,
+    isLoading: challengesLoading,
+  } = useGetDailyChallengeQuery([
+    { name: "limit", value: challengePageSize },
+    { name: "page", value: challengeCurrentPage },
+  ]);
+
+  const libraryVideos = libraryVideosData?.data || [];
+  const libraryPagination = libraryVideosData?.pagination || {
+    total: 0,
+    current: 1,
+    pageSize: 10,
+  };
+
+  const challenges = challengesData?.data || [];
+  const challengePagination = challengesData?.pagination || {
+    total: 0,
+    current: 1,
+    pageSize: 10,
+  };
 
   const isEditMode = !!editingItem;
 
-  // Function to get video duration
-  const getVideoDuration = (file) => {
-    return new Promise((resolve) => {
-      if (!file) {
-        resolve("");
-        return;
-      }
-
-      const video = document.createElement("video");
-      video.preload = "metadata";
-
-      video.onloadedmetadata = () => {
-        window.URL.revokeObjectURL(video.src);
-        const duration = video.duration;
-
-        // Convert seconds to minutes and format
-        const minutes = Math.floor(duration / 60);
-        const seconds = Math.floor(duration % 60);
-
-        let formattedDuration;
-        if (minutes > 0) {
-          formattedDuration =
-            seconds > 0
-              ? `${minutes}.${seconds.toString().padStart(2, "0")} Min`
-              : `${minutes} Min`;
-        } else {
-          formattedDuration = `${seconds} Sec`;
-        }
-
-        resolve(formattedDuration);
-      };
-
-      video.onerror = () => {
-        window.URL.revokeObjectURL(video.src);
-        resolve("");
-      };
-
-      video.src = URL.createObjectURL(file);
-    });
-  };
-
-  // Categories based on page type
-  const getCategories = () => {
-    switch (pageType) {
-      case "coming-soon":
-        return ["Coming Soon"];
-      case "daily-challenge":
-        return ["Daily Challenge"];
-      case "daily-inspiration":
-        return ["Daily Inspiration"];
-      default:
-        return ["Video"];
+  // Handle video selection from library
+  const handleSelectFromLibrary = (video) => {
+    if (selectedChallenge) {
+      message.warning("You cannot select both library video and challenge. Please remove challenge first.");
+      return;
     }
+
+    setSelectedLibraryVideo(video);
+    
+    // Set form values from selected video
+    form.setFieldsValue({
+      title: video.title,
+      description: video.description,
+    });
+
+    // Set equipments from selected video
+    if (video.equipment || video.equipments) {
+      const videoEquipments = video.equipment || video.equipments;
+      setEquipments(
+        Array.isArray(videoEquipments) ? videoEquipments : [videoEquipments]
+      );
+    }
+
+    message.success(`Video "${video.title}" selected from library`);
+    setLibraryModalVisible(false);
   };
 
-  const getFormTitle = () => {
-    const pageTitle =
-      {
-        "coming-soon": "Coming Soon",
-        "today-video": "Today's Video",
-        "challenge-video": "Challenge Video",
-      }[pageType] || "Content";
+  // Handle challenge selection
+  const handleSelectFromChallenge = (challenge) => {
+    if (selectedLibraryVideo) {
+      message.warning("You cannot select both challenge and library video. Please remove library video first.");
+      return;
+    }
 
-    return editingItem ? `Edit ${pageTitle}` : `Add New ${pageTitle}`;
+    setSelectedChallenge(challenge);
+    
+    // Set form values from selected challenge
+    form.setFieldsValue({
+      title: challenge.name,
+      description: challenge.description,
+    });
+
+    message.success(`Challenge "${challenge.name}" selected`);
+    setChallengeModalVisible(false);
+  };
+
+  // Handle library modal pagination
+  const handleLibraryPaginationChange = (page, size) => {
+    setLibraryCurrentPage(page);
+    setLibraryPageSize(size);
+  };
+
+  // Handle challenge modal pagination
+  const handleChallengePaginationChange = (page, size) => {
+    setChallengeCurrentPage(page);
+    setChallengePageSize(size);
   };
 
   // Initialize form when editing or opening modal
   useEffect(() => {
-    if (visible) {
-      if (editingItem) {
-        form.setFieldsValue({
-          title: editingItem.title,
-          category: pageType === "coming-soon" ? "Coming Soon" : editingItem.category,
-          timeDuration: editingItem.timeDuration || editingItem.duration,
-          description: editingItem.description,
-          // Parse publishAt as ISO string if it exists
-          publishAt: editingItem.publishAt ? moment(editingItem.publishAt) : null,
-          // Set isReady value if it exists for coming-soon videos
-          isReady: editingItem.isReady,
-          // Set redirectUrl if it exists for coming-soon videos
-          redirectUrl: editingItem.redirectUrl,
-        });
+    if (visible && editingItem) {
+      form.setFieldsValue({
+        title: editingItem.title,
+        category: "comingSoon",
+        description: editingItem.description,
+        isReady: editingItem.isReady || "comingSoon",
+        redirectUrl: editingItem.redirectUrl,
+      });
 
-        // Set equipments
-        if (editingItem.equipments || editingItem.equipment) {
-          const itemEquipments = editingItem.equipments || editingItem.equipment;
-          setEquipments(
-            Array.isArray(itemEquipments) ? itemEquipments : [itemEquipments]
-          );
-        }
-      } else if (pageType === "coming-soon") {
-        // Set default category for new coming-soon items
-        form.setFieldsValue({
-          category: "Coming Soon"
-        });
+      // Set equipments
+      if (editingItem.equipments || editingItem.equipment) {
+        const itemEquipments = editingItem.equipments || editingItem.equipment;
+        setEquipments(
+          Array.isArray(itemEquipments) ? itemEquipments : [itemEquipments]
+        );
+      }
+
+      // Set selected library video if exists
+      if (editingItem.videoOriginalId) {
+        setSelectedLibraryVideo({ _id: editingItem.videoOriginalId });
+      }
+
+      // Set selected challenge if exists
+      if (editingItem.challengeId) {
+        setSelectedChallenge({ _id: editingItem.challengeId });
       }
     }
-  }, [editingItem, visible, form, pageType]);
+  }, [editingItem, visible, form]);
 
   // Reset form when modal closes
   useEffect(() => {
     if (!visible) {
       form.resetFields();
       setThumbnailFile(null);
-      setVideoFile(null);
       setEquipments([]);
       setEquipmentInput("");
-      setVideoDuration("");
+      setSelectedLibraryVideo(null);
+      setSelectedChallenge(null);
+      setLibraryCurrentPage(1);
+      setChallengeCurrentPage(1);
     }
   }, [visible, form]);
 
@@ -184,7 +217,7 @@ const VideoFormModal = ({
         return false;
       }
       setThumbnailFile(file);
-      return false; // Prevent auto upload
+      return false;
     },
     onRemove: () => {
       setThumbnailFile(null);
@@ -193,328 +226,171 @@ const VideoFormModal = ({
     showUploadList: false,
   };
 
-  const videoProps = {
-    beforeUpload: async (file) => {
-      const isVideo = file.type.startsWith("video/");
-      if (!isVideo) {
-        message.error("You can only upload video files!");
-        return false;
-      }
-      const isLt2000M = file.size / 1024 / 1024 < 2000;
-      if (!isLt2000M) {
-        message.error("Video must be smaller than 2GB!");
-        return false;
-      }
-
-      setVideoFile(file);
-
-      // Get video duration and set it to form
-      try {
-        const duration = await getVideoDuration(file);
-        if (duration) {
-          setVideoDuration(duration);
-          form.setFieldsValue({
-            timeDuration: duration,
-          });
-        }
-      } catch (error) {
-        console.error("Error getting video duration:", error);
-      }
-
-      return false; // Prevent auto upload
-    },
-    onRemove: () => {
-      setVideoFile(null);
-      setVideoDuration("");
-      form.setFieldsValue({
-        timeDuration: "",
-      });
-    },
-    fileList: videoFile ? [videoFile] : [],
-    showUploadList: false,
-  };
-
-  // Disable past dates for DatePicker
-  const disablePastDates = (current) => {
-    // Can not select days before today
-    return current && current < moment().startOf('day');
-  };
-
   // Form submission handler
-  const handleFormSubmit = useCallback(
-    async (values) => {
-      try {
-        const hasExistingThumbnail =
-          editingItem?.thumbnailUrl || editingItem?.thumbnail;
-        const hasExistingVideo = editingItem?.videoUrl;
+  const handleFormSubmit = async (values) => {
+    try {
+      const hasExistingThumbnail = editingItem?.thumbnailUrl || editingItem?.thumbnail;
 
-        // Validate required files
-        if (!thumbnailFile && !isEditMode) {
-          message.error("Please select a thumbnail");
-          return;
-        }
-        
-        // Video is optional for coming-soon page type
-        if (!videoFile && !isEditMode && pageType !== "coming-soon") {
-          message.error("Please select a video");
-          return;
-        }
-
-        // For edit mode, check if we have either existing files or new files
-        if (isEditMode) {
-          if (!thumbnailFile && !hasExistingThumbnail) {
-            message.error("Please select a thumbnail");
-            return;
-          }
-          if (!videoFile && !hasExistingVideo && pageType !== "coming-soon") {
-            message.error("Please select a video");
-            return;
-          }
-        }
-
-        // Format duration - use the auto-detected duration if available
-        // For coming-soon videos, duration is optional
-        let formattedDuration = "";
-        if (values.timeDuration) {
-          formattedDuration = values.timeDuration.includes(" Min") ||
-            values.timeDuration.includes(" Sec")
-              ? values.timeDuration
-              : `${values.timeDuration} Min`;
-        }
-
-        // Check if we're only scheduling an existing video
-        // Only use the scheduling API if we're specifically on a page that needs scheduling
-        // and not when we're editing an existing video (which should use the update API)
-        if (isEditMode && editingItem?._id && values.publishAt && !thumbnailFile && !videoFile && 
-            pageType !== "daily-inspiration" && pageType !== "daily-challenge") {
-          // If only updating the schedule for an existing video
-          const scheduleData = {
-            videoId: editingItem._id,
-            publishAt: values.publishAt.toISOString()
-          };
-          
-          // Call the scheduling API directly
-          try {
-            if (apiHooks && apiHooks.scheduleVideo) {
-              await apiHooks.scheduleVideo(scheduleData);
-              message.success("Video scheduled successfully!");
-              onClose();
-              return;
-            }
-          } catch (error) {
-            console.error("Error scheduling video:", error);
-            message.error("Failed to schedule video");
-            return;
-          }
-        }
-
-        // For normal uploads with or without scheduling
-        const videoData = {
-          title: values.title,
-          category: values.category,
-          description: values.description || "",
-          equipment: equipments,
-          equipments: equipments,
-          uploadDate: editingItem?.uploadDate || new Date().toLocaleDateString(),
-        };
-        
-        // Add duration if provided or if it's not a coming-soon video
-        if (formattedDuration || pageType !== "coming-soon") {
-          videoData.duration = formattedDuration;
-          videoData.timeDuration = formattedDuration;
-        }
-        
-        // If it's coming-soon and no video is provided, set a flag
-        if (pageType === "coming-soon" && !videoFile && !hasExistingVideo) {
-          videoData.noVideo = true;
-        }
-        
-        // Add isReady field if it's a coming-soon video
-        if (pageType === "coming-soon") {
-          if (values.isReady) {
-            videoData.isReady = values.isReady;
-          }
-          if (values.redirectUrl) {
-            videoData.redirectUrl = values.redirectUrl;
-          }
-        };
-
-        // Add publishAt if provided
-        if (values.publishAt) {
-          videoData.publishAt = values.publishAt.toISOString();
-        }
-
-        // Create FormData
-        const formDataToSend = new FormData();
-        formDataToSend.append("data", JSON.stringify(videoData));
-
-        // Append files only if they are new files
-        if (thumbnailFile) {
-          formDataToSend.append("thumbnail", thumbnailFile);
-        }
-        if (videoFile) {
-          formDataToSend.append("video", videoFile);
-        }
-
-        await onSubmit(formDataToSend);
-      } catch (error) {
-        console.error("Error submitting video:", error);
-        message.error(
-          `Failed to ${editingItem ? "update" : "add"} video: ${
-            error?.message || "Unknown error"
-          }`
-        );
+      // Validate thumbnail
+      if (!thumbnailFile && !isEditMode) {
+        message.error("Please select a thumbnail");
+        return;
       }
-    },
-    [thumbnailFile, videoFile, editingItem, equipments, onSubmit, isEditMode, apiHooks]
-  );
+
+      if (isEditMode && !thumbnailFile && !hasExistingThumbnail) {
+        message.error("Please select a thumbnail");
+        return;
+      }
+
+      // Validate that either library video or challenge is selected (not both)
+      if (selectedLibraryVideo && selectedChallenge) {
+        message.error("Please select either library video or challenge, not both");
+        return;
+      }
+
+      // Prepare data according to backend format
+      const videoData = {
+        title: values.title,
+        category: "comingSoon",
+        description: values.description || "",
+        equipment: equipments,
+        thumbnailUrl: editingItem?.thumbnailUrl || "",
+        isReady: values.isReady,
+      };
+
+      // Add videoOriginalId if library video is selected
+      if (selectedLibraryVideo) {
+        videoData.videoOriginalId = selectedLibraryVideo._id;
+      }
+
+      // Add challengeId if challenge is selected
+      if (selectedChallenge) {
+        videoData.challengeId = selectedChallenge._id;
+      }
+
+      // Add redirectUrl if provided
+      if (values.redirectUrl) {
+        videoData.redirectUrl = values.redirectUrl;
+      }
+
+      // Create FormData
+      const formDataToSend = new FormData();
+      formDataToSend.append("data", JSON.stringify(videoData));
+
+      // Append thumbnail if new file is selected
+      if (thumbnailFile) {
+        formDataToSend.append("thumbnail", thumbnailFile);
+      }
+
+      await onSubmit(formDataToSend);
+    } catch (error) {
+      console.error("Error submitting video:", error);
+      message.error(
+        `Failed to ${editingItem ? "update" : "add"} video: ${
+          error?.message || "Unknown error"
+        }`
+      );
+    }
+  };
 
   return (
-    <Modal
-      title={getFormTitle()}
-      open={visible}
-      onCancel={onClose}
-      footer={null}
-      width={900}
-      destroyOnClose
-      className="video-form-modal"
-    >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleFormSubmit}
-        className="video-upload-form"
+    <>
+      <Modal
+        title={isEditMode ? "Edit Coming Soon" : "Add New Coming Soon"}
+        open={visible}
+        onCancel={onClose}
+        footer={null}
+        width={900}
+        destroyOnClose
+        className="video-form-modal"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Title */}
-          <Form.Item
-            name="title"
-            label="Title"
-            rules={[{ required: true, message: "Please enter video title" }]}
-          >
-            <Input placeholder="Enter Your Video Title" className="h-12" />
-          </Form.Item>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleFormSubmit}
+          className="video-upload-form"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Title */}
+            <Form.Item
+              name="title"
+              label="Title"
+              rules={[{ required: true, message: "Please enter title" }]}
+            >
+              <Input placeholder="Enter Title" className="h-12" />
+            </Form.Item>
 
-          {/* Category */}
-          <Form.Item
-            name="category"
-            label="Category"
-            rules={[{ required: true, message: "Please select a category" }]}
-          >
-            {pageType === "coming-soon" ? (
-              <Input 
-                value="Coming Soon" 
-                disabled 
-                className="h-12 bg-gray-100" 
-                placeholder="Coming Soon"
-              />
-            ) : (
-              <Select placeholder="Video/Picture" className="h-12">
-                {getCategories().map((category) => (
-                  <Option key={category} value={category}>
-                    {category}
-                  </Option>
-                ))}
+            {/* Category - Hidden but set to comingSoon */}
+            <Form.Item
+              name="category"
+              label="Category"
+              initialValue="comingSoon"
+              hidden
+            >
+              <Input value="comingSoon" disabled />
+            </Form.Item>
+
+            {/* Ready Status */}
+            <Form.Item
+              name="isReady"
+              label="Status"
+              rules={[{ required: true, message: "Please select a status" }]}
+            >
+              <Select placeholder="Select status" className="h-12">
+                <Option value="comingSoon">Coming Soon</Option>
+                <Option value="itsHere">It's Here</Option>
+                <Option value="checkThisOut">Check This Out</Option>
               </Select>
-            )}
-          </Form.Item>
+            </Form.Item>
 
-          {/* Time Duration */}
-          <Form.Item
-            name="timeDuration"
-            label="Time Duration"
-            rules={[{ required: pageType !== "coming-soon", message: "Please enter time duration" }]}
-          >
-            <Input
-              placeholder="Duration will be auto-detected from video"
-              className="h-12"
-              readOnly={!!videoDuration}
-            />
-          </Form.Item>
+            {/* Redirect URL */}
+            <Form.Item
+              name="redirectUrl"
+              label="Redirect URL"
+              rules={[{ type: 'url', message: 'Please enter a valid URL' }]}
+            >
+              <Input placeholder="Enter redirect URL (optional)" className="h-12" />
+            </Form.Item>
 
-          {/* Publish At (Schedule) - Added new field */}
-          <Form.Item
-            name="publishAt"
-            label="Publish At (Schedule)"
-            help="Leave empty for immediate publishing"
-          >
-            <DatePicker 
-              showTime 
-              placeholder="Select date and time to publish" 
-              className="h-12 w-full" 
-              format="YYYY-MM-DDTHH:mm:ss.SSS[Z]"
-              disabledDate={disablePastDates}
-            />
-          </Form.Item>
-          
-          {/* Ready Status - Only for coming-soon videos */}
-          {pageType === "coming-soon" && (
-            <>
-              <Form.Item
-                name="isReady"
-                label="Status"
-                rules={[{ required: true, message: "Please select a status" }]}
-              >
-                <Select placeholder="Select status" className="h-12">
-                  <Option value="comingSoon">Coming Soon</Option>
-                  <Option value="itsHere">It's Here</Option>
-                  <Option value="checkThisOut">Check This Out</Option>
-                </Select>
-              </Form.Item>
-              
-              <Form.Item
-                name="redirectUrl"
-                label="Redirect URL"
-                rules={[{ type: 'url', message: 'Please enter a valid URL' }]}
-              >
-                <Input placeholder="Enter redirect URL (optional)" className="h-12" />
-              </Form.Item>
-            </>
-          )}
-            
-          
-
-          {/* Equipment */}
-          <Form.Item label="Equipment">
-            <div className="space-y-2">
-              <Input
-                placeholder="Add equipment and press Enter"
-                value={equipmentInput}
-                onChange={(e) => setEquipmentInput(e.target.value)}
-                onKeyPress={handleEquipmentKeyPress}
-                className="h-12"
-                suffix={
-                  <Button
-                    type="text"
-                    onClick={addEquipment}
-                    disabled={!equipmentInput.trim()}
-                  >
-                    Add
-                  </Button>
-                }
-              />
-              {equipments.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {equipments.map((equipment, index) => (
-                    <Tag
-                      key={index}
-                      closable
-                      onClose={() => removeEquipment(equipment)}
-                      color="red"
+            {/* Equipment */}
+            <Form.Item label="Equipment" className="md:col-span-2">
+              <div className="space-y-2">
+                <Input
+                  placeholder="Add equipment and press Enter"
+                  value={equipmentInput}
+                  onChange={(e) => setEquipmentInput(e.target.value)}
+                  onKeyPress={handleEquipmentKeyPress}
+                  className="h-12"
+                  suffix={
+                    <Button
+                      type="text"
+                      onClick={addEquipment}
+                      disabled={!equipmentInput.trim()}
                     >
-                      {equipment}
-                    </Tag>
-                  ))}
-                </div>
-              )}
-            </div>
-          </Form.Item>
-        </div>
+                      Add
+                    </Button>
+                  }
+                />
+                {equipments.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {equipments.map((equipment, index) => (
+                      <Tag
+                        key={index}
+                        closable
+                        onClose={() => removeEquipment(equipment)}
+                        color="red"
+                      >
+                        {equipment}
+                      </Tag>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Form.Item>
+          </div>
 
-        {/* File Uploads */}
-        <div className="grid grid-cols-2 gap-4 mt-4">
           {/* Thumbnail Upload */}
-          <Form.Item label="Thumbnail" required={!isEditMode}>
+          <Form.Item label="Thumbnail" required={!isEditMode} className="mt-4">
             <Dragger {...thumbnailProps}>
               <InboxOutlined className="text-2xl mb-2" />
               <p>Click or drag image to upload</p>
@@ -555,75 +431,135 @@ const VideoFormModal = ({
             )}
           </Form.Item>
 
-          {/* Video Upload */}
-          <Form.Item label="Video" required={!isEditMode && pageType !== "coming-soon"}>
-            <Dragger {...videoProps}>
-              <InboxOutlined className="text-2xl mb-2" />
-              <p>Click or drag video to upload {pageType === "coming-soon" && "(optional)"}</p>
-              {isEditMode && (
-                <p className="text-blue-500 text-xs">
-                  Leave empty to keep existing video
-                </p>
-              )}
-            </Dragger>
-            {(videoFile || editingItem?.videoUrl) && (
-              <div className="mt-2 text-center">
-                <div className="relative inline-block">
-                  <video
-                    src={
-                      videoFile
-                        ? URL.createObjectURL(videoFile)
-                        : getVideoAndThumbnail
-                        ? getVideoAndThumbnail(editingItem.videoUrl)
-                        : editingItem.videoUrl
-                    }
-                    controls
-                    style={{ width: 400, height: 200, objectFit: "cover" }}
-                    className="rounded border"
-                  />
-                  {videoFile && (
+          {/* Video/Challenge Selection */}
+          <Form.Item label="Select Source" className="mt-4">
+            <div className="space-y-3">
+              {/* Show selected library video info */}
+              {selectedLibraryVideo && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium text-green-800">
+                        Selected from Library: {selectedLibraryVideo.title || 'Video'}
+                      </p>
+                    </div>
                     <Button
                       type="text"
                       size="small"
-                      icon={<DeleteOutlined />}
-                      onClick={() => setVideoFile(null)}
-                      className="absolute top-2 right-2 bg-red-500 text-white hover:bg-red-600"
-                      style={{ borderRadius: "50%", width: 24, height: 24 }}
-                    />
-                  )}
+                      danger
+                      onClick={() => setSelectedLibraryVideo(null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 </div>
+              )}
+
+              {/* Show selected challenge info */}
+              {selectedChallenge && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium text-blue-800">
+                        Selected Challenge: {selectedChallenge.name || 'Challenge'}
+                      </p>
+                    </div>
+                    <Button
+                      type="text"
+                      size="small"
+                      danger
+                      onClick={() => setSelectedChallenge(null)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Selection Buttons */}
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="default"
+                  className="h-12"
+                  onClick={() => setLibraryModalVisible(true)}
+                  disabled={!!selectedChallenge}
+                >
+                  From Library
+                </Button>
+                <Button
+                  type="default"
+                  className="h-12"
+                  onClick={() => setChallengeModalVisible(true)}
+                  disabled={!!selectedLibraryVideo}
+                >
+                  From Challenge
+                </Button>
               </div>
-            )}
+            </div>
           </Form.Item>
-        </div>
 
-        {/* Description */}
-        <Form.Item name="description" label="Description">
-          <TextArea rows={4} placeholder="Add video description (optional)" />
-        </Form.Item>
+          {/* Description */}
+          <Form.Item name="description" label="Description">
+            <TextArea rows={4} placeholder="Add description (optional)" />
+          </Form.Item>
 
-        {/* Submit & Cancel Buttons - Keep on right side */}
-        <Form.Item>
-          <div className="flex justify-end space-x-4">
-            <Button
-              onClick={onClose}
-              disabled={loading}
-              className="py-6 px-10"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              className="bg-primary py-6 px-8"
-            >
-              {editingItem ? "Update This Video" : "Add New Video"}
-            </Button>
-          </div>
-        </Form.Item>
-      </Form>
-    </Modal>
+          {/* Submit & Cancel Buttons */}
+          <Form.Item>
+            <div className="flex justify-end space-x-4">
+              <Button
+                onClick={onClose}
+                disabled={loading}
+                className="py-6 px-10"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                className="bg-primary py-6 px-8"
+              >
+                {editingItem ? "Update" : "Add New"}
+              </Button>
+            </div>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Video Library Modal */}
+      <VideoLibraryModal
+        visible={libraryModalVisible}
+        onCancel={() => setLibraryModalVisible(false)}
+        onSelectVideo={handleSelectFromLibrary}
+        availableVideos={libraryVideos}
+        loading={libraryLoading}
+        pagination={{
+          current: libraryCurrentPage,
+          pageSize: libraryPageSize,
+          total: libraryPagination.total,
+        }}
+        onPaginationChange={handleLibraryPaginationChange}
+        title="Select Video from Library"
+        selectButtonText="Select This Video"
+      />
+
+      {/* Challenge Library Modal */}
+      <ChallengeLibraryModal
+        visible={challengeModalVisible}
+        onCancel={() => setChallengeModalVisible(false)}
+        onSelectChallenge={handleSelectFromChallenge}
+        availableChallenges={challenges}
+        loading={challengesLoading}
+        pagination={{
+          current: challengeCurrentPage,
+          pageSize: challengePageSize,
+          total: challengePagination.total,
+        }}
+        onPaginationChange={handleChallengePaginationChange}
+        title="Select Challenge"
+        selectButtonText="Select This Challenge"
+      />
+    </>
   );
 };
 

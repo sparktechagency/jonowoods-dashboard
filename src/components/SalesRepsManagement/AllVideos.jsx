@@ -547,7 +547,7 @@ const AllVideos = () => {
     {
       title: "Title",
       key: "title",
-      width: "30%",
+      width: "50%",
       render: (_, record) => (
         <div>
           <p className="font-medium">{record.title || "Untitled Video"}</p>
@@ -557,17 +557,17 @@ const AllVideos = () => {
         </div>
       ),
     },
-    {
-      title: "Category",
-      dataIndex: "category",
-      key: "category",
-      width: "25%",
-      render: (category) => <Tag color="blue">{category || "No Category"}</Tag>,
-    },
+    // {
+    //   title: "Category",
+    //   dataIndex: "category",
+    //   key: "category",
+    //   width: "25%",
+    //   render: (category) => <Tag color="blue">{category || "No Category"}</Tag>,
+    // },
     {
       title: "Actions",
       key: "actions",
-      width: "15%",
+      width: "20%",
       render: (_, record) => (
         <Button
           type="primary"
