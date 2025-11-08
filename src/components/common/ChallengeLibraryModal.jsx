@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal, Button, Table, Space } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
-import { getVideoAndThumbnail } from "./imageUrl";
+import { getImageUrl, getVideoAndThumbnail } from "./imageUrl";
 
 const ChallengeLibraryModal = ({
   visible,
@@ -32,15 +32,15 @@ const ChallengeLibraryModal = ({
   const challengeColumns = [
     {
       title: "Image",
-      dataIndex: "imageUrl",
+      dataIndex: "image",
       key: "image",
       width: "15%",
       align: "center",
-      render: (imageUrl, record) => (
+      render: (image, record) => (
         <div className="flex justify-center">
-          {imageUrl && (
+          {image && (
             <img
-              src={getVideoAndThumbnail(imageUrl)}
+              src={getImageUrl(image)}
               alt={record.name || "Challenge"}
               style={{ width: 60, height: 60, objectFit: "cover" }}
               className="rounded-lg"
@@ -67,36 +67,36 @@ const ChallengeLibraryModal = ({
         </div>
       ),
     },
-    {
-      title: "Videos",
-      dataIndex: "videos",
-      key: "videos",
-      width: "15%",
-      align: "center",
-      render: (videos) => (
-        <span className="text-sm font-medium">
-          {Array.isArray(videos) ? videos.length : 0} Videos
-        </span>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      width: "15%",
-      align: "center",
-      render: (status) => (
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-medium ${
-            status === "active"
-              ? "bg-green-100 text-green-800"
-              : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          {status === "active" ? "Active" : "Inactive"}
-        </span>
-      ),
-    },
+    // {
+    //   title: "Videos",
+    //   dataIndex: "videos",
+    //   key: "videos",
+    //   width: "15%",
+    //   align: "center",
+    //   render: (videos) => (
+    //     <span className="text-sm font-medium">
+    //       {Array.isArray(videos) ? videos.length : 0} Videos
+    //     </span>
+    //   ),
+    // },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   width: "15%",
+    //   align: "center",
+    //   render: (status) => (
+    //     <span
+    //       className={`px-3 py-1 rounded-full text-xs font-medium ${
+    //         status === "active"
+    //           ? "bg-green-100 text-green-800"
+    //           : "bg-gray-100 text-gray-800"
+    //       }`}
+    //     >
+    //       {status === "active" ? "Active" : "Inactive"}
+    //     </span>
+    //   ),
+    // },
     {
       title: "Actions",
       key: "actions",
@@ -128,7 +128,7 @@ const ChallengeLibraryModal = ({
           </Button>
         </div>
       }
-      width={1200}
+      width={700}
     >
       <div style={{ width: "100%" }}>
         <Table
