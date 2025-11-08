@@ -88,20 +88,7 @@ const VideoFormModal = ({
 
     setSelectedLibraryVideo(video);
 
-    // Set form values from selected video
-    form.setFieldsValue({
-      title: video.title,
-      description: video.description,
-    });
-
-    // Set equipments from selected video
-    if (video.equipment || video.equipments) {
-      const videoEquipments = video.equipment || video.equipments;
-      setEquipments(
-        Array.isArray(videoEquipments) ? videoEquipments : [videoEquipments]
-      );
-    }
-
+    // Don't update title, description, or equipment - keep user's input
     message.success(`Video "${video.title}" selected from library`);
     setLibraryModalVisible(false);
   };
@@ -117,12 +104,7 @@ const VideoFormModal = ({
 
     setSelectedChallenge(challenge);
 
-    // Set form values from selected challenge
-    form.setFieldsValue({
-      title: challenge.name,
-      description: challenge.description,
-    });
-
+    // Don't update title and description - keep user's input
     message.success(`Challenge "${challenge.name}" selected`);
     setChallengeModalVisible(false);
   };
@@ -303,7 +285,7 @@ const VideoFormModal = ({
         open={visible}
         onCancel={onClose}
         footer={null}
-         getContainer={false}
+        getContainer={false}
         width={900}
         destroyOnClose
         className="video-form-modal"
@@ -521,7 +503,7 @@ const VideoFormModal = ({
 
           {/* Description */}
           <Form.Item name="description" label="Description">
-            <TextArea rows={4} placeholder="Add description (optional)" />
+            <TextArea rows={4} placeholder="Add description  min 10 characters" />
           </Form.Item>
 
           {/* Submit & Cancel Buttons */}
