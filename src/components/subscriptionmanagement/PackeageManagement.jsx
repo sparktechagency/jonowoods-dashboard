@@ -35,14 +35,14 @@ const MEMBERSHIP_OPTIONS = [
 
 export default function SubscriptionPackagesManagement() {
   const [showPackageModal, setShowPackageModal] = useState(false);
-  const [selectedType, setSelectedType] = useState("app");
+  const [selectedType, setSelectedType] = useState("web");
   const [currentPackage, setCurrentPackage] = useState({
     title: "",
     description: "",
     price: "",
     duration: "1 month",
     paymentType: "Yearly",
-    subscriptionType: "web",
+    // subscriptionType: "web",
     // New discount fields
     discountPercentage: "",
     discountVisibleTo: "all",
@@ -68,7 +68,7 @@ export default function SubscriptionPackagesManagement() {
       "price",
       "duration",
       "paymentType",
-      "subscriptionType",
+      // "subscriptionType",
     ];
 
     // Check if all required fields have values
@@ -134,7 +134,7 @@ export default function SubscriptionPackagesManagement() {
         price: "",
         duration: "1 month",
         paymentType: "Yearly",
-        subscriptionType: "web",
+        // subscriptionType: "web",
         discountPercentage: "",
         discountVisibleTo: "all",
       });
@@ -180,7 +180,7 @@ export default function SubscriptionPackagesManagement() {
         price: "",
         duration: "1 month",
         paymentType: "Yearly",
-        subscriptionType: "web",
+        // subscriptionType: "web",
         discount: "",
         discountVisibleTo: "all",
       });
@@ -243,9 +243,9 @@ export default function SubscriptionPackagesManagement() {
       <Menu.Item key="web" onClick={() => setSelectedType("Web")}>
         Web
       </Menu.Item>
-      <Menu.Item key="app" onClick={() => setSelectedType("App")}>
+      {/* <Menu.Item key="app" onClick={() => setSelectedType("App")}>
         App
-      </Menu.Item>
+      </Menu.Item> */}
     </Menu>
   );
 
@@ -258,7 +258,7 @@ export default function SubscriptionPackagesManagement() {
       {/* Type Filter */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          <Dropdown overlay={typeFilterMenu} trigger={["click"]}>
+          {/* <Dropdown overlay={typeFilterMenu} trigger={["click"]}>
             <Button
               className="py-5 mr-2 text-white bg-red-600 hover:text-black"
               style={{ border: "none" }}
@@ -271,7 +271,7 @@ export default function SubscriptionPackagesManagement() {
                 <ChevronDown className="ml-2" size={14} />
               </div>
             </Button>
-          </Dropdown>
+          </Dropdown> */}
         </div>
 
         {/* Add Package Button */}
@@ -569,7 +569,7 @@ export default function SubscriptionPackagesManagement() {
                 </div>
 
                 {/* Subscription Type */}
-                <div>
+                {/* <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
                     Subscription Type <span className="text-red-500">*</span>
                   </label>
@@ -584,7 +584,7 @@ export default function SubscriptionPackagesManagement() {
                     <option value="web">Web</option>
                     <option value="both">All</option>
                   </select>
-                </div>
+                </div> */}
 
                 {/* Description */}
                 <div>
