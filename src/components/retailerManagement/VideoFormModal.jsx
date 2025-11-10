@@ -23,6 +23,7 @@ import {
   useUpdateVideoMutation,
 } from "../../redux/apiSlices/videoApi";
 import { getBaseUrl } from "../../redux/api/baseUrl";
+import { isProduction } from "../../redux/api/baseApi";
 
 const { TextArea } = Input;
 const { Dragger } = Upload;
@@ -160,7 +161,7 @@ const VideoFormModal = ({
         setUploadProgress(0);
 
 
-        const initResponse = await fetch(`${getBaseUrl()}/api/v1/admin/videos/library/generate-upload-url`, {
+        const initResponse = await fetch(`${getBaseUrl(isProduction)}/api/v1/admin/videos/library/generate-upload-url`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -226,7 +227,7 @@ const VideoFormModal = ({
       const formData = new FormData();
       formData.append("thumbnail", thumbnailFile);
 
-      const response = await fetch(`${getBaseUrl()}/api/v1/admin/videos/library/thumbnail`, {
+      const response = await fetch(`${getBaseUrl(isProduction)}/api/v1/admin/videos/library/thumbnail`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${localStorage.getItem("token")}`
