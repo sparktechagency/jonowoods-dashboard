@@ -21,12 +21,15 @@ import {
   useGetVideoByIdQuery,
 } from "../../redux/apiSlices/videoApi";
 import Spinner from "../common/Spinner";
-import VideoFormModal from "./VideoFormModal";
-import VideoDetailsModal from "./VideoDetailsModal";
+// import VideoFormModal from "./VideoFormModal";
+// import VideoDetailsModal from "./VideoDetailsModal";
 import { getVideoAndThumbnail } from "../common/imageUrl";
-import SecureVideoPlayer from "./bunnyPlayer";
+// import SecureVideoPlayer from "./bunnyPlayer";
+import VideoUploadModal from "./VideoUploadModal";
+import VideoDetailsModal from "./VideoDetailsModal";
+import SecureVideoPlayer from "./BunnyPlayerSecure";
 
-const RetailerManageTable = () => {
+const VideoManagementContainer = () => {
   // Modal and editing states
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const [isDetailsModalVisible, setIsDetailsModalVisible] = useState(false);
@@ -167,7 +170,7 @@ const RetailerManageTable = () => {
     {
       title: "SL",
       key: "id",
-      width: 70,
+      width: 50,
       align: "center",
       render: (_, __, index) => `# ${(currentPage - 1) * pageSize + index + 1}`,
     },
@@ -176,7 +179,7 @@ const RetailerManageTable = () => {
       dataIndex: "thumbnailUrl",
       key: "thumbnailUrl",
       align: "center",
-      width: 150,
+      width: 110,
       render: (_, record) => (
         <div style={{ display: "flex", justifyContent: "center" }}>
           <img
@@ -193,7 +196,7 @@ const RetailerManageTable = () => {
       dataIndex: "title",
       key: "title",
       align: "center",
-      width: 300,
+      width: 200,
       render: (title) => (
         <span className="font-medium">{title}</span>
       ),
@@ -203,14 +206,14 @@ const RetailerManageTable = () => {
       dataIndex: "duration",
       key: "duration",
       align: "center",
-      width: 100,
+      width: 70,
     },
     {
       title: "Equipment",
       dataIndex: "equipment",
       key: "equipment",
       align: "center",
-      width: 200,
+      width: 150,
       render: (equipment) => (
         <div className="flex flex-wrap gap-1 justify-center">
           {equipment?.slice(0, 2).map((item, index) => (
@@ -229,18 +232,18 @@ const RetailerManageTable = () => {
         </div>
       ),
     },
-    {
-      title: "Description",
-      dataIndex: "description",
-      key: "description",
-      align: "center",
-      width: 250,
-      render: (description) => (
-        <span className="line-clamp-2 text-sm text-gray-600">
-          {description}
-        </span>
-      ),
-    },
+    // {
+    //   title: "Description",
+    //   dataIndex: "description",
+    //   key: "description",
+    //   align: "center",
+    //   width: 250,
+    //   render: (description) => (
+    //     <span className="line-clamp-2 text-sm text-gray-600">
+    //       {description}
+    //     </span>
+    //   ),
+    // },
     {
       title: "Action",
       key: "action",
@@ -311,7 +314,7 @@ const RetailerManageTable = () => {
         bordered
         size="small"
         className="custom-table"
-        scroll={{ x: 1500 }}
+        scroll={{ x: 800 }}
       />
 
       {/* Video Player Modal */}
@@ -322,7 +325,7 @@ const RetailerManageTable = () => {
       />
 
       {/* Add/Edit Video Modal */}
-      <VideoFormModal
+      <VideoUploadModal
         visible={isFormModalVisible}
         onCancel={closeFormModal}
         onSuccess={handleFormSubmit}
@@ -342,4 +345,4 @@ const RetailerManageTable = () => {
   );
 };
 
-export default RetailerManageTable;
+export default VideoManagementContainer;

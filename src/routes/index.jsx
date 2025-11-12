@@ -51,6 +51,9 @@ import AllVideos from "../components/SalesRepsManagement/AllVideos";
 import PrivateRoute from "./ProtectedRoute";
 import SubscriptionManagementTable from "../components/subscriptionUser/SubscriptionUser";
 import SubscriptionManagement from "../components/subscriptionmanagement/SubscriptionManagements";
+import VideoManagementContainer from "../components/videoManagement/VideoManagementContainer";
+import CategoryContainer from "../components/CategoryVideo/CategoryContainer";
+import CategoryVideos from "../components/CategoryVideo/CategoryVideo";
 
 const router = createBrowserRouter([
   {
@@ -72,7 +75,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/video-management",
-        element: <Retailer />,
+        element: <VideoManagementContainer />,
       },
       {
         path: "/video-management/:subCategoryId",
@@ -80,7 +83,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/category-management",
-        element: <CategoryManagement />,
+        element: <CategoryContainer />,
       },
       {
         path: "/subcategory-management/:categoryId",
@@ -89,7 +92,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/category-management/:categoryId",
-        element: <AllVideos />,
+        element: <CategoryVideos />,
       },
       {
         path: "/inventory",

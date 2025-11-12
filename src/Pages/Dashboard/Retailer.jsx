@@ -1,10 +1,10 @@
 import React from 'react'
-import RetailerManageTable from '../../components/retailerManagement/RetailerManageTable'
+// import RetailerManageTable from '../../components/retailerManagement/RetailerManageTable'
 
 const Retailer = () => {
   return (
     <div>
-      <RetailerManageTable />
+      <h1>Retailer Management</h1>
     </div>
   )
 }
