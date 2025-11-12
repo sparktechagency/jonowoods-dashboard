@@ -398,6 +398,7 @@ const VideoUploadModal = ({
             placeholder="Enter video title"
             size="large"
             disabled={uploadingVideo}
+            className="py-6"
           />
         </Form.Item>
 
@@ -417,6 +418,7 @@ const VideoUploadModal = ({
               placeholder="MM:SS (e.g., 10:30)"
               size="large"
               disabled={uploadingVideo}
+              className="py-6"
             />
           </Form.Item>
 
@@ -430,7 +432,7 @@ const VideoUploadModal = ({
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyPress={handleEquipmentKeyPress}
-                size="large"
+                size="medium"
                 disabled={uploadingVideo}
                 suffix={
                   <Button
@@ -467,7 +469,7 @@ const VideoUploadModal = ({
           <Form.Item label="Thumbnail Image" required={!isEditMode}>
             <Dragger {...thumbnailProps} disabled={uploadingVideo}>
               <p className="ant-upload-drag-icon">
-                <FileImageOutlined style={{ color: thumbnailFile ? '#52c41a' : '#1890ff' }} />
+                <FileImageOutlined style={{ color: thumbnailFile ? '@CA3939' : '#CA3939' }} />
               </p>
               <p className="ant-upload-text">
                 {thumbnailFile ? 'Thumbnail Selected' : 'Click or drag to upload'}
@@ -534,7 +536,7 @@ const VideoUploadModal = ({
               <>
                 <Dragger {...videoProps} disabled={uploadingVideo}>
                   <p className="ant-upload-drag-icon">
-                    <VideoCameraOutlined style={{ color: videoFile ? '#52c41a' : '#1890ff' }} />
+                    <VideoCameraOutlined style={{ color: videoFile ? '#CA3939' : '#CA3939' }} />
                   </p>
                   <p className="ant-upload-text">
                     {videoFile ? 'Video Selected' : 'Click or drag to upload'}
@@ -604,6 +606,7 @@ const VideoUploadModal = ({
             loading={isLoading}
             disabled={uploadingVideo && uploadProgress < 100}
             icon={<CloudUploadOutlined />}
+            className="bg-[#CA3939] text-white"
           >
             {uploadingVideo
               ? `Uploading... ${uploadProgress}%`
