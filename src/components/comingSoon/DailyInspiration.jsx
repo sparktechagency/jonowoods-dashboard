@@ -531,8 +531,7 @@ const DailyInspirationPage = () => {
           setSchedulingModalVisible(false);
           setModalCurrentPage(1);
         }}
-        onAddSingleVideo={handleAddSingleVideo}
-        onAddMultipleVideos={handleAddMultipleVideos}
+        onSelectVideo={handleAddSingleVideo}
         availableVideos={availableVideos}
         loading={allVideosLoading}
         pagination={{
@@ -542,10 +541,7 @@ const DailyInspirationPage = () => {
         }}
         onPaginationChange={handleModalPaginationChange}
         title="Video Library Daily Inspiration"
-        showDatePicker={true}
-        enableMultiSelect={true}
-        addButtonText="Add Video"
-        addMultipleButtonText="Add Selected Videos"
+        selectButtonText="Add Video"
       />
 
       <VideoDetailsModal
