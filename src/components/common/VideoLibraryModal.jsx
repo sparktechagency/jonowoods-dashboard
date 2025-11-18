@@ -92,7 +92,7 @@ const VideoLibraryModal = ({
           </Button>
         </div>
       }
-      width={700}
+      width={800}
     >
       <div style={{ width: "100%" }}>
         <Table

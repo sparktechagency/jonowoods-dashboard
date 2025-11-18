@@ -532,7 +532,7 @@ const CategoryVideos = () => {
       title: "Video",
       dataIndex: "title",
       key: "video",
-      width: "30%",
+      width: "20%",
       render: (_, record) => (
         <div className="flex items-center">
           {record.thumbnailUrl && (
@@ -549,7 +549,7 @@ const CategoryVideos = () => {
     {
       title: "Title",
       key: "title",
-      width: "50%",
+      width: "60%",
       render: (_, record) => (
         <div>
           <p className="font-medium">{record.title || "Untitled Video"}</p>
@@ -844,7 +844,7 @@ const CategoryVideos = () => {
             </Space>
           </div>
         }
-        width={1200}
+        width={800}
       >
         {/* Modal Filters */}
 
