@@ -62,7 +62,7 @@ const Home = () => {
               <div className="flex items-center gap-3">
                 <div>
                   <h2 className="text-center  font-bold mb-3">Total Earn</h2>
-                  <h3 className="text-primary text-3xl text-center font-bold">
+                  <h3 className="text-primary text-2xl text-center font-bold">
                     $ {data?.totalEarn}
                   </h3>
                 </div>
@@ -74,7 +74,7 @@ const Home = () => {
               <div className="flex items-center gap-3">
                 <div>
                   <h2 className="text-center  font-bold mb-3">Total Users</h2>
-                  <h3 className="text-primary text-3xl text-center font-bold">
+                  <h3 className="text-primary text-2xl text-center font-bold">
                     {data?.totalUsers}{" "}
                   </h3>
                 </div>
@@ -86,7 +86,7 @@ const Home = () => {
               <div className="flex items-center gap-3">
                 <div>
                   <h2 className="text-center  font-bold mb-3">Total Videos </h2>
-                  <h3 className="text-primary text-3xl text-center font-bold">
+                  <h3 className="text-primary text-2xl text-center font-bold">
                     {" "}
                     {data?.totalVideos}{" "}
                   </h3>
@@ -101,7 +101,7 @@ const Home = () => {
                   <h2 className="text-center  font-bold mb-3">
                     Subscribers
                   </h2>
-                  <h3 className="text-primary text-3xl text-center  font-bold">
+                  <h3 className="text-primary text-2xl text-center  font-bold">
                     {data?.totalSubscriptionsSell}{" "}
                   </h3>
                 </div>

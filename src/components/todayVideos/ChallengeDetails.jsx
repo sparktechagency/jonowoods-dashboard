@@ -560,7 +560,7 @@ console.log("challengeVideos:", challengeVideos);
     {
       title: "Title",
       key: "title",
-      width: "40%",
+      width: "50%",
       render: (_, record) => (
         <div>
           {record.title && (
@@ -569,22 +569,22 @@ console.log("challengeVideos:", challengeVideos);
         </div>
       ),
     },
-    {
-      title: "Duration",
-      key: "duration",
-      width: "20%",
-      render: (_, record) => (
-        <div>
-          {record.duration && (
-            <p className="text-xs text-gray-500">{record.duration}</p>
-          )}
-        </div>
-      ),
-    },
+    // {
+    //   title: "Duration",
+    //   key: "duration",
+    //   width: "20%",
+    //   render: (_, record) => (
+    //     <div>
+    //       {record.duration && (
+    //         <p className="text-xs text-gray-500">{record.duration}</p>
+    //       )}
+    //     </div>
+    //   ),
+    // },
     {
       title: "Actions",
       key: "actions",
-      width: "20%",
+      width: "30%",
       render: (_, record) => (
         <Button
           type="primary"
@@ -781,7 +781,7 @@ console.log("challengeVideos:", challengeVideos);
             </Space>
           </div>
         }
-        width={1200}
+        width={800}
       >
         <div style={{ width: "100%" }}>
           <Table
@@ -794,9 +794,9 @@ console.log("challengeVideos:", challengeVideos);
               pageSize: modalPageSize,
               total: allVideosPagination.total,
               onChange: handleModalPaginationChange,
-              // showSizeChanger: true,
+              showSizeChanger: true,
               // showQuickJumper: true,
-              // pageSizeOptions: ['5', '10', '20', '50'],
+              pageSizeOptions: ['5', '10', '20', '50'],
               // showTotal: (total, range) =>
               //   `${range[0]}-${range[1]} of ${total} items`,
             }}
