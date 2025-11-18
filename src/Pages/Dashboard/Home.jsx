@@ -44,20 +44,20 @@ const Home = () => {
 
   return (
     <div className="">
-      <div className="flex gap-10   rounded-lg">
+      <div className="flex flex-col xl:flex-row  gap-10   rounded-lg">
         {/* Line Chart Section */}
-        <div className=" flex-1 w-2/3 border border-[#DE5555]  rounded-lg p-6 ">
+        <div className="w-full xl:flex-1 xl:w-2/3 border border-[#DE5555]  rounded-lg p-6 ">
           <h2 className=" text-2xl font-bold text-black mb-4">Total Revenue</h2>
           <LineChart />
         </div>
         {/* Card Section */}
-        <div className=" w-1/3  h-[340px] bg-gradient-to-r from-primary  to-secondary p-6 rounded-lg">
+        <div className="w-full xl:w-1/3  xl:h-[340px] bg-gradient-to-r from-primary  to-secondary p-6 rounded-lg">
           <div className="flex justify-between mb-4 text-white">
             <h2 className=" mt-4"> Statistics</h2>
             <p className=" border-2  py-2 px-4 rounded-lg">Last 7 Days</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 h-[240px]">
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-2 gap-3 h-28 xl:h-[240px]">
             <div className="bg-white rounded-lg py-0 px-2 flex items-center justify-center gap-4">
               <div className="flex items-center gap-3">
                 <div>
