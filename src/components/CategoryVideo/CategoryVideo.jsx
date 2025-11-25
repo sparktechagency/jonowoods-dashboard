@@ -70,6 +70,7 @@ const CategoryVideos = () => {
 
   // Drag and drop states
   const [localVideos, setLocalVideos] = useState([]);
+  console.log("localVideos", localVideos);
   const [hasOrderChanges, setHasOrderChanges] = useState(false);
   const [viewMode, setViewMode] = useState("table"); // "table" or "drag"
 
@@ -84,6 +85,17 @@ const CategoryVideos = () => {
   const [modalPageSize, setModalPageSize] = useState(10);
   const [modalSearchTerm, setModalSearchTerm] = useState("");
   const [modalCategoryFilter, setModalCategoryFilter] = useState("all");
+
+  // Update pageSize based on viewMode
+useEffect(() => {
+  if (viewMode === "drag") {
+    setPageSize(1000); // Drag mode e 100 items per page
+    setCurrentPage(1); // Reset to first page
+  } else {
+    setPageSize(10); // Table mode e 10 items per page
+    setCurrentPage(1); // Reset to first page
+  }
+}, [viewMode]);
 
   // API calls
   const {

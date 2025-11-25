@@ -76,9 +76,22 @@ const ChallengeDetails = () => {
   const [viewMode, setViewMode] = useState("table");
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
 
+
+
   // State for pagination - Updated for both tables
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+
+    useEffect(() => {
+    if (viewMode === "drag") {
+      setPageSize(100); // Drag mode e 100 items per page
+      setCurrentPage(1); // Reset to first page
+    } else {
+      setPageSize(10); // Table mode e 10 items per page
+      setCurrentPage(1); // Reset to first page
+    }
+  }, [viewMode]);
 const queryParams = [
   { name: "limit", value: pageSize },
   { name: "page", value: currentPage },

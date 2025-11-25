@@ -58,6 +58,15 @@ const DailyInspirationPage = () => {
   const [editingVideo, setEditingVideo] = useState(null);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [selectedVideoDetails, setSelectedVideoDetails] = useState(null);
+    useEffect(() => {
+    if (viewMode === "drag") {
+      setPageSize(100); // Drag mode e 100 items per page
+      setCurrentPage(1); // Reset to first page
+    } else {
+      setPageSize(10); // Table mode e 10 items per page
+      setCurrentPage(1); // Reset to first page
+    }
+  }, [viewMode]);
 
   const queryParams = [
     { name: "limit", value: pageSize },
