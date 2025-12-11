@@ -42,10 +42,14 @@ export default function SubscriptionPackagesManagement() {
     price: "",
     duration: "1 month",
     paymentType: "Yearly",
-    // subscriptionType: "web",
+    subscriptionType: "web",
     // New discount fields
     discountPercentage: "",
     discountVisibleTo: "all",
+    // Platform fields
+    isGoogle: true,
+    googleProductId: "",
+    appleProductId: "",
   });
   const [editingPackageId, setEditingPackageId] = useState(null);
 
@@ -68,7 +72,7 @@ export default function SubscriptionPackagesManagement() {
       "price",
       "duration",
       "paymentType",
-      // "subscriptionType",
+      "subscriptionType",
     ];
 
     // Check if all required fields have values
@@ -101,6 +105,16 @@ export default function SubscriptionPackagesManagement() {
       }
     }
 
+    // App subscription specific validation
+    if (currentPackage.subscriptionType === "app") {
+      if (currentPackage.isGoogle && !currentPackage.googleProductId) {
+        return false;
+      }
+      if (!currentPackage.isGoogle && !currentPackage.appleProductId) {
+        return false;
+      }
+    }
+
     return true;
   };
 
@@ -124,6 +138,12 @@ export default function SubscriptionPackagesManagement() {
         // Handle discount fields with defaults
         discountPercentage: packageObj.discountPercentage || "",
         discountVisibleTo: packageObj.discountVisibleTo || "all",
+        // Platform specific
+        isGoogle: packageObj.hasOwnProperty("isGoogle")
+          ? packageObj.isGoogle
+          : true,
+        googleProductId: packageObj.googleProductId || "",
+        appleProductId: packageObj.appleProductId || "",
       });
       setEditingPackageId(packageObj._id || packageObj.id);
     } else {
@@ -134,9 +154,12 @@ export default function SubscriptionPackagesManagement() {
         price: "",
         duration: "1 month",
         paymentType: "Yearly",
-        // subscriptionType: "web",
+        subscriptionType: "web",
         discountPercentage: "",
         discountVisibleTo: "all",
+        isGoogle: true,
+        googleProductId: "",
+        appleProductId: "",
       });
       setEditingPackageId(null);
     }
@@ -180,9 +203,12 @@ export default function SubscriptionPackagesManagement() {
         price: "",
         duration: "1 month",
         paymentType: "Yearly",
-        // subscriptionType: "web",
+        subscriptionType: "web",
         discount: "",
         discountVisibleTo: "all",
+        isGoogle: true,
+        googleProductId: "",
+        appleProductId: "",
       });
       setEditingPackageId(null);
     } catch (error) {
@@ -225,27 +251,28 @@ export default function SubscriptionPackagesManagement() {
   };
 
   // Filter packages based on selected type
-  const filteredPackages =
-    selectedType === "All"
+  const filteredPackages = 
+    selectedType.toLowerCase() === "all"
       ? subscriptionPackages
       : subscriptionPackages.filter(
-          (pkg) =>
-            pkg.subscriptionType === selectedType.toLowerCase() ||
-            pkg.subscriptionType === "all"
-        );
+        (pkg) =>
+          pkg.subscriptionType.toLowerCase() === selectedType.toLowerCase()
+      );
 
+  console.log(filteredPackages);
   // Filter menu items
   const typeFilterMenu = (
     <Menu>
-      <Menu.Item key="all" onClick={() => setSelectedType("All")}>
+      <Menu.Item key="all" onClick={() => setSelectedType("all")}>
         All Types
       </Menu.Item>
-      <Menu.Item key="web" onClick={() => setSelectedType("Web")}>
+      <Menu.Item key="web" onClick={() => setSelectedType("web")}>
         Web
       </Menu.Item>
-      {/* <Menu.Item key="app" onClick={() => setSelectedType("App")}>
+      <Menu.Item key="app" onClick={() => setSelectedType("app")}>
         App
-      </Menu.Item> */}
+      </Menu.Item>
+
     </Menu>
   );
 
@@ -258,7 +285,7 @@ export default function SubscriptionPackagesManagement() {
       {/* Type Filter */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
-          {/* <Dropdown overlay={typeFilterMenu} trigger={["click"]}>
+          <Dropdown overlay={typeFilterMenu} trigger={["click"]}>
             <Button
               className="py-5 mr-2 text-white bg-red-600 hover:text-black"
               style={{ border: "none" }}
@@ -271,7 +298,7 @@ export default function SubscriptionPackagesManagement() {
                 <ChevronDown className="ml-2" size={14} />
               </div>
             </Button>
-          </Dropdown> */}
+          </Dropdown>
         </div>
 
         {/* Add Package Button */}
@@ -358,7 +385,7 @@ export default function SubscriptionPackagesManagement() {
                       </div>
                       {/* Discounted Price */}
                       <div className="text-5xl font-bold text-red-600">
-                        ${pkg.price}
+                        ${pkg.price.toFixed(2)}
                       </div>
                       {/* Savings amount */}
                       {/* <div className="text-sm text-green-600 mt-1">
@@ -520,7 +547,7 @@ export default function SubscriptionPackagesManagement() {
                               "Discount can only be up to 2 digits (0–99).",
                             okButtonProps: {
                               style: {
-                                backgroundColor: "#ef4444", 
+                                backgroundColor: "#ef4444",
                                 // borderColor: "#ef4444",
                                 color: "#fff",
                               },
@@ -569,7 +596,7 @@ export default function SubscriptionPackagesManagement() {
                 </div>
 
                 {/* Subscription Type */}
-                {/* <div>
+                <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
                     Subscription Type <span className="text-red-500">*</span>
                   </label>
@@ -582,9 +609,98 @@ export default function SubscriptionPackagesManagement() {
                   >
                     <option value="app">App</option>
                     <option value="web">Web</option>
-                    <option value="both">All</option>
                   </select>
-                </div> */}
+                </div>
+
+                {/* App Logic: Platform & Product ID */}
+                {currentPackage.subscriptionType === "app" && (
+                  <div className="p-4 border rounded-md bg-blue-50">
+                    <h3 className="mb-3 text-lg font-semibold text-gray-700">
+                      App Configuration
+                    </h3>
+
+                    {/* Platform Selection */}
+                    <div className="mb-4">
+                      <label className="block mb-2 text-sm font-medium text-gray-700">
+                        Platform <span className="text-red-500">*</span>
+                      </label>
+                      <div className="flex items-center gap-6">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="isGoogle"
+                            checked={currentPackage.isGoogle === true}
+                            onChange={() =>
+                              setCurrentPackage((prev) => ({
+                                ...prev,
+                                isGoogle: true,
+                              }))
+                            }
+                            className="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500"
+                          />
+                          <span className="text-sm text-gray-700">Google Play</span>
+                        </label>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="isGoogle"
+                            checked={currentPackage.isGoogle === false}
+                            onChange={() =>
+                              setCurrentPackage((prev) => ({
+                                ...prev,
+                                isGoogle: false,
+                              }))
+                            }
+                            className="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500"
+                          />
+                          <span className="text-sm text-gray-700">Apple App Store</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Product ID Input */}
+                    <div>
+                      <label className="block mb-1 text-sm font-medium text-gray-700">
+                        {currentPackage.isGoogle
+                          ? "Google Product ID"
+                          : "Apple Product ID"}{" "}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={
+                          currentPackage.isGoogle
+                            ? currentPackage.googleProductId
+                            : currentPackage.appleProductId
+                        }
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCurrentPackage((prev) => ({
+                            ...prev,
+                            // Update the field corresponding to the current platform selection
+                            [prev.isGoogle ? "googleProductId" : "appleProductId"]:
+                              val,
+                          }));
+                        }}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        placeholder={
+                          currentPackage.isGoogle
+                            ? "e.g. basic_03"
+                            : "e.g. com.app.basic"
+                        }
+                        required
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        This ID must match the product ID configured in{" "}
+                        {currentPackage.isGoogle
+                          ? "Google Play Console"
+                          : "App Store Connect"}
+                        .
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Description */}
                 <div>
@@ -607,11 +723,10 @@ export default function SubscriptionPackagesManagement() {
             {/* Modal Footer */}
             <div className="p-4">
               <button
-                className={`w-full py-3 font-medium text-white rounded-md transition-colors ${
-                  !isFormValid() || isCreating || isUpdating
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-red-500 hover:bg-red-600"
-                }`}
+                className={`w-full py-3 font-medium text-white rounded-md transition-colors ${!isFormValid() || isCreating || isUpdating
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-red-500 hover:bg-red-600"
+                  }`}
                 onClick={savePackage}
                 disabled={!isFormValid() || isCreating || isUpdating}
               >
