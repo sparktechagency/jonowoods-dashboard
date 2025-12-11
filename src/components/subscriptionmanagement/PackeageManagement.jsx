@@ -441,8 +441,8 @@ export default function SubscriptionPackagesManagement() {
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-2xl font-bold text-red-500">
                 {editingPackageId !== null
-                  ? "Edit Subscription Package"
-                  : "Add New Subscription Package"}
+                  ? "Edit Package"
+                  : "Add New Package"}
               </h2>
               <button onClick={() => setShowPackageModal(false)}>
                 <X size={24} />
