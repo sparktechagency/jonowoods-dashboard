@@ -35,7 +35,7 @@ const MEMBERSHIP_OPTIONS = [
 
 export default function SubscriptionPackagesManagement() {
   const [showPackageModal, setShowPackageModal] = useState(false);
-  const [selectedType, setSelectedType] = useState("web");
+  const [selectedType, setSelectedType] = useState("all");
   const [currentPackage, setCurrentPackage] = useState({
     title: "",
     description: "",
@@ -251,7 +251,7 @@ export default function SubscriptionPackagesManagement() {
   };
 
   // Filter packages based on selected type
-  const filteredPackages = 
+  const filteredPackages =
     selectedType.toLowerCase() === "all"
       ? subscriptionPackages
       : subscriptionPackages.filter(
@@ -434,7 +434,7 @@ export default function SubscriptionPackagesManagement() {
           onClick={() => setShowPackageModal(false)}
         >
           <div
-            className="w-full max-w-2xl overflow-hidden bg-white rounded-lg shadow-lg max-h-[90vh] overflow-y-auto"
+            className="w-full max-w-3xl overflow-hidden bg-white rounded-lg shadow-lg max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -452,147 +452,162 @@ export default function SubscriptionPackagesManagement() {
             {/* Modal Body */}
             <div className="p-4">
               <form className="space-y-4">
-                {/* Title */}
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Title <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={currentPackage.title}
-                    onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    placeholder="e.g. Basic Plan, Premium Plan"
-                    required
-                  />
-                </div>
-
-                {/* Duration */}
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Duration <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="duration"
-                    value={currentPackage.duration}
-                    onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    required
-                  >
-                    {DURATION_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Price */}
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Original Price <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    name="price"
-                    value={currentPackage.price}
-                    onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    placeholder="e.g. 60.99"
-                    min="0"
-                    step="0.01"
-                    required
-                  />
-                </div>
-
-                {/* Discount Section */}
-                <div className="p-4 border rounded-md bg-gray-50">
-                  <h3 className="mb-3 text-lg font-semibold text-gray-700">
-                    Discount Settings
-                  </h3>
-
-                  {/* Discount Percentage */}
-                  <div className="mb-3">
+                <div className="grid grid-cols-2  gap-6">
+                  {/* Title */}
+                  <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">
-                      Discount Percentage (%)
+                      Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={currentPackage.title}
+                      onChange={handlePackageChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      placeholder="e.g. Basic Plan, Premium Plan"
+                      required
+                    />
+                  </div>
+
+                  {/* Duration */}
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                      Duration <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="duration"
+                      value={currentPackage.duration}
+                      onChange={handlePackageChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      required
+                    >
+                      {DURATION_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Price */}
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                      Original Price <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="number"
-                      name="discountPercentage"
-                      value={currentPackage.discountPercentage}
-                      onChange={(e) => {
-                        const value = e.target.value;
-
-                        if (!/^\d*$/.test(value)) {
-                          Modal.error({
-                            title: "Invalid Input",
-                            content:
-                              "Fractional numbers (decimals) are not allowed.",
-                            okButtonProps: {
-                              style: {
-                                backgroundColor: "#ef4444",
-                                // borderColor: "#ef4444",
-                                color: "#fff",
-                              },
-                            },
-                          });
-                          return;
-                        }
-
-                        if (value.length > 2) {
-                          Modal.error({
-                            title: "Invalid Input",
-                            content:
-                              "Discount can only be up to 2 digits (0–99).",
-                            okButtonProps: {
-                              style: {
-                                backgroundColor: "#ef4444",
-                                // borderColor: "#ef4444",
-                                color: "#fff",
-                              },
-                            },
-                          });
-                          return;
-                        }
-
-                        setCurrentPackage((prev) => ({
-                          ...prev,
-                          discountPercentage: value,
-                        }));
-                      }}
+                      name="price"
+                      value={currentPackage.price}
+                      onChange={handlePackageChange}
                       className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                      placeholder="e.g. 20 (for 20% off)"
+                      placeholder="e.g. 60.99"
                       min="0"
-                      max="99"
+                      step="0.01"
+                      required
                     />
-
-                    <p className="mt-1 text-xs text-gray-500">
-                      Enter 0 for no discount, or any number from 1-100 for
-                      percentage off. Backend will calculate the discounted
-                      price.
-                    </p>
+                  </div>
+                  {/* Payment Type */}
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                      Payment Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="paymentType"
+                      value={currentPackage.paymentType}
+                      onChange={handlePackageChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      required
+                    >
+                      {PAYMENT_TYPE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
-                {/* Payment Type */}
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Payment Type <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="paymentType"
-                    value={currentPackage.paymentType}
-                    onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    required
-                  >
-                    {PAYMENT_TYPE_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+
+                <div className="grid grid-cols-2  gap-6">
+                  {/* Discount Section */}
+                  <div className="p-4 border rounded-md bg-gray-50">
+                   
+
+                    {/* Discount Percentage */}
+                    <div className="">
+                      <label className="block mb-1 text-sm font-medium text-gray-700">
+                        Discount Percentage (%)
+                      </label>
+                      <input
+                        type="number"
+                        name="discountPercentage"
+                        value={currentPackage.discountPercentage}
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          if (!/^\d*$/.test(value)) {
+                            Modal.error({
+                              title: "Invalid Input",
+                              content:
+                                "Fractional numbers (decimals) are not allowed.",
+                              okButtonProps: {
+                                style: {
+                                  backgroundColor: "#ef4444",
+                                  // borderColor: "#ef4444",
+                                  color: "#fff",
+                                },
+                              },
+                            });
+                            return;
+                          }
+
+                          if (value.length > 2) {
+                            Modal.error({
+                              title: "Invalid Input",
+                              content:
+                                "Discount can only be up to 2 digits (1-99).",
+                              okButtonProps: {
+                                style: {
+                                  backgroundColor: "#ef4444",
+                                  // borderColor: "#ef4444",
+                                  color: "#fff",
+                                },
+                              },
+                            });
+                            return;
+                          }
+
+                          setCurrentPackage((prev) => ({
+                            ...prev,
+                            discountPercentage: value,
+                          }));
+                        }}
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        placeholder="e.g. 20 (for 20% off)"
+                        min="0"
+                        max="99"
+                      />
+
+                      <p className="mt-1 text-xs text-gray-500">
+                       Enter a discount percentage from 1-99. The final price will be calculated automatically.
+                      </p>
+                    </div>
+                  </div>
+                  {/* Description */}
+                  <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-700">
+                      Description <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      name="description"
+                      value={currentPackage.description}
+                      onChange={handlePackageChange}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      rows="4"
+                      placeholder="Enter package description"
+                      required
+                    ></textarea>
+                  </div>
                 </div>
 
                 {/* Subscription Type */}
@@ -702,21 +717,7 @@ export default function SubscriptionPackagesManagement() {
                   </div>
                 )}
 
-                {/* Description */}
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Description <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    name="description"
-                    value={currentPackage.description}
-                    onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    rows="4"
-                    placeholder="Enter package description"
-                    required
-                  ></textarea>
-                </div>
+
               </form>
             </div>
 
