@@ -286,7 +286,7 @@ const VideoFormModal = ({
         onCancel={onClose}
         footer={null}
         getContainer={false}
-        width={900}
+        width={700}
         destroyOnClose
         className="video-form-modal"
       >
@@ -303,7 +303,7 @@ const VideoFormModal = ({
               label="Title"
               rules={[{ required: true, message: "Please enter title" }]}
             >
-              <Input placeholder="Enter Title" className="h-12" />
+              <Input placeholder="Enter Title" className="h-[44px]" />
             </Form.Item>
 
             {/* Ready Status */}
@@ -312,7 +312,7 @@ const VideoFormModal = ({
               label="Status"
               rules={[{ required: true, message: "Please select a status" }]}
             >
-              <Select placeholder="Select status" className="h-12">
+              <Select placeholder="Select status" className="h-[44px]">
                 <Option value="comingSoon">Coming Soon</Option>
                 <Option value="itsHere">It's Here</Option>
                 <Option value="checkThisOut">Check This Out</Option>
@@ -327,7 +327,7 @@ const VideoFormModal = ({
             >
               <Input
                 placeholder="Enter redirect URL (optional)"
-                className="h-12"
+                className="h-[44px]"
               />
             </Form.Item>
 
@@ -339,7 +339,7 @@ const VideoFormModal = ({
                   value={equipmentInput}
                   onChange={(e) => setEquipmentInput(e.target.value)}
                   onKeyPress={handleEquipmentKeyPress}
-                  className="h-12"
+                  className="h-[44px]"
                   suffix={
                     <Button
                       type="text"
@@ -481,7 +481,7 @@ const VideoFormModal = ({
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       type="default"
-                      className="h-12"
+                      className="h-[44px]"
                       onClick={() => setLibraryModalVisible(true)}
                       disabled={!!selectedChallenge}
                     >
@@ -489,7 +489,7 @@ const VideoFormModal = ({
                     </Button>
                     <Button
                       type="default"
-                      className="h-12"
+                      className="h-[44px]"
                       onClick={() => setChallengeModalVisible(true)}
                       disabled={!!selectedLibraryVideo}
                     >
@@ -512,7 +512,7 @@ const VideoFormModal = ({
               <Button
                 onClick={onClose}
                 disabled={loading}
-                className="py-6 px-10"
+                className="py-5 px-10"
               >
                 Cancel
               </Button>
@@ -520,9 +520,9 @@ const VideoFormModal = ({
                 type="primary"
                 htmlType="submit"
                 loading={loading}
-                className="bg-primary py-6 px-8"
+                className="bg-primary py-5 px-8"
               >
-                {editingItem ? "Update" : "Add New"}
+                {editingItem ? "Update Coming Soon" : "Add New Coming Soon"}
               </Button>
             </div>
           </Form.Item>

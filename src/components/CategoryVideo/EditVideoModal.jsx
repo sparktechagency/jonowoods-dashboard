@@ -157,7 +157,7 @@ const EditVideoModal = ({
           name="title"
           rules={[{ required: true, message: "Please enter title" }]}
         >
-          <Input placeholder="Video Title" className="py-3" />
+          <Input placeholder="Video Title" className="py-6" />
         </Form.Item>
 
         <Form.Item
@@ -210,7 +210,7 @@ const EditVideoModal = ({
           <Button
             onClick={onCancel}
             disabled={isLoading}
-            className="py-2 px-6"
+            className="py-5 px-6"
           >
             Cancel
           </Button>
@@ -218,7 +218,7 @@ const EditVideoModal = ({
             type="primary"
             htmlType="submit"
             loading={isLoading}
-            className="bg-primary py-2 px-6"
+            className="bg-primary py-5 px-6"
           >
             Update Video
           </Button>

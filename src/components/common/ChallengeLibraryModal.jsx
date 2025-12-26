@@ -128,7 +128,7 @@ const ChallengeLibraryModal = ({
           </Button>
         </div>
       }
-      width={700}
+      width={750}
     >
       <div style={{ width: "100%" }}>
         <Table
