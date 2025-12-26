@@ -105,7 +105,7 @@ const CategoryContainer = () => {
       setEditingCategory(null);
     } catch (error) {
       console.error("Error saving category:", error);
-      message.error("Failed to save category. Please try again.");
+      message.error(error.data.message || "Failed to save category. Please try again.");
     }
   };
 
@@ -199,7 +199,8 @@ const CategoryContainer = () => {
       setHasOrderChanges(false);
     } catch (error) {
       console.error("Error updating category order:", error);
-      message.error("Failed to update category order. Please try again.");
+      message.error( "Failed to update category order. Please try again.");
+      
     }
   };
 
@@ -270,7 +271,7 @@ const CategoryContainer = () => {
                 borderRadius: "4px",
                 marginRight: "10px",
               }}
-              className="bg-red-600 text-white h-10 border-none"
+              className="bg-primary text-white h-10 border-none"
             >
               {viewMode === "table" ? "Do Shuffle" : "Table View"}
             </Button>
@@ -320,10 +321,10 @@ const CategoryContainer = () => {
           />
         ) : (
           <DragDropList
-            items={orderedCategories} // data array
-            onReorder={handleReorder} // drag হলে state আপডেট করবে
-            onUpdateOrder={handleUpdateOrder} // save চাপলে API কল করবে
-            hasChanges={hasOrderChanges} // order বদলেছে কিনা চেক
+            items={orderedCategories} 
+            onReorder={handleReorder} 
+            onUpdateOrder={handleUpdateOrder} 
+            hasChanges={hasOrderChanges} 
             renderItem={(
               category,
               index,

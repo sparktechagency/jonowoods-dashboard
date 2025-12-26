@@ -79,6 +79,7 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
         onSubmit(values, thumbnailFile);
       })
       .catch((info) => {
+        // message.error(info.data.message);
         console.log("Validate Failed:", info);
       });
   };
@@ -128,16 +129,16 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
       open={visible}
       onCancel={onCancel}
       footer={[
-        <Button key="cancel" onClick={onCancel}>
+        <Button key="cancel" onClick={onCancel} className="py-5">
           Cancel
         </Button>,
         <Button
           key="submit"
           type="primary"
           onClick={handleFormSubmit}
-          className="bg-red-500"
+          className="bg-primary text-white py-5"
         >
-          Save
+          {initialValues ? "Update" : "Add New Category"}
         </Button>,
       ]}
     >
@@ -147,7 +148,7 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
           label="Category Name"
           rules={[{ required: true, message: "Please input category name!" }]}
         >
-          <Input placeholder="Write Category Title" />
+          <Input placeholder="Write Category Title" className="py-5" />
         </Form.Item>
         {/* <Form.Item
           name="categoryType"
@@ -172,13 +173,13 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
               >
                 <Button icon={<UploadOutlined />}>Select Thumbnail</Button>
               </Upload>
-              <Button
+              {/* <Button
                 icon={<ReloadOutlined />}
                 size="small"
                 shape="circle"
                 onClick={resetImage}
                 title="Reset image"
-              />
+              /> */}
             </div>
           </div>
         </Form.Item>
