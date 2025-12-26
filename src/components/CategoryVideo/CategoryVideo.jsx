@@ -564,7 +564,7 @@ useEffect(() => {
       width: "60%",
       render: (_, record) => (
         <div>
-          <p className="font-medium">{record.title || "Untitled Video"}</p>
+          <p className="font-medium max-w-[400px] overflow-hidden text-ellipsis whitespace-nowrap">{record.title || "Untitled Video"}</p>
           {record.duration && (
             <p className="text-xs text-gray-500">Duration: {record.duration}</p>
           )}
