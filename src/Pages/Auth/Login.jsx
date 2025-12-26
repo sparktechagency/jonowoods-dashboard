@@ -101,9 +101,9 @@ const Login = () => {
               fontSize: "18px",
               marginTop: 30,
             }}
-            className="flex items-center justify-center bg-gradient-to-r from-primary to-secondary border border-[#A92C2C] rounded-lg"
+            className="flex items-center justify-center bg-gradient-to-r from-primary to-secondary border border-[#A92C2C] rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? <div className="animate-spin">⏳</div> : "Login"}
           </button>
         </Form.Item>
 
