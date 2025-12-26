@@ -134,15 +134,17 @@ const CategoryTable = ({
   ];
 
   return (
+   <div className="border-2 rounded-lg">
     <Table
       columns={columns}
       dataSource={categories}
       rowKey="_id"
       pagination={{ pageSize: 10 }}
-      bordered
+      // bordered
       size="middle"
       className="custom-table"
     />
+   </div>
   );
 };
 

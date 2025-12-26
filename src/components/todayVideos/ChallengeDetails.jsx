@@ -375,34 +375,6 @@ console.log("challengeVideos:", challengeVideos);
         align: "center",
       },
       {
-        title: "Challenge Name",
-        dataIndex: "challengeName",
-        key: "challengeName",
-        align: "center",
-      },
-      {
-        title: "Duration",
-        dataIndex: "duration",
-        key: "duration",
-        align: "center",
-      },
-      {
-        title: "Equipment",
-        dataIndex: "equipment",
-        key: "equipment",
-        align: "center",
-        render: (equipment) => (
-          <div>
-            {equipment &&
-              equipment.map((item, index) => (
-                <Tag key={index} color="blue">
-                  {item}
-                </Tag>
-              ))}
-          </div>
-        ),
-      },
-      {
         title: "Thumbnail",
         dataIndex: "thumbnailUrl",
         key: "thumbnailUrl",
@@ -422,6 +394,35 @@ console.log("challengeVideos:", challengeVideos);
           </div>
         ),
       },
+      // {
+      //   title: "Challenge Name",
+      //   dataIndex: "challengeName",
+      //   key: "challengeName",
+      //   align: "center",
+      // },
+      {
+        title: "Duration",
+        dataIndex: "duration",
+        key: "duration",
+        align: "center",
+      },
+      // {
+      //   title: "Equipment",
+      //   dataIndex: "equipment",
+      //   key: "equipment",
+      //   align: "center",
+      //   render: (equipment) => (
+      //     <div>
+      //       {equipment &&
+      //         equipment.map((item, index) => (
+      //           <Tag key={index} color="blue">
+      //             {item}
+      //           </Tag>
+      //         ))}
+      //     </div>
+      //   ),
+      // },
+      
       {
         title: "Publish Date",
         dataIndex: "publishAt",
@@ -573,11 +574,11 @@ console.log("challengeVideos:", challengeVideos);
     {
       title: "Title",
       key: "title",
-      width: "50%",
+      width: "55%",
       render: (_, record) => (
         <div>
           {record.title && (
-            <p className="text-xs text-gray-500">{record.title}</p>
+            <p className=" max-w-[400px] overflow-hidden text-ellipsis whitespace-nowrap">{record.title}</p>
           )}
         </div>
       ),
@@ -597,7 +598,7 @@ console.log("challengeVideos:", challengeVideos);
     {
       title: "Actions",
       key: "actions",
-      width: "30%",
+      width: "25%",
       render: (_, record) => (
         <Button
           type="primary"
@@ -694,7 +695,8 @@ console.log("challengeVideos:", challengeVideos);
 
       {/* Challenge Videos - either in table or drag-and-drop mode */}
       {viewMode === "table" ? (
-        <Table
+        <div className="border-2 rounded-lg">
+          <Table
           columns={challengeVideoColumns}
           dataSource={sortedVideos}
           rowKey="_id"
@@ -712,7 +714,9 @@ console.log("challengeVideos:", challengeVideos);
           }}
           scroll={{ x: "max-content" }}
           className="custom-table"
+          size="middle"
         />
+        </div>
       ) : (
         <DragDropList
           items={localChallengeVideos}
@@ -746,54 +750,54 @@ console.log("challengeVideos:", challengeVideos);
           setModalCurrentPage(1);
           setModalPageSize(10);
         }}
-        footer={
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              {/* Optional Date Picker */}
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">
-                  Schedule Date (Optional):
-                </span>
-                <DatePicker
-                  showTime
-                  value={schedulingDate}
-                  onChange={setSchedulingDate}
-                  placeholder="Select date & time"
-                  className="w-48"
-                />
-              </div>
-              {selectedVideos.length > 0 && (
-                <span className="text-sm text-gray-600">
-                  {selectedVideos.length} video(s) selected
-                </span>
-              )}
-            </div>
-            <Space>
-              <Button
-                onClick={() => {
-                  setSchedulingModalVisible(false);
-                  setSelectedVideos([]);
-                  setSelectedRowKeys([]);
-                  setSchedulingDate(null);
-                  setModalCurrentPage(1);
-                  setModalPageSize(10);
-                }}
-                className="text-black h-10"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="primary"
-                onClick={handleScheduleSelectedVideos}
-                disabled={selectedVideos.length === 0}
-                icon={<PlusOutlined />}
-                className="bg-primary text-white h-10"
-              >
-                Schedule Selected Videos ({selectedVideos.length})
-              </Button>
-            </Space>
-          </div>
-        }
+        // footer={
+        //   <div className="flex justify-between items-center">
+        //     <div className="flex items-center space-x-4">
+        //       {/* Optional Date Picker */}
+        //       <div className="flex items-center space-x-2">
+        //         <span className="text-sm text-gray-600">
+        //           Schedule Date (Optional):
+        //         </span>
+        //         <DatePicker
+        //           showTime
+        //           value={schedulingDate}
+        //           onChange={setSchedulingDate}
+        //           placeholder="Select date & time"
+        //           className="w-48"
+        //         />
+        //       </div>
+        //       {selectedVideos.length > 0 && (
+        //         <span className="text-sm text-gray-600">
+        //           {selectedVideos.length} video(s) selected
+        //         </span>
+        //       )}
+        //     </div>
+        //     <Space>
+        //       <Button
+        //         onClick={() => {
+        //           setSchedulingModalVisible(false);
+        //           setSelectedVideos([]);
+        //           setSelectedRowKeys([]);
+        //           setSchedulingDate(null);
+        //           setModalCurrentPage(1);
+        //           setModalPageSize(10);
+        //         }}
+        //         className="text-black h-10"
+        //       >
+        //         Cancel
+        //       </Button>
+        //       <Button
+        //         type="primary"
+        //         onClick={handleScheduleSelectedVideos}
+        //         disabled={selectedVideos.length === 0}
+        //         icon={<PlusOutlined />}
+        //         className="bg-primary text-white h-10"
+        //       >
+        //         Schedule Selected Videos ({selectedVideos.length})
+        //       </Button>
+        //     </Space>
+        //   </div>
+        // }
         width={800}
       >
         <div style={{ width: "100%" }}>
@@ -818,6 +822,8 @@ console.log("challengeVideos:", challengeVideos);
             scroll={{ x: "max-content" }}
             style={{ width: "100%" }}
             tableLayout="auto"
+            className="custom-table"
+            size="middle"
           />
         </div>
       </Modal>

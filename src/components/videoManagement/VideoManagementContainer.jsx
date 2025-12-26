@@ -299,7 +299,8 @@ const VideoManagementContainer = () => {
         </GradientButton>
       </div>
 
-      <Table
+     <div className="border-2 rounded-lg">
+     <Table
         columns={columns}
         dataSource={videos}
         pagination={{
@@ -311,11 +312,12 @@ const VideoManagementContainer = () => {
         }}
         onChange={handleTableChange}
         rowKey="_id"
-        bordered
+        // bordered
         size="middle"
         className="custom-table"
         scroll={{ x: 800 }}
       />
+     </div>
 
       {/* Video Player Modal */}
       <SecureVideoPlayer
