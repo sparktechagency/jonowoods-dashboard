@@ -111,6 +111,8 @@ const VideoLibraryModal = ({
           scroll={{ x: "max-content" }}
           style={{ width: "100%" }}
           tableLayout="auto"
+          size="middle"
+          className="custom-table"
         />
       </div>
     </Modal>
