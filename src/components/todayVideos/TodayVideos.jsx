@@ -401,7 +401,7 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
     {
       title: "Challenge Name",
       key: "challengeName",
-      width:250,
+      width:"25%",
       render: (_, record) => (
         <div className="flex items-center">
           <p className="font-medium">{record.name || "Untitled Challenge"}</p>
@@ -411,13 +411,14 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
     {
       title: "Challenge Image",
       key: "challengeImage",
+      width:"15%",
       render: (_, record) => (
         <div className="flex items-center">
           {record.image && (
             <img
               src={getImageUrl(record.image)}
               alt={record.name || "Challenge"}
-              style={{ width: 80, height: 45, objectFit: "cover" }}
+              style={{ width: 120, height: 60, objectFit: "cover" }}
               className="rounded"
             />
           )}
@@ -428,7 +429,7 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
       title: "Description",
       dataIndex: "description",
       key: "description",
-      width:350,
+      width:"40%",
       ellipsis: true,
       render: (text) => <p className="max-w-lg truncate">{text.slice(0, 170)}</p>,
     },
@@ -446,20 +447,21 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
     {
       title: "Actions",
       key: "actions",
+      width:"20%",
       render: (_, record) => (
         <div className="flex items-center space-x-2">
           <Button
             size="small"
-            className="hover:bg-red-600 border-none hover:text-white text-red-500"
+            className="bg-primary text-white hover:bg-primary/80 border-none hover:text-white py-4 px-4"
             icon={<EyeOutlined />}
             onClick={() => handleViewChallenge(record)}
-          />
+          >View</Button>
           <Button
             size="small"
-            className="hover:bg-red-600 border-none hover:text-white text-red-500"
+            className="bg-primary text-white hover:bg-primary/80 border-none hover:text-white py-4 px-4"
             icon={<EditOutlined />}
             onClick={() => handleEditChallenge(record)}
-          />
+          >Edit</Button>
           {/* <Switch
             checked={record.status === "active"}
             onChange={() => handleStatusToggle(record._id, record.status)}
@@ -467,11 +469,11 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
             className="hover:bg-red-600 border-none hover:text-white text-red-500"
           /> */}
           <Button
-            className="hover:bg-red-600 border-none hover:text-white text-red-500"
+            className="bg-primary text-white hover:bg-primary/80 border-none hover:text-white py-4 px-4"
             size="small"
             icon={<DeleteOutlined />}
             onClick={() => handleDeleteChallenge(record._id)}
-          />
+          >Delete</Button>
         </div>
       ),
     },
@@ -558,14 +560,14 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
         open={challengeModalVisible}
         onCancel={handleModalCancel}
         footer={[
-          <Button key="cancel" onClick={handleModalCancel}>
+          <Button key="cancel" onClick={handleModalCancel} className="py-5">
             Cancel
           </Button>,
           <Button
             key="submit"
             type="primary"
             onClick={() => challengeForm.submit()}
-            className="bg-red-500"
+            className="bg-primary text-white py-5 px-8"
           >
             {editingChallenge ? "Update" : "Create"} Challenge
           </Button>,
@@ -578,7 +580,7 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
             label="Challenge Name"
             rules={[{ required: true, message: "Please enter challenge name" }]}
           >
-            <Input placeholder="Enter challenge name" />
+            <Input placeholder="Enter challenge name" className="py-5" />
           </Form.Item>
 
           <Form.Item
@@ -602,13 +604,13 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
                 >
                   <Button icon={<UploadOutlined />}>Select Image</Button>
                 </Upload>
-                <Button
+                {/* <Button
                   icon={<ReloadOutlined />}
                   size="small"
                   shape="circle"
                   onClick={resetImage}
                   title="Reset image"
-                />
+                /> */}
               </div>
             </div>
           </Form.Item>
