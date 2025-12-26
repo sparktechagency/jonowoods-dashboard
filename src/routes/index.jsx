@@ -54,6 +54,7 @@ import SubscriptionManagement from "../components/subscriptionmanagement/Subscri
 import VideoManagementContainer from "../components/videoManagement/VideoManagementContainer";
 import CategoryContainer from "../components/CategoryVideo/CategoryContainer";
 import CategoryVideos from "../components/CategoryVideo/CategoryVideo";
+import PushNotification from "../Pages/Dashboard/PushNotification";
 
 const router = createBrowserRouter([
   {
@@ -107,7 +108,7 @@ const router = createBrowserRouter([
         element: <VideoManagement />,
       },
       {
-        path: "/loyalty-program",
+        path: "/subscription-package",
         element: <SubscriptionManagement />,
       },
       {
@@ -135,13 +136,13 @@ const router = createBrowserRouter([
         element: <PostManagementSystem />,
       },
       {
-        path: "/subsciption",
-        element: <Subsciber />,
+        path: "/push-notification",
+        element: <PushNotification />,
       },
-      {
-        path: "/category",
-        element: <Category />,
-      },
+      // {
+      //   path: "/category",
+      //   element: <Category />,
+      // },
       {
         path: "/login-register",
         element: <PageManagement />,

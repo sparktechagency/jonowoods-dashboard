@@ -138,9 +138,9 @@ const Sidebar = () => {
       label: <Link to="/create-post">Create Post</Link>,
     },
     {
-      key: "/loyalty-program",
-      icon: renderIcon(SubscriptionManagement, "/loyalty-program"),
-      label: <Link to="/loyalty-program">Subscription package</Link>,
+        key: "/subscription-package",
+        icon: renderIcon(SubscriptionManagement, "/subscription-package"),
+      label: <Link to="/subscription-package">Subscription package</Link>,
       roles: ["SUPER_ADMIN"],
     },
     {
@@ -156,9 +156,9 @@ const Sidebar = () => {
       label: <Link to="/quotation-management">Quotation management</Link>,
     },
     {
-      key: "/subsciption",
-      icon: renderIcon(LoyaltyProgram, "/subsciption"),
-      label: <Link to="/subsciption">Push Notification</Link>,
+      key: "/push-notification",
+      icon: renderIcon(LoyaltyProgram, "/push-notification"),
+      label: <Link to="/push-notification">Push Notification</Link>,
     },
     {
       key: "/login-credentials",

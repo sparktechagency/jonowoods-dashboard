@@ -4,7 +4,7 @@ import PushNotification from '../../components/subscriber/SubscriberTable';
 const Subsciber = () => {
   return (
     <div>
-      <PushNotification />
+      <h1>Subsciber</h1>
     </div>
   );
 }

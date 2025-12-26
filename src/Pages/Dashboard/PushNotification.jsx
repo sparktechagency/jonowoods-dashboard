@@ -1,458 +1,489 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  MdDelete,
-  MdKeyboardArrowLeft,
-  MdKeyboardArrowRight,
-  MdModeEditOutline,
-  MdSend,
-  MdClose,
-} from "react-icons/md";
-import { useGetSendPushNotificationQuery } from "../../redux/apiSlices/pushNotification";
+  Button,
+  Input,
+  Form,
+  message,
+  DatePicker,
+  TimePicker,
+  Switch,
+  Space,
+  Card,
+  Table,
+  Modal,
+  Tag,
+  Tooltip,
+  Menu,
+  Dropdown,
+} from "antd";
+const { TextArea } = Input;
+import {
+  ClockCircleOutlined,
+  SendOutlined,
+  PlusOutlined,
+  EyeOutlined,
+  DownOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
+import "./pushNotification.css";
 
-// Mock notification data
-const notificationData = Array.from({ length: 25 }, (_, i) => ({
-  id: i + 1,
-  name: `Subscribers ${i + 1}`,
-  email: `subscribers${i + 1}@gmail.com`,
-  phone: `+23191633389${i + 1}`,
-  address: `Address ${i + 1}, City`,
-  image: `https://img.freepik.com/free-photo/portrait-handsome-young-man-with-arms-crossed-holding-white-headphone-around-his-neck_23-2148096439.jpg?semt=ais_hybrid`,
-}));
+import { useGetSendPushNotificationQuery, usePushNotificationSendMutation } from "../../redux/apiSlices/pushNotification.js";
+import { Filtering } from "../../components/common/Svg.jsx";
+import Spinner from "../../components/common/Spinner.jsx";
 
-// Simple Modal Component
-const NotificationModal = ({ isOpen, onClose }) => {
-  const [communicationType, setCommunicationType] = useState("");
-  const [title, setTitle] = useState("");
-  const [message, setMessage] = useState("");
-
-  const { data } = useGetSendPushNotificationQuery()
-  console.log(data)
-  console.log("push notification page")
-
-  if (!isOpen) return null;
-
-  const handleSend = () => {
-    console.log({ communicationType, title, message });
-    alert("Notification sent successfully!");
-    onClose();
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Send Notification</h2>
-          <button onClick={onClose}>
-            <MdClose className="text-2xl" />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block mb-2">Communication Type:</label>
-            <select
-              className="w-full border p-2 rounded"
-              value={communicationType}
-              onChange={(e) => setCommunicationType(e.target.value)}
-            >
-              <option value="">Select Type</option>
-              <option value="Email">Email</option>
-              <option value="SMS">SMS</option>
-              <option value="Push">Push Notification</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block mb-2">Title:</label>
-            <input
-              type="text"
-              className="w-full border p-2 rounded"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter notification title"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2">Message:</label>
-            <textarea
-              className="w-full border p-2 rounded h-24"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Enter your message"
-            />
-          </div>
-
-          <button
-            onClick={handleSend}
-            className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
-          >
-            Send Notification
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Simple Update Modal
-const UpdateModal = ({ isOpen, onClose, onSave, userData }) => {
-  const [formData, setFormData] = useState(userData || {});
-
-  useEffect(() => {
-    setFormData(userData || {});
-  }, [userData]);
-
-  if (!isOpen) return null;
-
-  const handleSave = () => {
-    onSave(formData);
-    onClose();
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-lg w-96">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold">Update User</h2>
-          <button onClick={onClose}>
-            <MdClose className="text-2xl" />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <input
-            type="text"
-            className="w-full border p-2 rounded"
-            value={formData.name || ""}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder="Name"
-          />
-          <input
-            type="email"
-            className="w-full border p-2 rounded"
-            value={formData.email || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
-            placeholder="Email"
-          />
-          <input
-            type="text"
-            className="w-full border p-2 rounded"
-            value={formData.phone || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, phone: e.target.value })
-            }
-            placeholder="Phone"
-          />
-          <input
-            type="text"
-            className="w-full border p-2 rounded"
-            value={formData.address || ""}
-            onChange={(e) =>
-              setFormData({ ...formData, address: e.target.value })
-            }
-            placeholder="Address"
-          />
-
-          <button
-            onClick={handleSave}
-            className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
-          >
-            Update
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const Category = () => {
-  const [communicationType, setCommunicationType] = useState("");
-  const [title, setTitle] = useState("");
-  const [message, setMessage] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterOption, setFilterOption] = useState("All");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Reduced for better display
+const PushNotification = () => {
+  const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [notifications, setNotifications] = useState(notificationData);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [notificationTypeFilter, setNotificationTypeFilter] = useState("All");
+  const [messageContent, setMessageContent] = useState("");
 
-  const handleEdit = (user) => {
-    setSelectedUser(user);
-    setIsUpdateModalOpen(true);
+  const [pushNotificationSend, { isLoading }] =
+    usePushNotificationSendMutation();
+
+  // Query params for filtering and pagination
+  const [queryParams, setQueryParams] = useState([]);
+  const {
+    data,
+    isLoading: isTableLoading,
+    refetch,
+  } = useGetSendPushNotificationQuery(queryParams);
+
+  const notificationData = data?.data || [];
+
+  // Update query params when filters change
+  useEffect(() => {
+    const params = [];
+
+    if (statusFilter !== "All") {
+      params.push({ name: "status", value: statusFilter });
+    }
+
+    setQueryParams(params);
+  }, [statusFilter]);
+
+  // Function to strip HTML tags from message
+  const stripHtmlTags = (html) => {
+    if (!html) return "";
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    return doc.body.textContent || "";
   };
 
-  const handleUpdate = (updatedUserData) => {
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === updatedUserData.id ? updatedUserData : notification
-      )
-    );
+  // Function to truncate text
+  const truncateText = (text, maxLength = 100) => {
+    if (!text) return "";
+    const cleanText = stripHtmlTags(text);
+    return cleanText.length > maxLength
+      ? cleanText.substring(0, maxLength) + "..."
+      : cleanText;
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this notification?")) {
-      setNotifications(
-        notifications.filter((notification) => notification.id !== id)
+
+
+  // Table columns configuration
+  const columns = [
+    {
+      title: "SL",
+      dataIndex: "sl",
+      key: "sl",
+      width: 60,
+      align: "center",
+      render: (_, __, index) => index + 1,
+    },
+    {
+      title: "Title",
+      dataIndex: "title",
+      key: "title",
+      render: (text) => <span className="font-medium">{text}</span>,
+    },
+    {
+      title: "Message",
+      dataIndex: "message",
+      key: "message",
+      width: "400px",
+      render: (text) => (
+        <Tooltip title={stripHtmlTags(text)} placement="topLeft">
+          <span className="font-medium">{truncateText(text, 80)}</span>
+        </Tooltip>
+      ),
+    },
+    {
+      title: "Notification Type",
+      dataIndex: "notificationType",
+      key: "notificationType",
+      align: "center",
+      render: (type) => (
+        <Tag
+          color={type === "schedule" ? "orange" : "green"}
+          icon={
+            type === "schedule" ? <ClockCircleOutlined /> : <SendOutlined />
+          }
+        >
+          {type === "schedule" ? "Scheduled" : "Instant"}
+        </Tag>
+      ),
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      align: "center",
+      render: (status) => {
+        const color =
+          status === "PENDING" ? "orange" : status === "SEND" ? "green" : "red";
+        return <Tag color={color}>{status}</Tag>;
+      },
+    },
+    {
+      title: "Send At",
+      dataIndex: "sendAt",
+      key: "sendAt",
+      render: (sendAt) => {
+        if (!sendAt) return "-";
+        return dayjs(sendAt).format("MMM D, YYYY h:mm A");
+      },
+    },
+  ];
+
+  const handleSubmit = async (values) => {
+    let scheduledDateTime = null;
+
+    // If scheduling is enabled, combine date and time
+    if (isScheduled && values.scheduleDate && values.scheduleTime) {
+      const date = dayjs(values.scheduleDate);
+      const time = dayjs(values.scheduleTime);
+
+      scheduledDateTime = date
+        .hour(time.hour())
+        .minute(time.minute())
+        .second(0)
+        .millisecond(0);
+
+      // Check if scheduled time is in the future
+      if (scheduledDateTime.isBefore(dayjs())) {
+        message.error("Scheduled time must be in the future!");
+        return;
+      }
+    }
+
+    const notificationPayload = {
+      title: values.title,
+      message: messageContent, // local state থেকে নিবে
+      isScheduled: isScheduled,
+      sendAt: scheduledDateTime ? scheduledDateTime.toISOString() : null,
+    };
+
+    try {
+      const result = await pushNotificationSend(notificationPayload).unwrap();
+
+      if (isScheduled) {
+        message.success(
+          `Notification scheduled successfully for ${scheduledDateTime.format(
+            "MMMM D, YYYY at h:mm A"
+          )}!`
+        );
+      } else {
+        message.success("Notification send successfully!");
+      }
+
+      form.resetFields();
+      setMessageContent(""); // Clear message content
+      setIsScheduled(false);
+      setIsModalOpen(false);
+      refetch(); // Refresh the table data
+    } catch (error) {
+      console.error("Error sending notification:", error);
+      message.error(
+        isScheduled
+          ? "Failed to schedule notification. Please try again."
+          : "Failed to send notification. Please try again."
       );
-      alert("Notification has been deleted.");
     }
   };
 
-  const handleSendNotification = () => {
-    if (!communicationType || !title || !message) {
-      alert("Please fill all fields");
-      return;
+  const handleScheduleToggle = (checked) => {
+    setIsScheduled(checked);
+    if (!checked) {
+      // Clear schedule fields when disabled
+      form.setFieldsValue({
+        scheduleDate: null,
+        scheduleTime: null,
+      });
     }
-
-    alert("Notification sent successfully!");
-    setCommunicationType("");
-    setTitle("");
-    setMessage("");
   };
 
-  const filteredSubscribers = notifications.filter((subscriber) => {
-    const matchesSearch =
-      subscriber.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      subscriber.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const handleModalCancel = () => {
+    form.resetFields();
+    setIsScheduled(false);
+    setIsModalOpen(false);
+    // if (editor.current) {
+    //   editor.current.value = "";
+    // }
+  };
 
-    if (filterOption === "All") return matchesSearch;
-    if (filterOption === "Email") return matchesSearch && subscriber.email;
-    if (filterOption === "Phone") return matchesSearch && subscriber.phone;
-    return matchesSearch;
-  });
+  const handleModalSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      await handleSubmit(values);
+    } catch (error) {
+      console.log("Validation failed:", error);
+    }
+  };
 
-  const totalPages = Math.ceil(filteredSubscribers.length / itemsPerPage);
-  const displayedSubscribers = filteredSubscribers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+  // Disable past dates
+  const disabledDate = (current) => {
+    return current && current < dayjs().startOf("day");
+  };
+
+  // Disable past times for today
+  const disabledTime = (current) => {
+    if (!current) return {};
+
+    const now = dayjs();
+    const selectedDate = dayjs(current);
+
+    if (selectedDate.isSame(now, "day")) {
+      return {
+        disabledHours: () => {
+          const hours = [];
+          for (let i = 0; i < now.hour(); i++) {
+            hours.push(i);
+          }
+          return hours;
+        },
+        disabledMinutes: (selectedHour) => {
+          if (selectedHour === now.hour()) {
+            const minutes = [];
+            for (let i = 0; i <= now.minute(); i++) {
+              minutes.push(i);
+            }
+            return minutes;
+          }
+          return [];
+        },
+      };
+    }
+    return {};
+  };
+
+  // Fixed pagination handler to avoid read-only property error
+  const handlePaginationChange = (page) => {
+    // Create a new array instead of modifying the existing one
+    const newParams = queryParams.filter((param) => param.name !== "page");
+    newParams.push({ name: "page", value: page });
+    setQueryParams(newParams);
+  };
+
+  // Filter menus
+  const statusMenu = (
+    <Menu>
+      <Menu.Item key="all" onClick={() => setStatusFilter("All")}>
+        All Status
+      </Menu.Item>
+      <Menu.Item key="PENDING" onClick={() => setStatusFilter("PENDING")}>
+        Pending
+      </Menu.Item>
+      <Menu.Item key="SEND" onClick={() => setStatusFilter("SEND")}>
+        Send
+      </Menu.Item>
+    </Menu>
   );
 
+  if (isTableLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
   return (
-    <div className="h-screen flex gap-4 p-4">
-      {/* Left Side - Notification Form (1/2 screen) */}
-      <div className="w-1/2 bg-white border rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          Send Notification
-        </h2>
+    <div className="">
+    
 
-        <div className="space-y-4">
-          <div>
-            <label className="block mb-2 font-medium">
-              Communication Type:
-            </label>
-            <select
-              className="w-full border p-3 rounded-md focus:outline-none focus:border-blue-500"
-              value={communicationType}
-              onChange={(e) => setCommunicationType(e.target.value)}
-            >
-              <option value="">Select Communication Type</option>
-              <option value="Email">Email</option>
-              <option value="SMS">SMS</option>
-              <option value="Push">Push Notification</option>
-              <option value="All">All Channels</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block mb-2 font-medium">
-              Notification Title:
-            </label>
-            <input
-              type="text"
-              className="w-full border p-3 rounded-md focus:outline-none focus:border-blue-500"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter notification title"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 font-medium">Message:</label>
-            <textarea
-              className="w-full border p-3 rounded-md h-32 focus:outline-none focus:border-blue-500"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Write your notification message here..."
-            />
-          </div>
-
-          <div className="flex gap-4">
-            <button
-              onClick={handleSendNotification}
-              className="flex-1 bg-blue-500 text-white py-3 px-4 rounded-md hover:bg-blue-600 flex items-center justify-center gap-2"
-            >
-              <MdSend className="text-xl" />
-              Send Notification
-            </button>
-
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex-1 bg-green-500 text-white py-3 px-4 rounded-md hover:bg-green-600"
-            >
-              Send via Modal
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-6 p-4 bg-gray-50 rounded-md">
-          <h3 className="font-medium mb-2">Quick Stats:</h3>
-          <p className="text-sm text-gray-600">
-            Total Subscribers: {notifications.length}
-          </p>
-          <p className="text-sm text-gray-600">
-            Filtered Results: {filteredSubscribers.length}
-          </p>
-        </div>
-      </div>
-
-      {/* Right Side - Subscribers Table (1/2 screen) */}
-      <div className="w-1/2 bg-white border rounded-lg p-6">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          Subscribers List
-        </h2>
-
-        {/* Search and Filter */}
-        <div className="flex gap-4 mb-4">
-          <input
-            type="text"
-            placeholder="Search subscribers..."
-            className="flex-1 border p-2 rounded-md focus:outline-none focus:border-blue-500"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <select
-            className="border p-2 rounded-md focus:outline-none focus:border-blue-500"
-            value={filterOption}
-            onChange={(e) => setFilterOption(e.target.value)}
-          >
-            <option value="All">All</option>
-            <option value="Email">Email</option>
-            <option value="Phone">Phone</option>
-          </select>
-        </div>
-
-        {/* Table */}
-        <div className="overflow-auto" style={{ height: "calc(100% - 200px)" }}>
-          <table className="w-full border-collapse text-sm">
-            <thead className="sticky top-0 bg-gray-100">
-              <tr className="border-b">
-                <th className="p-2 text-left">#</th>
-                <th className="p-2 text-left">Name</th>
-                <th className="p-2 text-left">Email</th>
-                <th className="p-2 text-left">Phone</th>
-                <th className="p-2 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {displayedSubscribers.map((notification, index) => (
-                <tr key={notification.id} className="border-b hover:bg-gray-50">
-                  <td className="p-2">
-                    {(currentPage - 1) * itemsPerPage + index + 1}
-                  </td>
-                  <td className="p-2">
-                    <div className="flex items-center gap-2">
-                      <img
-                        src={notification.image}
-                        alt={notification.name}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                      <span className="truncate">{notification.name}</span>
-                    </div>
-                  </td>
-                  <td className="p-2 truncate">{notification.email}</td>
-                  <td className="p-2">{notification.phone}</td>
-                  <td className="p-2">
-                    <div className="flex gap-1">
-                      <button
-                        className="bg-green-500 text-white p-1 rounded hover:bg-green-600"
-                        onClick={() => handleEdit(notification)}
-                      >
-                        <MdModeEditOutline className="text-sm" />
-                      </button>
-                      <button
-                        className="bg-red-500 text-white p-1 rounded hover:bg-red-600"
-                        onClick={() => handleDelete(notification.id)}
-                      >
-                        <MdDelete className="text-sm" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex justify-center mt-4 gap-2">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className="bg-gray-300 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-400"
-          >
-            <MdKeyboardArrowLeft className="text-xl" />
-          </button>
-
-          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-            let pageNum;
-            if (totalPages <= 5) {
-              pageNum = i + 1;
-            } else if (currentPage <= 3) {
-              pageNum = i + 1;
-            } else if (currentPage >= totalPages - 2) {
-              pageNum = totalPages - 4 + i;
-            } else {
-              pageNum = currentPage - 2 + i;
-            }
-
-            return (
-              <button
-                key={pageNum}
-                onClick={() => setCurrentPage(pageNum)}
-                className={`px-3 py-1 rounded text-sm ${
-                  currentPage === pageNum
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-300 hover:bg-gray-400"
-                }`}
+      {/* Search and Filter Section */}
+      <div className="flex justify-end mb-6 items-center">
+        <div className="flex gap-4">
+          <Space size="small" className="flex gap-4">
+            <Dropdown overlay={statusMenu}>
+              <Button
+                className="mr-2 bg-red-600 py-5 text-white hover:text-black hover:icon-black"
+                style={{ border: "none" }}
               >
-                {pageNum}
-              </button>
-            );
-          })}
+                <Space>
+                  <Filtering className="filtering-icon" />
+                  <span className="filter-text">
+                    {statusFilter === "All" ? "All Status" : statusFilter}
+                  </span>
+                  <DownOutlined />
+                </Space>
+              </Button>
+            </Dropdown>
 
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}
-            className="bg-gray-300 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-400"
-          >
-            <MdKeyboardArrowRight className="text-xl" />
-          </button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => setIsModalOpen(true)}
+              className="bg-primary"
+              size="large"
+            >
+              Send Push Notification
+            </Button>
+          </Space>
         </div>
       </div>
 
-      {/* Modals */}
-      <NotificationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
-
-      {isUpdateModalOpen && selectedUser && (
-        <UpdateModal
-          isOpen={isUpdateModalOpen}
-          onClose={() => setIsUpdateModalOpen(false)}
-          onSave={handleUpdate}
-          userData={selectedUser}
+      {/* Notifications Table */}
+      <div className="border-2 rounded-lg">
+        <Table
+          columns={columns}
+          dataSource={notificationData}
+          loading={isTableLoading}
+          rowKey="_id"
+          pagination={{
+            defaultPageSize: 10,
+            total: data?.pagination?.total,
+            current: data?.pagination?.currentPage,
+            onChange: handlePaginationChange, // Using the fixed handler
+          }}
+          size="middle"
+          className="custom-table"
+          scroll={{ x: "max-content" }} // Add horizontal scroll for better mobile experience
         />
-      )}
+      </div>
+
+      {/* Send Push Notification Modal */}
+      <Modal
+        title="Send Push Notification"
+        open={isModalOpen}
+        onCancel={handleModalCancel}
+        width={800}
+        footer={[
+          <Button key="cancel" onClick={handleModalCancel}>
+            Cancel
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={isLoading}
+            onClick={handleModalSubmit}
+            className="bg-primary"
+            icon={isScheduled ? <ClockCircleOutlined /> : <SendOutlined />}
+          >
+            {isScheduled ? "Schedule Notification" : "Send Now"}
+          </Button>,
+        ]}
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            label="Title"
+            name="title"
+            rules={[
+              { required: true, message: "Please enter a notification title" },
+            ]}
+          >
+            <Input placeholder="Write Your Title Here" size="large" />
+          </Form.Item>
+          <Form.Item
+            label="Message"
+            name="message"
+            rules={[
+              { required: true, message: "Please add notification content" },
+            ]}
+          >
+            <TextArea
+              placeholder="Write your notification message here..."
+              rows={6}
+              onChange={(e) => setMessageContent(e.target.value)}
+            />
+          </Form.Item>
+
+          {/* Scheduling Section */}
+          <Card
+            title={
+              <Space>
+                <ClockCircleOutlined />
+                Schedule Notification
+              </Space>
+            }
+            className="mb-4"
+            size="small"
+          >
+            <Form.Item
+              label="Enable Scheduling"
+              name="enableSchedule"
+              valuePropName="checked"
+              className="mb-3"
+            >
+              <Switch
+                checked={isScheduled}
+                onChange={handleScheduleToggle}
+                checkedChildren="Scheduled"
+                unCheckedChildren="Send Now"
+              />
+            </Form.Item>
+
+            {isScheduled && (
+              <>
+                <Space size="middle" className="w-full" wrap>
+                  <Form.Item
+                    label="Schedule Date"
+                    name="scheduleDate"
+                    rules={[
+                      {
+                        required: isScheduled,
+                        message: "Please select a date",
+                      },
+                    ]}
+                  >
+                    <DatePicker
+                      placeholder="Select Date"
+                      disabledDate={disabledDate}
+                      format="MMMM D, YYYY"
+                      size="large"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Schedule Time"
+                    name="scheduleTime"
+                    rules={[
+                      {
+                        required: isScheduled,
+                        message: "Please select a time",
+                      },
+                    ]}
+                  >
+                    <TimePicker
+                      placeholder="Select Time"
+                      format="h:mm A"
+                      use12Hours
+                      size="large"
+                      disabledTime={() => {
+                        const scheduleDate = form.getFieldValue("scheduleDate");
+                        return disabledTime(scheduleDate);
+                      }}
+                    />
+                  </Form.Item>
+                </Space>
+
+                <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                  <p className="text-sm text-blue-600 mb-0">
+                    <ClockCircleOutlined className="mr-2" />
+                    This notification will be scheduled for delivery at the
+                    specified time.
+                  </p>
+                </div>
+              </>
+            )}
+          </Card>
+        </Form>
+      </Modal>
     </div>
   );
 };
 
-export default Category;
+export default PushNotification;
