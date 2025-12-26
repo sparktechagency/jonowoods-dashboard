@@ -95,7 +95,7 @@ const router = createBrowserRouter([
         element: <CategoryVideos />,
       },
       {
-        path: "/inventory",
+        path: "/quotation-management",
         element: <QuotationManagement />,
       },
       {

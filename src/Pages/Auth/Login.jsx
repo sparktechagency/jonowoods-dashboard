@@ -55,11 +55,11 @@ const Login = () => {
         <p>Welcome back! Please enter your details.</p>
       </div>
       <Form onFinish={onFinish} layout="vertical">
-        <FormItem name={"email"} label={"Email"} />
+        <FormItem name={"email"} label={<p className="text-white">Email</p>} />
 
         <Form.Item
           name="password"
-          label={<p>Password</p>}
+          label={<p className="text-white">Password</p>}
           rules={[
             {
               required: true,
@@ -79,14 +79,14 @@ const Login = () => {
           />
         </Form.Item>
 
-        <div className="flex items-center justify-end">
+        {/* <div className="flex items-center justify-end">
           <a
             className="login-form-forgot text-white hover:text-white"
             href="/auth/forgot-password"
           >
             Forgot password
           </a>
-        </div>
+        </div> */}
 
         <Form.Item style={{ marginBottom: 0 }}>
           <button

@@ -106,7 +106,7 @@ const Quotationmanagement = () => {
 
       const quotationData = {
         quotation: quotationContent,
-        releaseAt: values.date.toISOString(),
+        // releaseAt: values.date.toISOString(),
       };
 
       if (editRecord) {
@@ -150,6 +150,7 @@ const Quotationmanagement = () => {
           message.error("Failed to delete quotation");
         }
       },
+      
     });
   };
 
@@ -174,40 +175,40 @@ const Quotationmanagement = () => {
     setCurrentPage(1); // Reset to first page when filter changes
   };
 
-  const handleStatusToggle = async (checked, record) => {
-    Modal.confirm({
-      title: `Are you sure you want to change this quotation status to ${
-        checked ? "Active" : "Inactive"
-      }?`,
-      okButtonProps: {
-        className: "bg-primary hover:bg-primary/80 border-primary text-white",
-      },
-      cancelButtonProps: {
-        style: {
-          backgroundColor: "transparent",
-          border: "1px solid #ff4d4f",
-          color: "#ff4d4f",
-        },
-      },
-      onOk: async () => {
-        setLoadingStatusChange(true);
-        try {
-          const newStatus = checked ? "active" : "inactive";
-          await toggleStatus({
-            id: record._id,
-            status: newStatus,
-          });
-          message.success(`Quotation ${newStatus} successfully`);
-          refetch();
-        } catch (error) {
-          console.error("Status toggle error:", error);
-          message.error("Failed to update status");
-        } finally {
-          setLoadingStatusChange(false);
-        }
-      },
-    });
-  };
+  // const handleStatusToggle = async (checked, record) => {
+  //   Modal.confirm({
+  //     title: `Are you sure you want to change this quotation status to ${
+  //       checked ? "Active" : "Inactive"
+  //     }?`,
+  //     okButtonProps: {
+  //       className: "bg-primary hover:bg-primary/80 border-primary text-white",
+  //     },
+  //     cancelButtonProps: {
+  //       style: {
+  //         backgroundColor: "transparent",
+  //         border: "1px solid #ff4d4f",
+  //         color: "#ff4d4f",
+  //       },
+  //     },
+  //     onOk: async () => {
+  //       setLoadingStatusChange(true);
+  //       try {
+  //         const newStatus = checked ? "active" : "inactive";
+  //         await toggleStatus({
+  //           id: record._id,
+  //           status: newStatus,
+  //         });
+  //         message.success(`Quotation ${newStatus} successfully`);
+  //         refetch();
+  //       } catch (error) {
+  //         console.error("Status toggle error:", error);
+  //         message.error("Failed to update status");
+  //       } finally {
+  //         setLoadingStatusChange(false);
+  //       }
+  //     },
+  //   });
+  // };
 
   const handleTableChange = (pagination) => {
     setCurrentPage(pagination.current);
@@ -235,60 +236,60 @@ const Quotationmanagement = () => {
       title: <div className="text-center">Quotation</div>,
       dataIndex: "quotation",
       key: "quotation",
-      width: "35%",
+      width: "80%",
       render: (text) => (
         <div
-          className="max-w-[300px] overflow-hidden text-center"
+          className=" overflow-hidden text-center"
           dangerouslySetInnerHTML={{ __html: text }}
         />
       ),
     },
-    {
-      title: <div className="text-center">Date</div>,
-      dataIndex: "date",
-      key: "date",
-      width: "15%",
-      render: (date) => (
-        <div className="text-center">
-          {date ? date.format("DD-MM-YYYY") : ""}
-        </div>
-      ),
-    },
-    {
-      title: <div className="text-center">Status</div>,
-      dataIndex: "status",
-      key: "status",
-      width: "15%",
-      render: (status, record) => (
-        <div className="flex justify-center">
-          <Switch
-            checked={status === "active"}
-            onChange={(checked) => handleStatusToggle(checked, record)}
-            loading={loadingStatusChange}
-            className="bg-primary"
-            style={{ backgroundColor: status === "active" ? "" : "#d9d9d9" }}
-          />
-        </div>
-      ),
-    },
+    // {
+    //   title: <div className="text-center">Date</div>,
+    //   dataIndex: "date",
+    //   key: "date",
+    //   width: "15%",
+    //   render: (date) => (
+    //     <div className="text-center">
+    //       {date ? date.format("DD-MM-YYYY") : ""}
+    //     </div>
+    //   ),
+    // },
+    // {
+    //   title: <div className="text-center">Status</div>,
+    //   dataIndex: "status",
+    //   key: "status",
+    //   width: "15%",
+    //   render: (status, record) => (
+    //     <div className="flex justify-center">
+    //       <Switch
+    //         checked={status === "active"}
+    //         onChange={(checked) => handleStatusToggle(checked, record)}
+    //         loading={loadingStatusChange}
+    //         className="bg-primary"
+    //         style={{ backgroundColor: status === "active" ? "" : "#d9d9d9" }}
+    //       />
+    //     </div>
+    //   ),
+    // },
     {
       title: <div className="text-center">Action</div>,
       key: "action",
       width: "15%",
       render: (_, record) => (
         <Space size="middle" className="justify-center">
-          <Button
+          <GradientButton
             type="text"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
-            className="text-blue-500 hover:text-blue-600"
-          />
-          <Button
+            className=""
+          >Edit</GradientButton>
+          <GradientButton
             type="text"
             icon={<DeleteOutlined />}
             onClick={() => handleDelete(record._id)}
             className="text-red-500 hover:text-red-600"
-          />
+          >Delete</GradientButton>
         </Space>
       ),
     },
@@ -304,7 +305,7 @@ const Quotationmanagement = () => {
 
   return (
     <div className="p-4">
-      <div className="flex justify-between mb-4">
+      {/* <div className="flex justify-between mb-4">
         <Dropdown
           menu={{
             items: items.map((item) => ({
@@ -332,7 +333,7 @@ const Quotationmanagement = () => {
         >
           <PlusOutlined /> Add New Quotation
         </GradientButton>
-      </div>
+      </div> */}
 
       <div>
         <Table
@@ -348,7 +349,7 @@ const Quotationmanagement = () => {
           }}
           onChange={handleTableChange}
           loading={isLoading}
-          className="border rounded border-red-500 custom-table"
+          className="border rounded-lg border-red-500 custom-table"
           rowClassName="hover:bg-gray-50"
         />
       </div>
@@ -374,7 +375,7 @@ const Quotationmanagement = () => {
             />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
             name="date"
             label="Date"
             rules={[{ required: true, message: "Please select a date!" }]}
@@ -384,7 +385,7 @@ const Quotationmanagement = () => {
               className="h-12"
               disabledDate={disablePastDates}
             />
-          </Form.Item>
+          </Form.Item> */}
         </Form>
       </Modal>
     </div>

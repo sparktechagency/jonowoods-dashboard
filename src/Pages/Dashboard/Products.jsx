@@ -1,12 +1,10 @@
 import React from 'react'
-import ProductInfo from '../../components/Products/ProductsInfo'
-import InventorCard from '../../components/Products/InventorCard'
+
 
 const Products = () => {
   return (
     <div>
-        {/* <InventorCard /> */}
-      <ProductInfo />
+     <h1>Products</h1>
     </div>
   )
 }

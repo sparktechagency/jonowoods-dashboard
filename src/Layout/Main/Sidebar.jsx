@@ -151,9 +151,9 @@ const Sidebar = () => {
       roles: ["SUPER_ADMIN"],
     },
     {
-      key: "/inventory",
-      icon: renderIcon(Inventorymanagement, "/inventory"),
-      label: <Link to="/inventory">Quotation management</Link>,
+      key: "/quotation-management",
+      icon: renderIcon(Inventorymanagement, "/quotation-management"),
+      label: <Link to="/quotation-management">Quotation management</Link>,
     },
     {
       key: "/subsciption",
