@@ -496,7 +496,8 @@ const DailyInspirationPage = () => {
 
       {/* Scheduled Videos - either in table or drag-and-drop mode */}
       {viewMode === "table" ? (
-        <Table
+      <div className="border-2 rounded-lg">
+          <Table
           columns={scheduledVideoColumns}
           dataSource={localScheduledVideos}
           rowKey="_id"
@@ -514,6 +515,7 @@ const DailyInspirationPage = () => {
           className="custom-table"
           size="middle"
         />
+      </div>
       ) : (
         <DragDropList
           items={localScheduledVideos}
