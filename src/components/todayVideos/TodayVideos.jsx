@@ -523,7 +523,8 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
 
       {/* Display challenges - either in table or drag-and-drop mode */}
       {viewMode === "table" ? (
-        <Table
+       <div className="border-2 rounded-lg">
+         <Table
           columns={challengeColumns}
           dataSource={sortedChallenges}
           rowKey="_id"
@@ -534,6 +535,7 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
           size="middle"
           scroll={{ x: "max-content" }}
         />
+       </div>
       ) : (
         <DragDropList
           items={localChallenges}

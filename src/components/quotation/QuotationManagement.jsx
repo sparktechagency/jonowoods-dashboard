@@ -239,7 +239,7 @@ const Quotationmanagement = () => {
       width: "80%",
       render: (text) => (
         <div
-          className=" overflow-hidden text-center"
+          className=" overflow-hidden text-start"
           dangerouslySetInnerHTML={{ __html: text }}
         />
       ),
@@ -305,8 +305,8 @@ const Quotationmanagement = () => {
 
   return (
     <div className="p-4">
-      {/* <div className="flex justify-between mb-4">
-        <Dropdown
+      <div className="flex justify-end mb-4">
+        {/* <Dropdown
           menu={{
             items: items.map((item) => ({
               ...item,
@@ -324,7 +324,7 @@ const Quotationmanagement = () => {
               {selectedStatus} <DownOutlined />
             </Space>
           </Button>
-        </Dropdown>
+        </Dropdown> */}
 
         <GradientButton
           type="primary"
@@ -333,7 +333,7 @@ const Quotationmanagement = () => {
         >
           <PlusOutlined /> Add New Quotation
         </GradientButton>
-      </div> */}
+      </div>
 
       <div>
         <Table
@@ -363,6 +363,7 @@ const Quotationmanagement = () => {
         okButtonProps={{
           className: "bg-primary hover:bg-primary/80 border-primary text-white",
         }}
+        okText="Save Quotation"
         width={800}
       >
         <Form form={form} layout="vertical" name="quotation_form">
