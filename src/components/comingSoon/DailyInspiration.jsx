@@ -470,9 +470,9 @@ const DailyInspirationPage = () => {
       `}</style>
 
       {/* Header */}
-      <div className="mb-6">
+      {/* <div className="mb-6">
         <h1 className="text-2xl font-bold mb-4">Daily Inspiration</h1>
-      </div>
+      </div> */}
 
       {/* Action buttons */}
       <div className="mb-6 flex justify-end">
@@ -512,6 +512,7 @@ const DailyInspirationPage = () => {
           }}
           scroll={{ x: "max-content" }}
           className="custom-table"
+          size="middle"
         />
       ) : (
         <DragDropList

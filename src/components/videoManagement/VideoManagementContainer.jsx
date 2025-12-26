@@ -312,7 +312,7 @@ const VideoManagementContainer = () => {
         onChange={handleTableChange}
         rowKey="_id"
         bordered
-        size="small"
+        size="middle"
         className="custom-table"
         scroll={{ x: 800 }}
       />

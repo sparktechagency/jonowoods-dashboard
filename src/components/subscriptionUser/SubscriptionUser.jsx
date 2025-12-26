@@ -191,7 +191,7 @@ const SubscriptionManagementTable = () => {
           dataSource={subscriptionsData?.subscriptions || []}
           rowKey="_id"
           loading={isLoading}
-          size="small"
+          size="middle"
           className="custom-table"
           pagination={{
             current: currentPage,

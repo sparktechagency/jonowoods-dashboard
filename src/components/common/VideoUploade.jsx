@@ -467,7 +467,7 @@ console.log(itemsData)
         onChange={handleTableChange}
         rowKey="_id"
         bordered
-        size="small"
+        size="middle"
         className="custom-table"
         scroll={{ x: "max-content" }}
       />

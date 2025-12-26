@@ -785,7 +785,7 @@ useEffect(() => {
           }}
           onChange={handleTableChange}
           bordered
-          size="small"
+          size="middle"
           className="custom-table"
           scroll={{ x: "max-content" }}
         />

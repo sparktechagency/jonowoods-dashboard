@@ -531,7 +531,7 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
           pagination={{ pageSize: 8 }}
           locale={{ emptyText: "No challenges found" }}
           className="custom-table"
-          size="small"
+          size="middle"
           scroll={{ x: "max-content" }}
         />
       ) : (

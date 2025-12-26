@@ -93,12 +93,13 @@ const ContactmanagementTable = () => {
         {/* Search Only */}
         <div className="mb-4" >
           <Input
-            placeholder="Search by name, email, or subject"
+            placeholder="Search by name, email"
             allowClear
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
                       onSearch={handleSearch}
                       className="w-96 border"
+                      style={{ height: 45 }}
           />
         </div>
       </div>
@@ -110,7 +111,7 @@ const ContactmanagementTable = () => {
           dataSource={contactsData?.contacts || []}
           rowKey="_id"
           loading={isLoading}
-          size="medium"
+          size="middle"
           className="custom-table"
           pagination={{
             current: currentPage,

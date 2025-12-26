@@ -140,7 +140,7 @@ const CategoryTable = ({
       rowKey="_id"
       pagination={{ pageSize: 10 }}
       bordered
-      size="small"
+      size="middle"
       className="custom-table"
     />
   );

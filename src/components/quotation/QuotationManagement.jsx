@@ -349,8 +349,9 @@ const Quotationmanagement = () => {
           }}
           onChange={handleTableChange}
           loading={isLoading}
-          className="border rounded-lg border-red-500 custom-table"
+          className="border rounded-lg border-primary custom-table"
           rowClassName="hover:bg-gray-50"
+          size="middle"
         />
       </div>
 
