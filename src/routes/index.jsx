@@ -4,7 +4,7 @@ import Main from "../Layout/Main/Main";
 import Home from "../Pages/Dashboard/Home";
 import Users from "../Pages/Dashboard/Subsciber";
 import Admin from "../Pages/Dashboard/Admin";
-import Category from "../Pages/Dashboard/PushNotification";
+// import Category from "../Pages/Dashboard/PushNotification";
 import Events from "../Pages/Dashboard/UpdatePassword";
 import Banner from "../Pages/Dashboard/Banner";
 import AboutUs from "../Pages/Dashboard/AboutUs";
@@ -55,6 +55,7 @@ import VideoManagementContainer from "../components/videoManagement/VideoManagem
 import CategoryContainer from "../components/CategoryVideo/CategoryContainer";
 import CategoryVideos from "../components/CategoryVideo/CategoryVideo";
 import PushNotification from "../Pages/Dashboard/PushNotification";
+import GreetingMessage from "../Pages/Dashboard/GreetingMessage";
 
 const router = createBrowserRouter([
   {
@@ -138,6 +139,10 @@ const router = createBrowserRouter([
       {
         path: "/push-notification",
         element: <PushNotification />,
+      },
+      {
+        path: "/greeting-message",
+        element: <GreetingMessage />,
       },
       // {
       //   path: "/category",

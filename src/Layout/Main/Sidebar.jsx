@@ -173,6 +173,11 @@ const Sidebar = () => {
       label: <Link to="/contactUs">Contact Us</Link>,
     },
     {
+      key: "/greeting-message",
+      icon: renderIcon(LoginCredentials, "/greeting-message"),
+      label: <Link to="/greeting-message">Greeting Message</Link>,
+    },
+    {
       key: "subMenuSetting",
       icon: renderIcon(Settings, "subMenuSetting"),
       label: "Settings",
