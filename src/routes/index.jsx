@@ -56,6 +56,7 @@ import CategoryContainer from "../components/CategoryVideo/CategoryContainer";
 import CategoryVideos from "../components/CategoryVideo/CategoryVideo";
 import PushNotification from "../Pages/Dashboard/PushNotification";
 import GreetingMessage from "../Pages/Dashboard/GreetingMessage";
+import Leaderboard from "../Pages/Dashboard/Leaderboard";
 
 const router = createBrowserRouter([
   {
@@ -143,6 +144,10 @@ const router = createBrowserRouter([
       {
         path: "/greeting-message",
         element: <GreetingMessage />,
+      },
+      {
+        path: "/leaderboard",
+        element: <Leaderboard />,
       },
       // {
       //   path: "/category",

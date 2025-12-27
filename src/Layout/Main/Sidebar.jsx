@@ -178,6 +178,11 @@ const Sidebar = () => {
       label: <Link to="/greeting-message">Greeting Message</Link>,
     },
     {
+      key: "/leaderboard",
+      icon: renderIcon(LoginCredentials, "/leaderboard"),
+      label: <Link to="/leaderboard">Leaderboard</Link>,
+    },
+    {
       key: "subMenuSetting",
       icon: renderIcon(Settings, "subMenuSetting"),
       label: "Settings",
