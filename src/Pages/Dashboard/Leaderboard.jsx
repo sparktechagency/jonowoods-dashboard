@@ -1,24 +1,28 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { Switch } from 'antd'
-import { useGetLeaderboardDataQuery, useLeaderboardStatusUpdateMutation } from '../../redux/apiSlices/leaderboardApi'
+import { 
+  useGetLeaderboardDataQuery, 
+  useLeaderboardStatusGlobalUpdateMutation,
+  useLeaderboardGlobalStatusQuery
+} from '../../redux/apiSlices/leaderboardApi'
 import Spinner from '../../components/common/Spinner'
 
 const Leaderboard = () => {
-  const { data, isLoading } = useGetLeaderboardDataQuery()
-  const [updateStatus] = useLeaderboardStatusUpdateMutation()
-  const [isEnabled, setIsEnabled] = useState(true)
+  const { data: leaderboardDataResponse, isLoading: isLeaderboardLoading } = useGetLeaderboardDataQuery()
+  const { data: globalStatusResponse, isLoading: isStatusLoading } = useLeaderboardGlobalStatusQuery()
+  const [updateStatus] = useLeaderboardStatusGlobalUpdateMutation()
+
+  const leaderboardIsShown = globalStatusResponse?.data?.leaderboardIsShown ?? false
 
   const handleToggle = async (checked) => {
-    setIsEnabled(checked)
     try {
       await updateStatus().unwrap()
     } catch (error) {
       console.error('Failed to update leaderboard status:', error)
-      setIsEnabled(!checked) // Revert on error
     }
   }
 
-  if (isLoading) {
+  if (isLeaderboardLoading || isStatusLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Spinner />
@@ -26,7 +30,7 @@ const Leaderboard = () => {
     )
   }
 
-  const leaderboardData = data?.data || {}
+  const leaderboardData = leaderboardDataResponse?.data || {}
 
   const LeaderboardCard = ({ title, data, scoreKey }) => {
     return (
@@ -77,31 +81,40 @@ const Leaderboard = () => {
         <div className="flex items-center gap-3">
           <span className="text-gray-700">Status:</span>
           <Switch
-            checked={isEnabled}
+            checked={leaderboardIsShown}
             onChange={handleToggle}
             className="bg-primary"
           />
         </div>
       </div>
 
-      {/* Three Leaderboard Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <LeaderboardCard
-          title="Total Time (Minutes)"
-          data={leaderboardData.topByMatTime}
-          scoreKey="matTime"
-        />
-        <LeaderboardCard
-          title="Streaks (Login Count)"
-          data={leaderboardData.topByLoginCount}
-          scoreKey="loginCount"
-        />
-        <LeaderboardCard
-          title="Sessions Completed"
-          data={leaderboardData.topByCompletedSessions}
-          scoreKey="completedSessionsCount"
-        />
-      </div>
+      {/* Three Leaderboard Cards - Only show when leaderboardIsShown is true */}
+      {leaderboardIsShown && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <LeaderboardCard
+            title="Total Time (Minutes)"
+            data={leaderboardData.topByMatTime}
+            scoreKey="matTime"
+          />
+          <LeaderboardCard
+            title="Streaks (Login Count)"
+            data={leaderboardData.topByLoginCount}
+            scoreKey="loginCount"
+          />
+          <LeaderboardCard
+            title="Sessions Completed"
+            data={leaderboardData.topByCompletedSessions}
+            scoreKey="completedSessionsCount"
+          />
+        </div>
+      )}
+
+      {/* Message when leaderboard is hidden */}
+      {!leaderboardIsShown && (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <p className="text-gray-500 text-lg">Leaderboard is currently hidden</p>
+        </div>
+      )}
     </div>
   )
 }
