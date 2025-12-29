@@ -13,8 +13,7 @@ const leaderboardApi = api.injectEndpoints({
       invalidatesTags: ["Leaderboard"],
     }),
 
-    // GET: Get all push notifications with filtering and pagination
-        getLeaderboardData: builder.query({
+    getLeaderboardData: builder.query({
       query: () => {
         return {
           url: `/community/leaderboard`,
@@ -46,9 +45,9 @@ const leaderboardApi = api.injectEndpoints({
   }),
 });
 
-export const { 
-  useLeaderboardStatusUpdateMutation, 
+export const {
+  useLeaderboardStatusUpdateMutation,
   useGetLeaderboardDataQuery,
   useLeaderboardStatusGlobalUpdateMutation,
-  useLeaderboardGlobalStatusQuery
+  useLeaderboardGlobalStatusQuery,
 } = leaderboardApi;

@@ -167,3 +167,12 @@ input[type="number"]::-webkit-inner-spin-button {
   background-color: #c93d3d !important;
   color: white !important;
 }
+
+/* Leaderboard Switch Styling */
+.leaderboard-switch-on.ant-switch-checked {
+  background-color: #CA3939 !important;
+}
+
+.leaderboard-switch-off.ant-switch {
+  background-color: #d9d9d9 !important;
+}

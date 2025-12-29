@@ -1,5 +1,5 @@
 import React from 'react'
-import { Switch } from 'antd'
+import { Switch, Modal, message } from 'antd'
 import { 
   useGetLeaderboardDataQuery, 
   useLeaderboardStatusGlobalUpdateMutation,
@@ -14,12 +14,38 @@ const Leaderboard = () => {
 
   const leaderboardIsShown = globalStatusResponse?.data?.leaderboardIsShown ?? false
 
-  const handleToggle = async (checked) => {
-    try {
-      await updateStatus().unwrap()
-    } catch (error) {
-      console.error('Failed to update leaderboard status:', error)
-    }
+  const handleToggle = (checked) => {
+    const action = checked ? 'Turn On' : 'Turn Off'
+    const actionText = checked ? 'show' : 'hide'
+    
+    Modal.confirm({
+      title: 'Confirm Leaderboard Status',
+      content: `Are you sure you want to ${actionText} the leaderboard?`,
+      okText: action,
+      cancelText: 'Cancel',
+      okButtonProps: {
+        style: {
+          backgroundColor: '#CA3939',
+          borderColor: '#CA3939',
+          color: '#fff',
+        },
+      },
+      cancelButtonProps: {
+        style: {
+          borderColor: '#000',
+          color: '#000',
+        },
+      },
+      onOk: async () => {
+        try {
+          await updateStatus().unwrap()
+          message.success(`Leaderboard ${actionText} successfully`)
+        } catch (error) {
+          console.error('Failed to update leaderboard status:', error)
+          message.error('Failed to update leaderboard status')
+        }
+      },
+    })
   }
 
   if (isLeaderboardLoading || isStatusLoading) {
@@ -83,7 +109,7 @@ const Leaderboard = () => {
           <Switch
             checked={leaderboardIsShown}
             onChange={handleToggle}
-            className="bg-primary"
+            className={leaderboardIsShown ? 'leaderboard-switch-on' : 'leaderboard-switch-off'}
           />
         </div>
       </div>
@@ -111,9 +137,11 @@ const Leaderboard = () => {
 
       {/* Message when leaderboard is hidden */}
       {!leaderboardIsShown && (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-gray-500 text-lg">Leaderboard is currently hidden</p>
+       <div className="flex items-center justify-center min-h-[calc(100vh-300px)]">
+         <div className="flex items-center justify-center h-[100px] max-w-md mx-auto p-6 shadow-lg rounded-lg">
+          <p className=" text-lg text-center">Leaderboard is currently hidden, Please turn it on to show the leaderboard</p>
         </div>
+       </div>
       )}
     </div>
   )
