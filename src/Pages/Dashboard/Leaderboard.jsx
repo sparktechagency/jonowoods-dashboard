@@ -115,7 +115,7 @@ const Leaderboard = () => {
       </div>
 
       {/* Three Leaderboard Cards - Only show when leaderboardIsShown is true */}
-      {leaderboardIsShown && (
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <LeaderboardCard
             title="Total Time (Minutes)"
@@ -133,16 +133,16 @@ const Leaderboard = () => {
             scoreKey="completedSessionsCount"
           />
         </div>
-      )}
+   
 
       {/* Message when leaderboard is hidden */}
-      {!leaderboardIsShown && (
+      {/* {!leaderboardIsShown && (
        <div className="flex items-center justify-center min-h-[calc(100vh-300px)]">
          <div className="flex items-center justify-center h-[100px] max-w-md mx-auto p-6 shadow-lg rounded-lg">
           <p className=" text-lg text-center">Leaderboard is currently hidden, Please turn it on to show the leaderboard</p>
         </div>
        </div>
-      )}
+      )} */}
     </div>
   )
 }
