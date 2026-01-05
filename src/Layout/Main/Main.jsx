@@ -17,7 +17,7 @@ const Main = () => {
         </div>
         {/* Scrollable Outlet area */}
         <main
-          className="flex-1 pt-[88px] overflow-auto bg-baseBg px-4 py-6 rounded-md lg:px-10"
+          className="flex-1 pt-[88px] overflow-auto bg-baseBg px-4 py-6 rounded-md lg:px-5"
           style={{ height: "calc(100vh - 68px)" }}
         >
           <Outlet />

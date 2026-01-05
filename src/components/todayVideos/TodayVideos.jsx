@@ -430,8 +430,8 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
       dataIndex: "description",
       key: "description",
       width:"35%",
-      ellipsis: true,
-      render: (text) => <p className="truncate max-w-sm text-wrap">{text.slice(0, 170)}</p>,
+   
+      render: (text) => <p className="truncate max-w-[320px] text-wrap">{text.slice(0, 100)}...</p>,
     },
     // {
     //   title: "Status",
