@@ -401,17 +401,17 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
     {
       title: "Challenge Name",
       key: "challengeName",
-      width:"25%",
+      width:"20%",
       render: (_, record) => (
         <div className="flex items-center">
-          <p className="font-medium">{record.name || "Untitled Challenge"}</p>
+          <p className="font-medium text-wrap">{record.name || "Untitled Challenge"}</p>
         </div>
       ),
     },
     {
-      title: "Challenge Image",
+      title: " Image",
       key: "challengeImage",
-      width:"15%",
+      width:"10%",
       render: (_, record) => (
         <div className="flex items-center">
           {record.image && (
@@ -419,7 +419,7 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
               src={getImageUrl(record.image)}
               alt={record.name || "Challenge"}
               style={{ width: 120, height: 60, objectFit: "cover" }}
-              className="rounded"
+              className="rounded "
             />
           )}
         </div>
@@ -429,9 +429,9 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
       title: "Description",
       dataIndex: "description",
       key: "description",
-      width:"40%",
+      width:"35%",
       ellipsis: true,
-      render: (text) => <p className="max-w-lg truncate">{text.slice(0, 170)}</p>,
+      render: (text) => <p className="truncate max-w-sm text-wrap">{text.slice(0, 170)}</p>,
     },
     // {
     //   title: "Status",
@@ -447,21 +447,21 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
     {
       title: "Actions",
       key: "actions",
-      width:"20%",
+      width:"10%",
       render: (_, record) => (
         <div className="flex items-center space-x-2">
           <Button
-            size="small"
-            className="bg-primary text-white hover:bg-primary/80 border-none hover:text-white py-4 px-4"
+            size="middle"
+            className="bg-primary text-white hover:bg-primary/80 border-none hover:text-white py-4 px-6"
             icon={<EyeOutlined />}
             onClick={() => handleViewChallenge(record)}
-          >View</Button>
+          ></Button>
           <Button
-            size="small"
-            className="bg-primary text-white hover:bg-primary/80 border-none hover:text-white py-4 px-4"
+            size="middle"
+            className="bg-primary text-white hover:bg-primary/80 border-none hover:text-white py-4 px-6"
             icon={<EditOutlined />}
             onClick={() => handleEditChallenge(record)}
-          >Edit</Button>
+          ></Button>
           {/* <Switch
             checked={record.status === "active"}
             onChange={() => handleStatusToggle(record._id, record.status)}
@@ -469,11 +469,11 @@ const handleStatusToggle = async (challengeId, currentStatus) => {
             className="hover:bg-red-600 border-none hover:text-white text-red-500"
           /> */}
           <Button
-            className="bg-primary text-white hover:bg-primary/80 border-none hover:text-white py-4 px-4"
-            size="small"
+            className="bg-primary text-white hover:bg-primary/80 border-none hover:text-white py-4 px-10"
+            size="middle"
             icon={<DeleteOutlined />}
             onClick={() => handleDeleteChallenge(record._id)}
-          >Delete</Button>
+          ></Button>
         </div>
       ),
     },
