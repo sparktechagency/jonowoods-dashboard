@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Modal,
   Form,
@@ -42,8 +42,16 @@ const VideoUploadModal = ({
   const [tagInput, setTagInput] = useState("");
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadSpeed, setUploadSpeed] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(0);
   const [uploadStatus, setUploadStatus] = useState("");
   const [bunnyVideoData, setBunnyVideoData] = useState(null);
+  const [videoPreview, setVideoPreview] = useState('');
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+
+  const xhrRef = useRef(null);
+  const startTimeRef = useRef(0);
+  const uploadedBytesRef = useRef(0);
 
   const isEditMode = !!currentVideo?._id;
 
@@ -81,11 +89,33 @@ const VideoUploadModal = ({
   }, [visible, currentVideo, form, setEquipmentTags]);
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return "0 B";
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+  };
+
+  // Format time for upload remaining
+  const formatTime = (seconds) => {
+    if (!seconds || seconds === Infinity) return '--:--';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Calculate upload speed and time remaining
+  const calculateProgress = (loaded, total) => {
+    const currentTime = Date.now();
+    const elapsedTime = (currentTime - startTimeRef.current) / 1000; // seconds
+
+    if (elapsedTime > 0) {
+      const speed = loaded / elapsedTime; // bytes per second
+      const remaining = (total - loaded) / speed; // seconds
+
+      setUploadSpeed(speed);
+      setTimeRemaining(remaining);
+    }
   };
 
   const handleThumbnailUpload = (info) => {
@@ -99,12 +129,21 @@ const VideoUploadModal = ({
       return;
     }
 
-    if (fileObj.size > 5 * 1024 * 1024) {
-      message.error('Image must be smaller than 5MB');
+    const maxSize = 20 * 1024 * 1024; // 20MB
+    if (fileObj.size > maxSize) {
+      message.error('Thumbnail must be less than 20MB');
       return;
     }
 
     setThumbnailFile(fileObj);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setThumbnailPreview(reader.result);
+    };
+    reader.readAsDataURL(fileObj);
+
     message.success('Thumbnail selected successfully');
   };
 
@@ -119,7 +158,21 @@ const VideoUploadModal = ({
       return;
     }
 
+    const maxSize = 10 * 1024 * 1024 * 1024; // 10GB
+    if (fileObj.size > maxSize) {
+      message.error('Video file must be less than 10GB');
+      return;
+    }
+
     setVideoFile(fileObj);
+
+    // Create preview (only for smaller files to avoid memory issues)
+    if (fileObj.size < 200 * 1024 * 1024) { // Only preview files under 200MB
+      const url = URL.createObjectURL(fileObj);
+      setVideoPreview(url);
+    } else {
+      setVideoPreview('large-file'); // Flag for large files
+    }
 
     const video = document.createElement("video");
     video.preload = "metadata";
@@ -153,96 +206,131 @@ const VideoUploadModal = ({
     }
   };
 
-  const uploadVideoToBunnyStream = async (videoFile, title) => {
-    return new Promise(async (resolve, reject) => {
+  // Cancel upload functionality
+  const cancelUpload = () => {
+    if (xhrRef.current) {
+      xhrRef.current.abort();
+      xhrRef.current = null;
+    }
+    setUploadingVideo(false);
+    setUploadProgress(0);
+    setUploadSpeed(0);
+    setTimeRemaining(0);
+    setUploadStatus("");
+    message.info('Upload cancelled');
+  };
+
+  const uploadVideoAndThumbnail = async (videoFile, thumbnailFile, title) => {
+    return new Promise((resolve, reject) => {
       try {
         setUploadingVideo(true);
-        setUploadStatus("Initializing upload...");
+        setUploadStatus("Preparing upload...");
         setUploadProgress(0);
+        setUploadSpeed(0);
+        setTimeRemaining(0);
+        startTimeRef.current = Date.now();
+        uploadedBytesRef.current = 0;
 
+        // Create FormData with video and thumbnail
+        const formData = new FormData();
+        formData.append('video', videoFile);
+        formData.append('thumbnail', thumbnailFile);
 
-        const initResponse = await fetch(`${getBaseUrl(isProduction)}/api/v1/admin/videos/library/generate-upload-url`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("token")}`
-          },
-          body: JSON.stringify({
-            title: title,
-            fileName: videoFile.name,
-          }),
-        });
-
-        if (!initResponse.ok) {
-          throw new Error("Failed to get upload URL");
-        }
-
-        const { data } = await initResponse.json();
-        const { videoId, uploadUrl, apiKey, embedUrl } = data;
-
-        setUploadStatus("Uploading video...");
+        setUploadStatus("Uploading video and thumbnail...");
 
         const xhr = new XMLHttpRequest();
+        xhrRef.current = xhr;
 
+        // Progress tracking
         xhr.upload.addEventListener("progress", (e) => {
           if (e.lengthComputable) {
             const percentComplete = Math.round((e.loaded / e.total) * 100);
             setUploadProgress(percentComplete);
+            uploadedBytesRef.current = e.loaded;
+            calculateProgress(e.loaded, e.total);
             setUploadStatus(`Uploading: ${percentComplete}%`);
           }
         });
 
-        xhr.addEventListener("load", async () => {
+        // Success
+        xhr.addEventListener("load", () => {
           if (xhr.status === 200 || xhr.status === 201) {
-            setUploadStatus("Upload complete! Processing...");
-            setUploadProgress(100);
+            try {
+              const response = JSON.parse(xhr.responseText);
+              setUploadStatus("Upload complete! Processing...");
+              setUploadProgress(100);
+              xhrRef.current = null;
 
-            resolve({
-              videoId,
-              embedUrl,
-              videoUrl: embedUrl,
-            });
+              // Response structure: { data: { videoId, libraryId, videoUrl, downloadUrl, isDrmEnabled } }
+              resolve(response.data);
+            } catch (parseError) {
+              xhrRef.current = null;
+              reject(new Error("Failed to parse server response"));
+            }
           } else {
-            reject(new Error("Video upload failed"));
+            try {
+              const error = JSON.parse(xhr.responseText);
+              xhrRef.current = null;
+              reject(new Error(error.message || 'Upload failed'));
+            } catch {
+              xhrRef.current = null;
+              reject(new Error(`Upload failed with status: ${xhr.status}`));
+            }
           }
         });
 
+        // Error
         xhr.addEventListener("error", () => {
-          reject(new Error("Network error during upload"));
+          xhrRef.current = null;
+          reject(new Error("Network error occurred. Please check your connection."));
         });
 
-        xhr.open("PUT", uploadUrl);
-        xhr.setRequestHeader("AccessKey", apiKey);
-        xhr.setRequestHeader("Content-Type", "application/octet-stream");
-        xhr.send(videoFile);
+        // Timeout
+        xhr.addEventListener("timeout", () => {
+          xhrRef.current = null;
+          reject(new Error("Upload timeout. Please try again."));
+        });
+
+        // Abort
+        xhr.addEventListener("abort", () => {
+          xhrRef.current = null;
+          reject(new Error("Upload cancelled"));
+        });
+
+        // Send request with extended timeout
+        xhr.open('POST', `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/generate-upload-url`);
+        xhr.setRequestHeader("Authorization", `Bearer ${localStorage.getItem("token")}`);
+        xhr.timeout = 3600000; // 1 hour timeout for large files
+        xhr.send(formData);
 
       } catch (error) {
+        xhrRef.current = null;
         reject(error);
       }
     });
   };
 
-  const uploadThumbnailToBunnyStorage = async (thumbnailFile) => {
-    try {
-      const formData = new FormData();
-      formData.append("thumbnail", thumbnailFile);
+  // const uploadThumbnailToBunnyStorage = async (thumbnailFile) => {
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("thumbnail", thumbnailFile);
 
-      const response = await fetch(`${getBaseUrl(isProduction)}/api/v1/admin/videos/library/thumbnail`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${localStorage.getItem("token")}`
-        },
-        body: formData,
-      });
+  //     const response = await fetch(`${getBaseUrl(isProduction)}/api/v1/admin/videos/library/thumbnail`, {
+  //       method: "POST",
+  //       headers: {
+  //         "Authorization": `Bearer ${localStorage.getItem("token")}`
+  //       },
+  //       body: formData,
+  //     });
 
-      if (!response.ok) return null;
+  //     if (!response.ok) return null;
 
-      const result = await response.json();
-      return result.data;
-    } catch {
-      return null;
-    }
-  };
+  //     const result = await response.json();
+  //     return result.data;
+  //   } catch {
+  //     return null;
+  //   }
+  // };
 
   const handleSubmit = async (values) => {
     if (!isEditMode && (!thumbnailFile || !videoFile)) {
@@ -260,21 +348,20 @@ const VideoUploadModal = ({
     let videoId = currentVideo?.videoId;
 
     try {
-      if (!isEditMode && videoFile) {
-        const bunnyData = await uploadVideoToBunnyStream(videoFile, values.title);
-        videoUrl = bunnyData.videoUrl;
-        videoId = bunnyData.videoId;
-        setBunnyVideoData(bunnyData);
+      if (!isEditMode && videoFile && thumbnailFile) {
+        // Upload video and thumbnail together
+        const uploadResponse = await uploadVideoAndThumbnail(videoFile, thumbnailFile, values.title);
 
-        if (thumbnailFile) {
-          setUploadStatus("Uploading thumbnail...");
-          const uploadedThumbnailUrl = await uploadThumbnailToBunnyStorage(
-            thumbnailFile
-          );
-          if (uploadedThumbnailUrl) {
-            thumbnailUrl = uploadedThumbnailUrl;
-          }
+        // Response contains: { videoId, libraryId, videoUrl, downloadUrl, thumbnailUrl?, isDrmEnabled }
+        videoUrl = uploadResponse.videoUrl;
+        videoId = uploadResponse.videoId;
+
+        // Thumbnail URL is included in the response if upload was successful
+        if (uploadResponse.thumbnailUrl) {
+          thumbnailUrl = uploadResponse.thumbnailUrl;
         }
+
+        setBunnyVideoData(uploadResponse);
       }
 
       let formattedDuration = values.duration;
@@ -314,12 +401,24 @@ const VideoUploadModal = ({
 
       message.success(`Video ${isEditMode ? "updated" : "added"} successfully`);
 
+      // Clean up
+      if (videoPreview && videoPreview !== 'large-file') {
+        URL.revokeObjectURL(videoPreview);
+      }
+
       setUploadingVideo(false);
       setUploadProgress(0);
+      setUploadSpeed(0);
+      setTimeRemaining(0);
+      setVideoPreview('');
+      setThumbnailPreview(null);
       onSuccess();
       onCancel();
     } catch (error) {
       setUploadingVideo(false);
+      setUploadSpeed(0);
+      setTimeRemaining(0);
+      xhrRef.current = null;
 
       const errorMessage = error?.data?.message
         || error?.message
@@ -371,15 +470,47 @@ const VideoUploadModal = ({
               </div>
             }
             description={
-              <Progress
-                percent={uploadProgress}
-                status={uploadProgress === 100 ? "success" : "active"}
-                strokeColor={{
-                  '0%': '#108ee9',
-                  '100%': '#87d068',
-                }}
-                showInfo={true}
-              />
+              <div className="space-y-3">
+                <Progress
+                  percent={uploadProgress}
+                  status={uploadProgress === 100 ? "success" : "active"}
+                  strokeColor={{
+                    '0%': '#108ee9',
+                    '100%': '#87d068',
+                  }}
+                  showInfo={true}
+                />
+
+                {/* Upload Stats */}
+                {uploadProgress > 0 && uploadProgress < 100 && (
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <div className="flex items-center gap-1">
+                      <span>Speed:</span>
+                      <span className="font-semibold">{formatFileSize(uploadSpeed)}/s</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span>⏱</span>
+                      <span>{formatTime(timeRemaining)} remaining</span>
+                    </div>
+                  </div>
+                )}
+
+                <p className="text-xs text-gray-500">
+                  Uploading large files may take several minutes. Please don't close this page.
+                </p>
+
+                {/* Cancel Button */}
+                {uploadProgress < 100 && (
+                  <Button
+                    size="small"
+                    danger
+                    onClick={cancelUpload}
+                    className="w-full"
+                  >
+                    Cancel Upload
+                  </Button>
+                )}
+              </div>
             }
             type="info"
             className="mb-4"
@@ -475,7 +606,7 @@ const VideoUploadModal = ({
                 {thumbnailFile ? 'Thumbnail Selected' : 'Click or drag to upload'}
               </p>
               <p className="ant-upload-hint">
-                Support: JPG, PNG, WEBP (Max 5MB)
+                Support: JPG, PNG, WEBP (Max 20MB)
               </p>
             </Dragger>
 
@@ -542,7 +673,7 @@ const VideoUploadModal = ({
                     {videoFile ? 'Video Selected' : 'Click or drag to upload'}
                   </p>
                   <p className="ant-upload-hint">
-                    Support: MP4, WEBM, MOV, AVI
+                    Support: MP4, WEBM, MOV, AVI (Max 10GB)
                   </p>
                 </Dragger>
 
