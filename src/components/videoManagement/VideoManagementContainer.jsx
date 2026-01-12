@@ -185,7 +185,7 @@ const VideoManagementContainer = () => {
           <img
             src={getVideoAndThumbnail(record.thumbnailUrl)}
             alt="thumbnail"
-            style={{ width: 100, height: 50, objectFit: "cover" }}
+            style={{ width: 120, height: 55, objectFit: "cover" }}
             className="rounded-lg"
           />
         </div>

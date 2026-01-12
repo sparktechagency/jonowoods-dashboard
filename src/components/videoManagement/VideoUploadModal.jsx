@@ -346,6 +346,7 @@ const VideoUploadModal = ({
     let videoUrl = currentVideo?.videoUrl;
     let thumbnailUrl = currentVideo?.thumbnailUrl;
     let videoId = currentVideo?.videoId;
+    let downloadUrl = currentVideo?.downloadUrl;
 
     try {
       if (!isEditMode && videoFile && thumbnailFile) {
@@ -355,6 +356,7 @@ const VideoUploadModal = ({
         // Response contains: { videoId, libraryId, videoUrl, downloadUrl, thumbnailUrl?, isDrmEnabled }
         videoUrl = uploadResponse.videoUrl;
         videoId = uploadResponse.videoId;
+        downloadUrl = uploadResponse.downloadUrl;
 
         // Thumbnail URL is included in the response if upload was successful
         if (uploadResponse.thumbnailUrl) {
@@ -375,10 +377,11 @@ const VideoUploadModal = ({
         description: values.description || "",
         equipment: equipmentTags,
         videoUrl: videoUrl,
+        downloadUrl: downloadUrl,
         videoId: videoId,
         ...(thumbnailUrl && { thumbnailUrl }),
       };
-
+console.log(videoData);
       setUploadStatus("Saving metadata...");
 
       if (isEditMode) {

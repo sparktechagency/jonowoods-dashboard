@@ -16,6 +16,13 @@ export const getImageUrl = (path) => {
   }
 };
 
-export const getVideoAndThumbnail = (Url) => {
-  return `https://${Url}`;
+// export const getVideoAndThumbnail = (Url) => {
+//   return `${Url}`;
+// };
+
+
+
+export const getVideoAndThumbnail = (url) => {
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : getImageUrl(url);
 };
