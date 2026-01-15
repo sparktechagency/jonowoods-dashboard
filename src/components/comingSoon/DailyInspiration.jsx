@@ -29,8 +29,9 @@ import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
 import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
-import EditVideoModal from "../SalesRepsManagement/EditVideoModal";
+// import EditVideoModal from "../SalesRepsManagement/EditVideoModal";
 import VideoLibraryModal from "../common/VideoLibraryModal"; // Import the new reusable component
+import EditVideoModal from "../CategoryVideo/EditVideoModal";
 
 const DailyInspirationPage = () => {
   const [deleteDailyInspiration] = useDeleteDailyInspirationMutation();

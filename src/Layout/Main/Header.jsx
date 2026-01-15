@@ -296,7 +296,7 @@ const Header = () => {
               }
             }}
           >
-            <div className="w-12 h-12 bg-primary text-white flex items-center justify-center rounded-full relative cursor-pointer">
+            {/* <div className="w-12 h-12 bg-primary text-white flex items-center justify-center rounded-full relative cursor-pointer">
               <FaRegBell size={30} className="text-smart" />
               {unreadCount > 0 ? (
                 <Badge
@@ -308,7 +308,7 @@ const Header = () => {
                   className="absolute top-2 right-3"
                 />
               ) : null}
-            </div>
+            </div> */}
           </Popover>
 
           <Popover

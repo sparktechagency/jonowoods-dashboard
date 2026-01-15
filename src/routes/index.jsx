@@ -2,11 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import Auth from "../Layout/Auth/Auth";
 import Main from "../Layout/Main/Main";
 import Home from "../Pages/Dashboard/Home";
-import Users from "../Pages/Dashboard/Subsciber";
-import Admin from "../Pages/Dashboard/Admin";
-// import Category from "../Pages/Dashboard/PushNotification";
-import Events from "../Pages/Dashboard/UpdatePassword";
-import Banner from "../Pages/Dashboard/Banner";
+// import Banner from "../Pages/Dashboard/Banner";
 import AboutUs from "../Pages/Dashboard/AboutUs";
 import PrivacyPolicy from "../Pages/Dashboard/PrivacyPolicy";
 import TermsAndConditions from "../Pages/Dashboard/TermsAndCondition";
@@ -19,19 +15,11 @@ import NotFound from "../NotFound";
 import Notifications from "../Pages/Dashboard/Notifications";
 import SubCategory from "../Pages/Dashboard/SubCategory";
 import AdminProfile from "../Pages/Dashboard/AdminProfile/AdminProfile";
-import Retailer from "../Pages/Dashboard/Retailer";
 import ViewSalesReps from "../components/SalesRepsManagement/detailsSalesReps/SubCategoryTable";
 import VideoManagement from "../components/SalesRepsManagement/detailsSalesReps/VideoManagement";
 import VideoManagementSystem from "../components/SalesRepsManagement/detailsSalesReps/VideoManagement";
-import Products from "../Pages/Dashboard/Products";
-import LoyaltyProgram from "../Pages/Dashboard/LoyaltyProgram";
 import OrderManagementContainer from "../components/orderManagement/OrderManagementContainer";
-// import VideoManagementSystem from "../components/retailerManagement/RetailerManageTable";
 
-
-import CategoryManagement from "../components/SalesRepsManagement/SalesRepsManagement";
-import Subscriber from "../Pages/Dashboard/Subsciber";
-import Subsciber from "../Pages/Dashboard/Subsciber";
 import QuotationManagement from "../components/quotation/QuotationManagement";
 import SubCategoryManagement from "../components/SalesRepsManagement/detailsSalesReps/CategoryDetails";
 import LoginCredentials from "../components/loginCredentials/LoginCredentials";
@@ -44,9 +32,8 @@ import DailyInspirationPage from "../components/comingSoon/DailyInspiration";
 import PostManagementSystem from "../components/createPost/CreatePostManagement";
 
 
-import PageManagement from "../Pages/Dashboard/LoginAndRegisterBG";
+// import PageManagement from "../Pages/Dashboard/LoginAndRegisterBG";
 import ContactManagement from "../components/contactus/ContactUsUser";
-import AllVideos from "../components/SalesRepsManagement/AllVideos";
 
 import PrivateRoute from "./ProtectedRoute";
 import SubscriptionManagementTable from "../components/subscriptionUser/SubscriptionUser";
@@ -153,10 +140,10 @@ const router = createBrowserRouter([
       //   path: "/category",
       //   element: <Category />,
       // },
-      {
-        path: "/login-register",
-        element: <PageManagement />,
-      },
+      // {
+      //   path: "/login-register",
+      //   element: <PageManagement />,
+      // },
       {
         path: "/contactUs",
         element: <ContactManagement />,
@@ -165,10 +152,10 @@ const router = createBrowserRouter([
         path: "/subcription-user",
         element: <SubscriptionManagementTable />,
       },
-      {
-        path: "/banner",
-        element: <Banner />,
-      },
+      // {
+      //   path: "/banner",
+      //   element: <Banner />,
+      // },
       {
         path: "/about-us",
         element: <AboutUs />,
