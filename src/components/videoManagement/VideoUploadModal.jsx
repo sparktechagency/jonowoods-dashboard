@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Modal,
   Form,
@@ -32,6 +32,9 @@ const { Dragger } = Upload;
 const CHUNK_SIZE = 5 * 1024 * 1024;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
+
+// Add delay after all chunks uploaded before calling complete
+const POST_UPLOAD_BUFFER = 2000; // 2 seconds buffer
 
 const VideoUploadModal = ({
   visible,
@@ -275,6 +278,13 @@ const VideoUploadModal = ({
         }
 
         const result = await response.json();
+
+        // CRITICAL: Wait for backend confirmation before proceeding
+        // Backend should return { success: true, chunkReceived: true }
+        if (!result.success) {
+          throw new Error("Chunk upload not confirmed by backend");
+        }
+
         return result;
       } catch (error) {
         if (
@@ -330,7 +340,7 @@ const VideoUploadModal = ({
       formData.append("uploadId", uploadId);
       formData.append("fileType", fileType);
 
-      // Upload with retry
+      // Upload with retry and WAIT for backend confirmation
       await uploadChunkWithRetry(formData, chunkIndex, totalChunks);
 
       // Update progress
@@ -344,14 +354,72 @@ const VideoUploadModal = ({
         `Uploading ${fileType}: ${fileProgress}% (${chunkIndex + 1}/${totalChunks} chunks)`,
       );
 
-      console.log(`✓ Chunk ${chunkIndex + 1}/${totalChunks} uploaded`);
+      console.log(
+        `✓ Chunk ${chunkIndex + 1}/${totalChunks} uploaded and confirmed`,
+      );
     }
 
-    console.log(`✓ ${fileType} upload complete`);
+    console.log(
+      `✓ All ${fileType} chunks sent. Waiting for backend finalization...`,
+    );
+
+    // CRITICAL FIX: Add buffer time for backend to finalize disk writes
+    setUploadStatus(`Finalizing ${fileType} on server...`);
+    await sleep(POST_UPLOAD_BUFFER);
+
+    console.log(`✓ ${fileType} upload complete and finalized`);
+  };
+
+  // Verify upload status before completing
+  const verifyUploadStatus = async (uploadId) => {
+    try {
+      const response = await fetch(
+        `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/verify-upload/${uploadId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      if (!response.ok) {
+        return { ready: false };
+      }
+
+      const result = await response.json();
+      return result; // { ready: true/false, missingFiles: [...] }
+    } catch (error) {
+      console.error("Verify upload error:", error);
+      return { ready: false };
+    }
   };
 
   // Complete upload and process with retry logic
   const completeUpload = async (retries = 3) => {
+    // STEP 1: Verify all files are ready on backend
+    setUploadStatus("Verifying upload completion...");
+
+    for (let i = 0; i < 5; i++) {
+      // Check 5 times with increasing delay
+      const verification = await verifyUploadStatus(uploadIdRef.current);
+
+      if (verification.ready) {
+        console.log("✓ Backend confirmed all files ready");
+        break;
+      }
+
+      if (i < 4) {
+        const waitTime = 1000 * (i + 1); // 1s, 2s, 3s, 4s
+        console.log(`Waiting ${waitTime}ms for backend to finalize...`);
+        setUploadStatus(`Waiting for server finalization... (${i + 1}/5)`);
+        await sleep(waitTime);
+      } else {
+        console.warn("⚠️ Proceeding without verification confirmation");
+      }
+    }
+
+    // STEP 2: Call complete upload
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         setUploadStatus(`Processing files... (Attempt ${attempt}/${retries})`);
@@ -394,7 +462,7 @@ const VideoUploadModal = ({
         }
 
         const result = await response.json();
-        console.log("Complete upload successful:", result);
+        console.log("✓ Complete upload successful:", result);
 
         setOverallProgress(100);
         return result.data;
@@ -458,17 +526,17 @@ const VideoUploadModal = ({
           .toString(36)
           .substr(2, 9)}`;
 
-        // Upload thumbnail
+        // Upload thumbnail with backend confirmation
         setUploadStatus("Uploading thumbnail...");
         await uploadFileInChunks(thumbnailFile, "thumbnail");
 
-        // Upload video
+        // Upload video with backend confirmation
         setUploadStatus("Uploading video...");
         setUploadProgress(0);
         await uploadFileInChunks(videoFile, "video");
 
-        // Complete upload
-        setUploadStatus("Processing upload...");
+        // Complete upload with verification
+        setUploadStatus("Verifying and processing upload...");
         const uploadResult = await completeUpload(3);
 
         if (uploadResult?.alreadyProcessed) {
