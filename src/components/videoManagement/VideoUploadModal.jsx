@@ -325,8 +325,14 @@ const VideoUploadModal = ({
     }
 
     console.log(
-      `✓ All ${fileType} chunks uploaded. Backend will finalize...`,
+      `✓ All ${fileType} chunks uploaded. Waiting for backend to finalize...`,
     );
+
+    // CRITICAL: Give backend time to finalize disk writes
+    setUploadStatus(`Finalizing ${fileType} on server...`);
+    await sleep(POST_UPLOAD_BUFFER);
+
+    console.log(`✓ ${fileType} upload complete and finalized`);
   };
 
   // Verify upload status with exponential retry logic (10s increments)
