@@ -34,7 +34,7 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 
 // Add delay after all chunks uploaded before calling complete
-const POST_UPLOAD_BUFFER = 20000; // 2 seconds buffer
+const POST_UPLOAD_BUFFER = 20000; // 20 seconds buffer
 
 const VideoUploadModal = ({
   visible,
@@ -370,56 +370,95 @@ const VideoUploadModal = ({
     console.log(`✓ ${fileType} upload complete and finalized`);
   };
 
-  // Verify upload status before completing
+  // Verify upload status with exponential retry logic (10s increments)
   const verifyUploadStatus = async (uploadId) => {
-    try {
-      const response = await fetch(
-        `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/verify-upload/${uploadId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+    let attempt = 0;
+    let delaySeconds = 0; // First attempt is immediate
+
+    while (true) {
+      try {
+        attempt++;
+        
+        // Wait before making the request (except first attempt)
+        if (attempt > 1) {
+          console.log(`⏳ Waiting ${delaySeconds}s before verification attempt ${attempt}...`);
+          setUploadStatus(`Verifying upload... (Waiting ${delaySeconds}s before attempt ${attempt})`);
+          await sleep(delaySeconds * 1000);
+        }
+
+        console.log(`🔍 Verification attempt ${attempt}...`);
+        setUploadStatus(`Verifying upload... (Attempt ${attempt})`);
+
+        const response = await fetch(
+          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/verify-upload/${uploadId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           },
-        },
-      );
+        );
 
-      if (!response.ok) {
-        return { ready: false };
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        
+        // Check if upload is ready
+        if (result.data?.ready) {
+          console.log(`✅ Upload verified successfully on attempt ${attempt}`);
+          return result.data;
+        }
+
+        // If not ready, log missing files and continue retry
+        const missingFiles = result.data?.missingFiles?.join(', ') || 'unknown';
+        console.log(`⚠️ Upload not ready yet. Missing: ${missingFiles}`);
+        
+        // Increment delay by 10 seconds for next attempt
+        delaySeconds += 10;
+        
+        setUploadStatus(`Files not ready yet (Missing: ${missingFiles}). Retrying in ${delaySeconds}s...`);
+        
+      } catch (error) {
+        console.error(`❌ Verification attempt ${attempt} failed:`, error);
+        
+        // Check if upload was cancelled
+        if (abortControllerRef.current?.signal.aborted) {
+          throw new Error("Upload cancelled");
+        }
+        
+        // Check network connectivity
+        if (!navigator.onLine) {
+          setUploadStatus("⚠️ Network disconnected. Waiting to reconnect...");
+          await sleep(5000); // Wait 5s before retrying on network error
+          continue; // Don't increment delay on network errors
+        }
+        
+        // Increment delay by 10 seconds for next attempt
+        delaySeconds += 10;
+        
+        // Continue retrying indefinitely on errors
+        setUploadStatus(`Verification failed. Retrying in ${delaySeconds}s... (Attempt ${attempt})`);
       }
-
-      const result = await response.json();
-      return result; // { ready: true/false, missingFiles: [...] }
-    } catch (error) {
-      console.error("Verify upload error:", error);
-      return { ready: false };
     }
   };
 
   // Complete upload and process with retry logic
   const completeUpload = async (retries = 3) => {
-    // STEP 1: Verify all files are ready on backend
+    // STEP 1: Verify all files are ready on backend with infinite retry
     setUploadStatus("Verifying upload completion...");
-
-    for (let i = 0; i < 5; i++) {
-      // Check 5 times with increasing delay
+    
+    try {
+      // This will retry indefinitely until success or cancellation
       const verification = await verifyUploadStatus(uploadIdRef.current);
-      console.log(verification, "===========================================");
-      if (verification.ready) {
-        console.log("✓ Backend confirmed all files ready");
-        break;
-      }
-
-      if (i < 4) {
-        const waitTime = 1000 * (i + 1); // 1s, 2s, 3s, 4s
-        console.log(`Waiting ${waitTime}ms for backend to finalize...`);
-        setUploadStatus(`Waiting for server finalization... (${i + 1}/5)`);
-        await sleep(waitTime);
-      } else {
-        console.warn("⚠️ Proceeding without verification confirmation");
-      }
+      console.log("✅ Backend confirmed all files ready:", verification);
+    } catch (error) {
+      // Only throws on cancellation
+      throw error;
     }
 
-    // STEP 2: Call complete upload
+    // STEP 2: Call complete upload API
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         setUploadStatus(`Processing files... (Attempt ${attempt}/${retries})`);
@@ -462,7 +501,7 @@ const VideoUploadModal = ({
         }
 
         const result = await response.json();
-        console.log("✓ Complete upload successful:", result);
+        console.log("✅ Complete upload successful:", result);
 
         setOverallProgress(100);
         return result.data;
@@ -892,7 +931,7 @@ const VideoUploadModal = ({
             icon={<CloudUploadOutlined />}
             style={{
               backgroundColor: "#CA3939",
-              color: "#FFFFFF", // Force white text
+              color: "#FFFFFF",
               border: "none",
             }}
             className="!text-white"
