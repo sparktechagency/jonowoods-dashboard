@@ -822,14 +822,20 @@ const VideoUploadModal = ({
             loading={isLoading}
             disabled={uploadingVideo && overallProgress < 100}
             icon={<CloudUploadOutlined />}
-            style={{ backgroundColor: "#CA3939" }}
-            className="bg-[#CA3939] text-white"
+            style={{
+              backgroundColor: "#CA3939",
+              color: "#FFFFFF", // Force white text
+              border: "none",
+            }}
+            className="!text-white"
           >
-            {uploadingVideo
-              ? `${overallProgress}%`
-              : isEditMode
-                ? "Update"
-                : "Upload"}
+            {uploadingVideo ? (
+              <span style={{ color: "#FFFFFF" }}>{overallProgress}%</span>
+            ) : isEditMode ? (
+              "Update"
+            ) : (
+              "Upload"
+            )}
           </Button>
         </div>
       </Form>
