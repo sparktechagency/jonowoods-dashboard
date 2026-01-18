@@ -34,7 +34,7 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 
 // Add delay after all chunks uploaded before calling complete
-const POST_UPLOAD_BUFFER = 2000; // 2 seconds buffer
+const POST_UPLOAD_BUFFER = 20000; // 2 seconds buffer
 
 const VideoUploadModal = ({
   visible,
@@ -403,7 +403,7 @@ const VideoUploadModal = ({
     for (let i = 0; i < 5; i++) {
       // Check 5 times with increasing delay
       const verification = await verifyUploadStatus(uploadIdRef.current);
-
+      console.log(verification, "===========================================");
       if (verification.ready) {
         console.log("✓ Backend confirmed all files ready");
         break;
