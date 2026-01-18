@@ -244,40 +244,74 @@ const VideoUploadModal = ({
   // Sleep helper for retry delays
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-  // Upload single chunk (no retry - just upload once)
-  const uploadChunk = async (formData, chunkIndex, totalChunks) => {
-    // Check if cancelled
-    if (abortControllerRef.current?.signal.aborted) {
-      throw new Error("Upload cancelled");
+  // Upload single chunk with retry logic
+  const uploadChunkWithRetry = async (
+    formData,
+    chunkIndex,
+    totalChunks,
+    retries = MAX_RETRIES,
+  ) => {
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        // Check if cancelled
+        if (abortControllerRef.current?.signal.aborted) {
+          throw new Error("Upload cancelled");
+        }
+
+        const response = await fetch(
+          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/upload-chunk`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: formData,
+            signal: abortControllerRef.current?.signal,
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || `Chunk upload failed: ${response.statusText}`,
+          );
+        }
+
+        const result = await response.json();
+
+        // Backend should return { success: true }
+        if (!result.success) {
+          throw new Error("Chunk upload not confirmed by backend");
+        }
+
+        return result;
+      } catch (error) {
+        if (
+          error.name === "AbortError" ||
+          error.message === "Upload cancelled"
+        ) {
+          throw error;
+        }
+
+        // Check network connectivity
+        if (!navigator.onLine) {
+          throw new Error(
+            "Network connection lost. Please check your internet.",
+          );
+        }
+
+        // Retry logic
+        if (attempt < retries - 1) {
+          const delay = RETRY_DELAY * (attempt + 1);
+          console.log(
+            `Retrying chunk ${chunkIndex + 1}/${totalChunks} after ${delay}ms...`,
+          );
+          await sleep(delay);
+        } else {
+          throw error;
+        }
+      }
     }
-
-    const response = await fetch(
-      `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/upload-chunk`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: formData,
-        signal: abortControllerRef.current?.signal,
-      },
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `Chunk upload failed: ${response.statusText}`,
-      );
-    }
-
-    const result = await response.json();
-
-    // Backend should return { success: true }
-    if (!result.success) {
-      throw new Error("Chunk upload not confirmed by backend");
-    }
-
-    return result;
   };
 
   // Upload file in chunks
@@ -305,8 +339,8 @@ const VideoUploadModal = ({
       formData.append("uploadId", uploadId);
       formData.append("fileType", fileType);
 
-      // Upload chunk (no retry - just once)
-      await uploadChunk(formData, chunkIndex, totalChunks);
+      // Upload with retry logic
+      await uploadChunkWithRetry(formData, chunkIndex, totalChunks);
 
       // Update progress
       const fileProgress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
@@ -320,7 +354,7 @@ const VideoUploadModal = ({
       );
 
       console.log(
-        `✓ Chunk ${chunkIndex + 1}/${totalChunks} uploaded`,
+        `✓ Chunk ${chunkIndex + 1}/${totalChunks} uploaded and confirmed`,
       );
     }
 
