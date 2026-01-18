@@ -36,6 +36,7 @@ import {
   useUpdatePostStatusMutation,
 } from "../../redux/apiSlices/createPostApi";
 import Spinner from "../common/Spinner";
+import Thumbnail from "../videoManagement/Thumbnail";
 
 const PostmanagementSystem = () => {
   // State management
@@ -271,8 +272,8 @@ const handleStatusChange = async (id) => {
     if (post.type === "image" && post.thumbnailUrl) {
       return (
         <div className="relative h-32 overflow-hidden rounded-lg">
-          <img
-            src={getVideoAndThumbnail(post.thumbnailUrl)}
+          <Thumbnail
+            thumbnailUrl={getVideoAndThumbnail(post.thumbnailUrl)}
             alt="preview"
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
           />

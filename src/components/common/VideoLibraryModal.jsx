@@ -2,6 +2,7 @@ import React from "react";
 import { Modal, Button, Table, Space } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { getVideoAndThumbnail } from "./imageUrl";
+import Thumbnail from "../videoManagement/Thumbnail";
 
 const VideoLibraryModal = ({
   visible,
@@ -38,8 +39,8 @@ const VideoLibraryModal = ({
       render: (_, record) => (
         <div className="flex items-center">
           {record.thumbnailUrl && (
-            <img
-              src={getVideoAndThumbnail(record.thumbnailUrl)}
+            <Thumbnail
+              thumbnailUrl={getVideoAndThumbnail(record.thumbnailUrl)}
               alt={record.title || "Thumbnail"}
               style={{ width: 80, height: 45, objectFit: "cover" }}
               className="mr-3 rounded"

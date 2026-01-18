@@ -45,6 +45,7 @@ import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment";
 import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
 import EditVideoModal from "../SalesRepsManagement/EditVideoModal";
+import Thumbnail from "../videoManagement/Thumbnail";
 
 const { TabPane } = Tabs;
 
@@ -186,8 +187,8 @@ console.log("challengeVideos:", challengeVideos);
 
         {/* Thumbnail */}
         <div className="flex-shrink-0">
-          <img
-            src={getVideoAndThumbnail(video.thumbnailUrl)}
+          <Thumbnail
+            thumbnailUrl={getVideoAndThumbnail(video.thumbnailUrl)}
             alt={video.title}
             className="w-20 h-12 object-cover rounded"
           />
@@ -381,8 +382,8 @@ console.log("challengeVideos:", challengeVideos);
         align: "center",
         render: (_, record) => (
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <img
-              src={getVideoAndThumbnail(record.thumbnailUrl)}
+            <Thumbnail
+              thumbnailUrl={getVideoAndThumbnail(record.thumbnailUrl)}
               alt="thumbnail"
               style={{
                 width: 100,

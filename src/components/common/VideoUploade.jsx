@@ -24,6 +24,7 @@ import VideoFormModal from "./VideoUploadModal";
 import Spinner from "./Spinner";
 import { getVideoAndThumbnail } from "./imageUrl";
 import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
+import Thumbnail from "../videoManagement/Thumbnail";
 
 // Added additionalButtons prop with default empty fragment
 const VideoUploadSystem = ({ pageType, apiHooks, additionalButtons = <></> }) => {
@@ -335,8 +336,8 @@ console.log(itemsData)
         align: "center",
         render: (_, record) => (
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <img
-              src={getVideoAndThumbnail(record.thumbnailUrl)}
+            <Thumbnail
+              thumbnailUrl={getVideoAndThumbnail(record.thumbnailUrl)}
               alt="thumbnail"
               style={{
                 width: 100,

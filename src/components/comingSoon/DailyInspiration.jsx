@@ -32,6 +32,7 @@ import VideoDetailsModal from "../retailerManagement/VideoDetailsModal";
 // import EditVideoModal from "../SalesRepsManagement/EditVideoModal";
 import VideoLibraryModal from "../common/VideoLibraryModal"; // Import the new reusable component
 import EditVideoModal from "../CategoryVideo/EditVideoModal";
+import Thumbnail from "../videoManagement/Thumbnail";
 
 const DailyInspirationPage = () => {
   const [deleteDailyInspiration] = useDeleteDailyInspirationMutation();
@@ -167,8 +168,8 @@ const DailyInspirationPage = () => {
 
         {/* Thumbnail */}
         <div className="flex-shrink-0">
-          <img
-            src={getVideoAndThumbnail(video.thumbnailUrl)}
+          <Thumbnail
+            thumbnailUrl={getVideoAndThumbnail(video.thumbnailUrl)}
             alt={video.title}
             className="w-20 h-12 object-cover rounded"
           />
@@ -400,8 +401,8 @@ const DailyInspirationPage = () => {
         render: (_, record) => (
           <div className="flex justify-center">
             {record.thumbnailUrl && (
-              <img
-                src={getVideoAndThumbnail(record.thumbnailUrl)}
+              <Thumbnail
+                thumbnailUrl={getVideoAndThumbnail(record.thumbnailUrl)}
                 alt={record.title || "Thumbnail"}
                 style={{ width: 80, height: 45, objectFit: "cover" }}
                 className="mr-3 rounded"

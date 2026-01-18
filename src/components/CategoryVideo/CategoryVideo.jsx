@@ -50,6 +50,7 @@ import DragDropList from "../common/DragDropList";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import EditVideoModal from "./EditVideoModal";
 import VideoDetailsModal from "../videoManagement/VideoDetailsModal";
+import Thumbnail from "../videoManagement/Thumbnail";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -237,8 +238,8 @@ useEffect(() => {
 
         {/* Thumbnail */}
         <div className="flex-shrink-0">
-          <img
-            src={getVideoAndThumbnail(video.thumbnailUrl)}
+          <Thumbnail
+            thumbnailUrl={getVideoAndThumbnail(video.thumbnailUrl)}
             alt={video.title}
             className="w-20 h-12 object-cover rounded"
           />
@@ -548,8 +549,8 @@ useEffect(() => {
       render: (_, record) => (
         <div className="flex items-center">
           {record.thumbnailUrl && (
-            <img
-              src={getVideoAndThumbnail(record.thumbnailUrl)}
+            <Thumbnail
+              thumbnailUrl={getVideoAndThumbnail(record.thumbnailUrl)}
               alt={record.title || "Thumbnail"}
               style={{ width: 80, height: 45, objectFit: "cover" }}
               className="mr-3 rounded"
@@ -613,8 +614,8 @@ useEffect(() => {
       width: 120,
       render: (thumbnailUrl) => (
         <div style={{ display: "flex", justifyContent: "center" }}>
-          <img
-            src={getVideoAndThumbnail(thumbnailUrl)}
+          <Thumbnail
+            thumbnailUrl={getVideoAndThumbnail(thumbnailUrl)}
             alt="thumbnail"
             className="object-cover rounded-xl"
             style={{ width: 100, height: 60 }}

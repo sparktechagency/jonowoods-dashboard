@@ -3,6 +3,7 @@ import { Card, Row, Col, Tag, Button, Space, Switch } from 'antd';
 import { EditOutlined, EyeOutlined, DeleteOutlined, DragOutlined, AppstoreOutlined } from '@ant-design/icons';
 import moment from 'moment/moment';
 import { getImageUrl, getVideoAndThumbnail } from '../common/imageUrl';
+import Thumbnail from '../videoManagement/Thumbnail';
 
 const DraggableCategoryCard = ({
   category,
@@ -15,7 +16,7 @@ const DraggableCategoryCard = ({
   dragHandleProps,
   serialNumber,
 }) => {
-  console.log(category?.thumbnail)
+
   return (
     <div
       className={`category-card ${isDragging ? "dragging" : ""} py-2`}
@@ -67,8 +68,8 @@ const DraggableCategoryCard = ({
         </Col>
 
         <Col span={4}>
-          <img
-            src={getImageUrl(category.thumbnail)}
+          <Thumbnail
+            thumbnailUrl={getImageUrl(category.thumbnail)}
             alt={category.name}
             style={{
               width: "80%",

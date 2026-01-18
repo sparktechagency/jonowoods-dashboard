@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Button, Upload, Tag } from "antd";
 import { UploadOutlined, ReloadOutlined, PictureOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../../common/imageUrl";
+import Thumbnail from "../../videoManagement/Thumbnail";
 
 const { TextArea } = Input;
 
@@ -142,8 +143,8 @@ const SubCategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
 
     // Show actual image
     return (
-      <img
-        src={previewUrl}
+      <Thumbnail
+        thumbnailUrl={previewUrl}
         alt="Thumbnail preview"
         className="w-full rounded mb-2"
         style={{ maxHeight: "200px", objectFit: "contain" }}

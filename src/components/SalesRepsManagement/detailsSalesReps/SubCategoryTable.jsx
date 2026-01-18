@@ -2,6 +2,7 @@ import React from "react";
 import { Table, Button, Space, Switch, Tag, Popconfirm } from "antd";
 import { EditOutlined, DeleteOutlined, EyeOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../../common/imageUrl";
+import Thumbnail from "../../videoManagement/Thumbnail";
 
 const SubCategoryTable = ({
   subCategories,
@@ -35,8 +36,8 @@ const SubCategoryTable = ({
       key: "thumbnail",
       render: (thumbnail) => (
         <div style={{ display: "flex", justifyContent: "center" }}>
-          <img
-            src={getImageUrl(thumbnail)}
+          <Thumbnail
+            thumbnailUrl={getImageUrl(thumbnail)}
             alt="thumbnail"
             className="object-cover rounded-xl"
             style={{ width: 100, height: 60 }}

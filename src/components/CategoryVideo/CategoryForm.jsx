@@ -3,6 +3,7 @@ import { Modal, Form, Input, Select, Button, Upload } from "antd";
 import { UploadOutlined, ReloadOutlined, PictureOutlined } from "@ant-design/icons";
 import { getImageUrl } from "../common/imageUrl";
 import { useParams } from "react-router-dom";
+import Thumbnail from "../videoManagement/Thumbnail";
 
 const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
   const [form] = Form.useForm();
@@ -112,8 +113,8 @@ const CategoryForm = ({ visible, onCancel, onSubmit, initialValues }) => {
 
     // Show actual image
     return (
-      <img
-        src={previewUrl}
+      <Thumbnail
+        thumbnailUrl={previewUrl}
         alt="Thumbnail preview"
         className="w-full rounded-3xl mb-2"
         style={{ maxHeight: "200px", objectFit: "contain" }}

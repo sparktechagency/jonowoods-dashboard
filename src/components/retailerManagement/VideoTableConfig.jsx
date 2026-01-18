@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import { getVideoAndThumbnail } from "../common/imageUrl";
 import moment from "moment/moment";
+import Thumbnail from "../videoManagement/Thumbnail";
 
 // Table columns configuration
 export const getTableColumns = ({
@@ -39,8 +40,8 @@ export const getTableColumns = ({
     align: "center",
     render: (_, record) => (
       <div style={{ display: "flex", justifyContent: "center" }}>
-        <img
-          src={getVideoAndThumbnail(record.thumbnailUrl)}
+        <Thumbnail
+          thumbnailUrl={getVideoAndThumbnail(record.thumbnailUrl)}
           alt="thumbnail"
           style={{
             width: 100,
@@ -119,8 +120,8 @@ export const getScheduleVideoColumns = ({ handleAddToSchedule }) => [
     render: (_, record) => (
       <div className="flex items-center">
         {record.thumbnailUrl && (
-          <img
-            src={getVideoAndThumbnail(record.thumbnailUrl)}
+          <Thumbnail
+            thumbnailUrl={getVideoAndThumbnail(record.thumbnailUrl)}
             alt={record.title || "Thumbnail"}
             style={{ width: 80, height: 45, objectFit: "cover" }}
             className="mr-3 rounded"

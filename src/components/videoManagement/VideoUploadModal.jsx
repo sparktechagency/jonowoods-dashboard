@@ -28,6 +28,11 @@ import { isProduction } from "../../redux/api/baseApi";
 const { TextArea } = Input;
 const { Dragger } = Upload;
 
+// Chunk size: 5MB
+const CHUNK_SIZE = 5 * 1024 * 1024;
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000;
+
 const VideoUploadModal = ({
   visible,
   onCancel,
@@ -42,16 +47,13 @@ const VideoUploadModal = ({
   const [tagInput, setTagInput] = useState("");
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadSpeed, setUploadSpeed] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(0);
   const [uploadStatus, setUploadStatus] = useState("");
-  const [bunnyVideoData, setBunnyVideoData] = useState(null);
-  const [videoPreview, setVideoPreview] = useState('');
-  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [currentFile, setCurrentFile] = useState("");
+  const [overallProgress, setOverallProgress] = useState(0);
 
-  const xhrRef = useRef(null);
-  const startTimeRef = useRef(0);
-  const uploadedBytesRef = useRef(0);
+  const abortControllerRef = useRef(null);
+  const uploadIdRef = useRef(null);
+  const videoElementRef = useRef(null);
 
   const isEditMode = !!currentVideo?._id;
 
@@ -59,6 +61,18 @@ const VideoUploadModal = ({
   const [updateVideo, { isLoading: isUpdating }] = useUpdateVideoMutation();
 
   const isLoading = isAdding || isUpdating || uploadingVideo;
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      if (videoElementRef.current && videoElementRef.current.src) {
+        URL.revokeObjectURL(videoElementRef.current.src);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (visible && currentVideo) {
@@ -72,50 +86,51 @@ const VideoUploadModal = ({
         setEquipmentTags(currentVideo.equipment);
       }
 
-      setThumbnailFile(null);
-      setVideoFile(null);
-      setTagInput("");
-      setBunnyVideoData(null);
-      setUploadProgress(0);
+      resetUploadState();
     } else if (visible) {
       form.resetFields();
-      setThumbnailFile(null);
-      setVideoFile(null);
-      setTagInput("");
       setEquipmentTags([]);
-      setBunnyVideoData(null);
-      setUploadProgress(0);
+      resetUploadState();
     }
-  }, [visible, currentVideo, form, setEquipmentTags]);
+  }, [visible, currentVideo]);
+
+  const resetUploadState = () => {
+    setThumbnailFile(null);
+    setVideoFile(null);
+    setTagInput("");
+    setUploadProgress(0);
+    setOverallProgress(0);
+    setUploadStatus("");
+    setCurrentFile("");
+    uploadIdRef.current = null;
+
+    if (videoElementRef.current && videoElementRef.current.src) {
+      URL.revokeObjectURL(videoElementRef.current.src);
+      videoElementRef.current = null;
+    }
+  };
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return "0 B";
     const k = 1024;
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
-  // Format time for upload remaining
-  const formatTime = (seconds) => {
-    if (!seconds || seconds === Infinity) return '--:--';
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const validateImageFile = (file) => {
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    return validTypes.includes(file.type);
   };
 
-  // Calculate upload speed and time remaining
-  const calculateProgress = (loaded, total) => {
-    const currentTime = Date.now();
-    const elapsedTime = (currentTime - startTimeRef.current) / 1000; // seconds
-
-    if (elapsedTime > 0) {
-      const speed = loaded / elapsedTime; // bytes per second
-      const remaining = (total - loaded) / speed; // seconds
-
-      setUploadSpeed(speed);
-      setTimeRemaining(remaining);
-    }
+  const validateVideoFile = (file) => {
+    const validTypes = [
+      "video/mp4",
+      "video/webm",
+      "video/quicktime",
+      "video/x-msvideo",
+    ];
+    return validTypes.includes(file.type);
   };
 
   const handleThumbnailUpload = (info) => {
@@ -124,27 +139,19 @@ const VideoUploadModal = ({
 
     const fileObj = file.originFileObj || file;
 
-    if (!fileObj.type.startsWith('image/')) {
-      message.error('Please upload a valid image file');
+    if (!validateImageFile(fileObj)) {
+      message.error("Please upload a valid image file (JPG, PNG, WEBP)");
       return;
     }
 
-    const maxSize = 20 * 1024 * 1024; // 20MB
+    const maxSize = 20 * 1024 * 1024;
     if (fileObj.size > maxSize) {
-      message.error('Thumbnail must be less than 20MB');
+      message.error("Thumbnail must be less than 20MB");
       return;
     }
 
     setThumbnailFile(fileObj);
-
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setThumbnailPreview(reader.result);
-    };
-    reader.readAsDataURL(fileObj);
-
-    message.success('Thumbnail selected successfully');
+    message.success("Thumbnail selected successfully");
   };
 
   const handleVideoUpload = (info) => {
@@ -153,38 +160,48 @@ const VideoUploadModal = ({
 
     const fileObj = file.originFileObj || file;
 
-    if (!fileObj.type.startsWith('video/')) {
-      message.error('Please upload a valid video file');
+    if (!validateVideoFile(fileObj)) {
+      message.error("Please upload a valid video file (MP4, WEBM, MOV, AVI)");
       return;
     }
 
-    const maxSize = 10 * 1024 * 1024 * 1024; // 10GB
+    const maxSize = 10 * 1024 * 1024 * 1024;
     if (fileObj.size > maxSize) {
-      message.error('Video file must be less than 10GB');
+      message.error("Video file must be less than 10GB");
       return;
     }
 
     setVideoFile(fileObj);
 
-    // Create preview (only for smaller files to avoid memory issues)
-    if (fileObj.size < 200 * 1024 * 1024) { // Only preview files under 200MB
-      const url = URL.createObjectURL(fileObj);
-      setVideoPreview(url);
-    } else {
-      setVideoPreview('large-file'); // Flag for large files
+    // Clean up previous video element
+    if (videoElementRef.current && videoElementRef.current.src) {
+      URL.revokeObjectURL(videoElementRef.current.src);
     }
 
     const video = document.createElement("video");
+    videoElementRef.current = video;
     video.preload = "metadata";
+
     video.onloadedmetadata = () => {
-      window.URL.revokeObjectURL(video.src);
       const duration = Math.floor(video.duration);
       const minutes = Math.floor(duration / 60);
       const seconds = duration % 60;
       const formatted = `${minutes}:${seconds.toString().padStart(2, "0")}`;
       form.setFieldsValue({ duration: formatted });
-      message.success('Video selected successfully');
+      message.success("Video selected successfully");
+
+      // Clean up
+      URL.revokeObjectURL(video.src);
     };
+
+    video.onerror = () => {
+      message.error("Failed to load video metadata");
+      if (video.src) {
+        URL.revokeObjectURL(video.src);
+      }
+      videoElementRef.current = null;
+    };
+
     video.src = URL.createObjectURL(fileObj);
   };
 
@@ -206,131 +223,214 @@ const VideoUploadModal = ({
     }
   };
 
-  // Cancel upload functionality
+  const calculateOverallProgress = (currentFileType, fileProgress) => {
+    const thumbnailWeight = 10; // 10%
+    const videoWeight = 85; // 85%
+    const processingWeight = 5; // 5%
+
+    if (currentFileType === "thumbnail") {
+      return Math.round((fileProgress * thumbnailWeight) / 100);
+    } else if (currentFileType === "video") {
+      return Math.round(10 + (fileProgress * videoWeight) / 100);
+    } else if (currentFileType === "processing") {
+      return Math.round(95 + (fileProgress * processingWeight) / 100);
+    }
+    return 0;
+  };
+
+  // Sleep helper for retry delays
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  // Upload single chunk with retry logic
+  const uploadChunkWithRetry = async (
+    formData,
+    chunkIndex,
+    totalChunks,
+    retries = MAX_RETRIES,
+  ) => {
+    for (let attempt = 0; attempt < retries; attempt++) {
+      try {
+        // Check if cancelled
+        if (abortControllerRef.current?.signal.aborted) {
+          throw new Error("Upload cancelled");
+        }
+
+        const response = await fetch(
+          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/upload-chunk`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: formData,
+            signal: abortControllerRef.current?.signal,
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || `Chunk upload failed: ${response.statusText}`,
+          );
+        }
+
+        const result = await response.json();
+        return result;
+      } catch (error) {
+        if (
+          error.name === "AbortError" ||
+          error.message === "Upload cancelled"
+        ) {
+          throw error;
+        }
+
+        // Check network connectivity
+        if (!navigator.onLine) {
+          throw new Error(
+            "Network connection lost. Please check your internet.",
+          );
+        }
+
+        // Retry logic
+        if (attempt < retries - 1) {
+          const delay = RETRY_DELAY * (attempt + 1);
+          console.log(
+            `Retrying chunk ${chunkIndex + 1}/${totalChunks} after ${delay}ms...`,
+          );
+          await sleep(delay);
+        } else {
+          throw error;
+        }
+      }
+    }
+  };
+
+  // Upload file in chunks
+  const uploadFileInChunks = async (file, fileType) => {
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const uploadId = uploadIdRef.current;
+
+    setCurrentFile(fileType === "video" ? "Video" : "Thumbnail");
+
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+      // Check if cancelled
+      if (abortControllerRef.current?.signal.aborted) {
+        throw new Error("Upload cancelled");
+      }
+
+      const start = chunkIndex * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, file.size);
+      const chunk = file.slice(start, end);
+
+      const formData = new FormData();
+      formData.append("chunk", chunk);
+      formData.append("chunkIndex", chunkIndex.toString());
+      formData.append("totalChunks", totalChunks.toString());
+      formData.append("fileName", file.name);
+      formData.append("uploadId", uploadId);
+      formData.append("fileType", fileType);
+
+      // Upload with retry
+      await uploadChunkWithRetry(formData, chunkIndex, totalChunks);
+
+      // Update progress
+      const fileProgress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+      setUploadProgress(fileProgress);
+
+      const overall = calculateOverallProgress(fileType, fileProgress);
+      setOverallProgress(overall);
+
+      setUploadStatus(
+        `Uploading ${fileType}: ${fileProgress}% (${chunkIndex + 1}/${totalChunks} chunks)`,
+      );
+
+      console.log(`✓ Chunk ${chunkIndex + 1}/${totalChunks} uploaded`);
+    }
+
+    console.log(`✓ ${fileType} upload complete`);
+  };
+
+  // Complete upload and process with retry logic
+  const completeUpload = async (retries = 3) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        setUploadStatus(`Processing files... (Attempt ${attempt}/${retries})`);
+        setCurrentFile("processing");
+
+        const processingProgress = Math.round((attempt / retries) * 100);
+        setOverallProgress(
+          calculateOverallProgress("processing", processingProgress),
+        );
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30 * 60 * 1000);
+
+        const response = await fetch(
+          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/complete-upload`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({
+              uploadId: uploadIdRef.current,
+            }),
+            signal: controller.signal,
+          },
+        );
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+
+          if (errorData.message?.includes("already uploaded")) {
+            console.log("Upload already processed");
+            return { alreadyProcessed: true };
+          }
+
+          throw new Error(errorData.message || `HTTP ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Complete upload successful:", result);
+
+        setOverallProgress(100);
+        return result.data;
+      } catch (error) {
+        console.error(`Complete upload error (attempt ${attempt}):`, error);
+
+        if (
+          error.name === "AbortError" ||
+          error.message?.includes("currently being processed")
+        ) {
+          throw error;
+        }
+
+        if (attempt < retries) {
+          const delay = Math.min(5000 * attempt, 15000);
+          console.log(`Retrying in ${delay}ms...`);
+          await sleep(delay);
+        } else {
+          throw error;
+        }
+      }
+    }
+  };
+
   const cancelUpload = () => {
-    if (xhrRef.current) {
-      xhrRef.current.abort();
-      xhrRef.current = null;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
     }
     setUploadingVideo(false);
     setUploadProgress(0);
-    setUploadSpeed(0);
-    setTimeRemaining(0);
+    setOverallProgress(0);
     setUploadStatus("");
-    message.info('Upload cancelled');
+    setCurrentFile("");
+    message.info("Upload cancelled");
   };
-
-  const uploadVideoAndThumbnail = async (videoFile, thumbnailFile, title) => {
-    return new Promise((resolve, reject) => {
-      try {
-        setUploadingVideo(true);
-        setUploadStatus("Preparing upload...");
-        setUploadProgress(0);
-        setUploadSpeed(0);
-        setTimeRemaining(0);
-        startTimeRef.current = Date.now();
-        uploadedBytesRef.current = 0;
-
-        // Create FormData with video and thumbnail
-        const formData = new FormData();
-        formData.append('video', videoFile);
-        formData.append('thumbnail', thumbnailFile);
-
-        setUploadStatus("Uploading video and thumbnail...");
-
-        const xhr = new XMLHttpRequest();
-        xhrRef.current = xhr;
-
-        // Progress tracking
-        xhr.upload.addEventListener("progress", (e) => {
-          if (e.lengthComputable) {
-            const percentComplete = Math.round((e.loaded / e.total) * 100);
-            setUploadProgress(percentComplete);
-            uploadedBytesRef.current = e.loaded;
-            calculateProgress(e.loaded, e.total);
-            setUploadStatus(`Uploading: ${percentComplete}%`);
-          }
-        });
-
-        // Success
-        xhr.addEventListener("load", () => {
-          if (xhr.status === 200 || xhr.status === 201) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              setUploadStatus("Upload complete! Processing...");
-              setUploadProgress(100);
-              xhrRef.current = null;
-
-              // Response structure: { data: { videoId, libraryId, videoUrl, downloadUrl, isDrmEnabled } }
-              resolve(response.data);
-            } catch (parseError) {
-              xhrRef.current = null;
-              reject(new Error("Failed to parse server response"));
-            }
-          } else {
-            try {
-              const error = JSON.parse(xhr.responseText);
-              xhrRef.current = null;
-              reject(new Error(error.message || 'Upload failed'));
-            } catch {
-              xhrRef.current = null;
-              reject(new Error(`Upload failed with status: ${xhr.status}`));
-            }
-          }
-        });
-
-        // Error
-        xhr.addEventListener("error", () => {
-          xhrRef.current = null;
-          reject(new Error("Network error occurred. Please check your connection."));
-        });
-
-        // Timeout
-        xhr.addEventListener("timeout", () => {
-          xhrRef.current = null;
-          reject(new Error("Upload timeout. Please try again."));
-        });
-
-        // Abort
-        xhr.addEventListener("abort", () => {
-          xhrRef.current = null;
-          reject(new Error("Upload cancelled"));
-        });
-
-        // Send request with extended timeout
-        xhr.open('POST', `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/generate-upload-url`);
-        xhr.setRequestHeader("Authorization", `Bearer ${localStorage.getItem("token")}`);
-        xhr.timeout = 3600000; // 1 hour timeout for large files
-        xhr.send(formData);
-
-      } catch (error) {
-        xhrRef.current = null;
-        reject(error);
-      }
-    });
-  };
-
-  // const uploadThumbnailToBunnyStorage = async (thumbnailFile) => {
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("thumbnail", thumbnailFile);
-
-  //     const response = await fetch(`${getBaseUrl(isProduction)}/api/v1/admin/videos/library/thumbnail`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Authorization": `Bearer ${localStorage.getItem("token")}`
-  //       },
-  //       body: formData,
-  //     });
-
-  //     if (!response.ok) return null;
-
-  //     const result = await response.json();
-  //     return result.data;
-  //   } catch {
-  //     return null;
-  //   }
-  // };
 
   const handleSubmit = async (values) => {
     if (!isEditMode && (!thumbnailFile || !videoFile)) {
@@ -350,20 +450,38 @@ const VideoUploadModal = ({
 
     try {
       if (!isEditMode && videoFile && thumbnailFile) {
-        // Upload video and thumbnail together
-        const uploadResponse = await uploadVideoAndThumbnail(videoFile, thumbnailFile, values.title);
+        setUploadingVideo(true);
+        setUploadProgress(0);
+        setOverallProgress(0);
+        abortControllerRef.current = new AbortController();
+        uploadIdRef.current = `upload-${Date.now()}-${Math.random()
+          .toString(36)
+          .substr(2, 9)}`;
 
-        // Response contains: { videoId, libraryId, videoUrl, downloadUrl, thumbnailUrl?, isDrmEnabled }
-        videoUrl = uploadResponse.videoUrl;
-        videoId = uploadResponse.videoId;
-        downloadUrl = uploadResponse.downloadUrl;
+        // Upload thumbnail
+        setUploadStatus("Uploading thumbnail...");
+        await uploadFileInChunks(thumbnailFile, "thumbnail");
 
-        // Thumbnail URL is included in the response if upload was successful
-        if (uploadResponse.thumbnailUrl) {
-          thumbnailUrl = uploadResponse.thumbnailUrl;
+        // Upload video
+        setUploadStatus("Uploading video...");
+        setUploadProgress(0);
+        await uploadFileInChunks(videoFile, "video");
+
+        // Complete upload
+        setUploadStatus("Processing upload...");
+        const uploadResult = await completeUpload(3);
+
+        if (uploadResult?.alreadyProcessed) {
+          message.warning("Video was already uploaded, please refresh");
+          setUploadingVideo(false);
+          onCancel();
+          return;
         }
 
-        setBunnyVideoData(uploadResponse);
+        videoUrl = uploadResult.videoUrl;
+        videoId = uploadResult.videoId;
+        downloadUrl = uploadResult.downloadUrl;
+        thumbnailUrl = uploadResult.thumbnailUrl;
       }
 
       let formattedDuration = values.duration;
@@ -381,19 +499,10 @@ const VideoUploadModal = ({
         videoId: videoId,
         ...(thumbnailUrl && { thumbnailUrl }),
       };
-console.log(videoData);
+
       setUploadStatus("Saving metadata...");
 
       if (isEditMode) {
-        if (thumbnailFile) {
-          const uploadedThumbnailUrl = await uploadThumbnailToBunnyStorage(
-            thumbnailFile
-          );
-          if (uploadedThumbnailUrl) {
-            videoData.thumbnailUrl = uploadedThumbnailUrl;
-          }
-        }
-
         await updateVideo({
           id: currentVideo._id,
           videoData: videoData,
@@ -404,28 +513,18 @@ console.log(videoData);
 
       message.success(`Video ${isEditMode ? "updated" : "added"} successfully`);
 
-      // Clean up
-      if (videoPreview && videoPreview !== 'large-file') {
-        URL.revokeObjectURL(videoPreview);
-      }
-
       setUploadingVideo(false);
-      setUploadProgress(0);
-      setUploadSpeed(0);
-      setTimeRemaining(0);
-      setVideoPreview('');
-      setThumbnailPreview(null);
+      resetUploadState();
       onSuccess();
       onCancel();
     } catch (error) {
       setUploadingVideo(false);
-      setUploadSpeed(0);
-      setTimeRemaining(0);
-      xhrRef.current = null;
+      abortControllerRef.current = null;
 
-      const errorMessage = error?.data?.message
-        || error?.message
-        || `Failed to ${isEditMode ? "update" : "add"} video`;
+      const errorMessage =
+        error?.data?.message ||
+        error?.message ||
+        `Failed to ${isEditMode ? "update" : "add"} video`;
 
       message.error(errorMessage);
     }
@@ -445,7 +544,7 @@ console.log(videoData);
 
   const videoProps = {
     ...uploadProps,
-    accept: "video/mp4,video/webm,video/mov,video/avi",
+    accept: "video/mp4,video/webm,video/quicktime,video/x-msvideo",
     onChange: handleVideoUpload,
   };
 
@@ -458,10 +557,12 @@ console.log(videoData);
         </div>
       }
       open={visible}
-      onCancel={onCancel}
+      onCancel={uploadingVideo ? null : onCancel}
       footer={null}
       width={900}
       destroyOnClose
+      maskClosable={!uploadingVideo}
+      closable={!uploadingVideo}
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         {uploadingVideo && (
@@ -474,36 +575,41 @@ console.log(videoData);
             }
             description={
               <div className="space-y-3">
-                <Progress
-                  percent={uploadProgress}
-                  status={uploadProgress === 100 ? "success" : "active"}
-                  strokeColor={{
-                    '0%': '#108ee9',
-                    '100%': '#87d068',
-                  }}
-                  showInfo={true}
-                />
+                <div className="text-sm text-gray-600 mb-2">
+                  Currently: <strong>{currentFile}</strong>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-xs text-gray-500">Current file:</div>
+                  <Progress
+                    percent={uploadProgress}
+                    status={uploadProgress === 100 ? "success" : "active"}
+                    strokeColor={{
+                      "0%": "#108ee9",
+                      "100%": "#87d068",
+                    }}
+                  />
+                  <div className="text-xs text-gray-500">Overall:</div>
+                  <Progress
+                    percent={overallProgress}
+                    status={overallProgress === 100 ? "success" : "active"}
+                    strokeColor={{
+                      "0%": "#CA3939",
+                      "100%": "#52c41a",
+                    }}
+                  />
+                </div>
 
-                {/* Upload Stats */}
-                {uploadProgress > 0 && uploadProgress < 100 && (
-                  <div className="flex justify-between text-xs text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <span>Speed:</span>
-                      <span className="font-semibold">{formatFileSize(uploadSpeed)}/s</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span>⏱</span>
-                      <span>{formatTime(timeRemaining)} remaining</span>
-                    </div>
-                  </div>
+                {currentFile === "processing" ? (
+                  <p className="text-xs text-amber-600 font-medium">
+                    ⚠️ Processing may take 1-2 minutes. Please wait...
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    Uploading in chunks. Don't close this page.
+                  </p>
                 )}
 
-                <p className="text-xs text-gray-500">
-                  Uploading large files may take several minutes. Please don't close this page.
-                </p>
-
-                {/* Cancel Button */}
-                {uploadProgress < 100 && (
+                {uploadProgress < 100 && currentFile !== "processing" && (
                   <Button
                     size="small"
                     danger
@@ -525,14 +631,13 @@ console.log(videoData);
           name="title"
           rules={[
             { required: true, message: "Please enter video title" },
-            { min: 3, message: "Title must be at least 3 characters" }
+            { min: 3, message: "Title must be at least 3 characters" },
           ]}
         >
           <Input
             placeholder="Enter video title"
             size="large"
             disabled={uploadingVideo}
-            className="py-6"
           />
         </Form.Item>
 
@@ -543,30 +648,26 @@ console.log(videoData);
             rules={[
               { required: true, message: "Please enter duration" },
               {
-                pattern: /^\d+:\d{2}$/,
-                message: "Format: MM:SS (e.g., 10:30)"
-              }
+                pattern: /^\d+:[0-5]\d$/,
+                message: "Format: MM:SS (e.g., 10:30)",
+              },
             ]}
           >
             <Input
               placeholder="MM:SS (e.g., 10:30)"
               size="large"
               disabled={uploadingVideo}
-              className="py-6"
             />
           </Form.Item>
 
-          <Form.Item
-            label="Equipment"
-            required
-          >
+          <Form.Item label="Equipment" required>
             <div className="space-y-2">
               <Input
                 placeholder="Add equipment and press Enter"
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyPress={handleEquipmentKeyPress}
-                size="medium"
+                size="large"
                 disabled={uploadingVideo}
                 suffix={
                   <Button
@@ -593,24 +694,24 @@ console.log(videoData);
                 </div>
               )}
               {equipmentTags.length === 0 && (
-                <p className="text-xs text-red-500">At least one equipment is required</p>
+                <p className="text-xs text-red-500">At least one required</p>
               )}
             </div>
           </Form.Item>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Form.Item label="Thumbnail Image" required={!isEditMode}>
+          <Form.Item label="Thumbnail" required={!isEditMode}>
             <Dragger {...thumbnailProps} disabled={uploadingVideo}>
               <p className="ant-upload-drag-icon">
-                <FileImageOutlined style={{ color: thumbnailFile ? '@CA3939' : '#CA3939' }} />
+                <FileImageOutlined
+                  style={{ color: thumbnailFile ? "#52c41a" : "#CA3939" }}
+                />
               </p>
               <p className="ant-upload-text">
-                {thumbnailFile ? 'Thumbnail Selected' : 'Click or drag to upload'}
+                {thumbnailFile ? "Selected" : "Click or drag"}
               </p>
-              <p className="ant-upload-hint">
-                Support: JPG, PNG, WEBP (Max 20MB)
-              </p>
+              <p className="ant-upload-hint">JPG, PNG, WEBP (Max 20MB)</p>
             </Dragger>
 
             {thumbnailFile && (
@@ -638,46 +739,31 @@ console.log(videoData);
                 </div>
               </div>
             )}
-
-            {isEditMode && !thumbnailFile && currentVideo?.thumbnailUrl && (
-              <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-xs text-blue-600">
-                  Current thumbnail will be kept if not changed
-                </p>
-              </div>
-            )}
           </Form.Item>
 
-          <Form.Item label="Video File" required={!isEditMode}>
+          <Form.Item label="Video" required={!isEditMode}>
             {isEditMode ? (
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 bg-gray-50">
                 <div className="text-center">
                   <VideoCameraOutlined className="text-4xl text-gray-400 mb-3" />
-                  <p className="text-gray-600 font-medium mb-1">Video Cannot Be Changed</p>
-                  <p className="text-xs text-gray-500">
-                    Video files are locked after upload for security reasons
+                  <p className="text-gray-600 font-medium mb-1">
+                    Cannot Change Video
                   </p>
-                  {currentVideo?.videoId && (
-                    <div className="mt-3 p-2 bg-white rounded border border-gray-200">
-                      <p className="text-xs text-gray-600">
-                        Video ID: <span className="font-mono text-gray-800">{currentVideo.videoId}</span>
-                      </p>
-                    </div>
-                  )}
+                  <p className="text-xs text-gray-500">Locked after upload</p>
                 </div>
               </div>
             ) : (
               <>
                 <Dragger {...videoProps} disabled={uploadingVideo}>
                   <p className="ant-upload-drag-icon">
-                    <VideoCameraOutlined style={{ color: videoFile ? '#CA3939' : '#CA3939' }} />
+                    <VideoCameraOutlined
+                      style={{ color: videoFile ? "#52c41a" : "#CA3939" }}
+                    />
                   </p>
                   <p className="ant-upload-text">
-                    {videoFile ? 'Video Selected' : 'Click or drag to upload'}
+                    {videoFile ? "Selected" : "Click or drag"}
                   </p>
-                  <p className="ant-upload-hint">
-                    Support: MP4, WEBM, MOV, AVI (Max 10GB)
-                  </p>
+                  <p className="ant-upload-hint">MP4, WEBM, MOV (Max 10GB)</p>
                 </Dragger>
 
                 {videoFile && (
@@ -715,22 +801,18 @@ console.log(videoData);
           name="description"
           rules={[
             { required: true, message: "Please enter description" },
-            { min: 10, message: "Description must be at least 10 characters" }
+            { min: 10, message: "Minimum 10 characters" },
           ]}
         >
           <TextArea
             rows={4}
-            placeholder="Enter video description (minimum 10 characters)"
+            placeholder="Enter description"
             disabled={uploadingVideo}
           />
         </Form.Item>
 
         <div className="flex justify-end gap-3 mt-6">
-          <Button
-            size="large"
-            onClick={onCancel}
-            disabled={uploadingVideo}
-          >
+          <Button size="large" onClick={onCancel} disabled={uploadingVideo}>
             Cancel
           </Button>
           <Button
@@ -738,16 +820,16 @@ console.log(videoData);
             size="large"
             htmlType="submit"
             loading={isLoading}
-            disabled={uploadingVideo && uploadProgress < 100}
+            disabled={uploadingVideo && overallProgress < 100}
             icon={<CloudUploadOutlined />}
+            style={{ backgroundColor: "#CA3939" }}
             className="bg-[#CA3939] text-white"
           >
             {uploadingVideo
-              ? `Uploading... ${uploadProgress}%`
+              ? `${overallProgress}%`
               : isEditMode
-                ? "Update Video"
-                : "Upload Video"
-            }
+                ? "Update"
+                : "Upload"}
           </Button>
         </div>
       </Form>
