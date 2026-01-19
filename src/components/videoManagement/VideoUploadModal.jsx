@@ -590,15 +590,23 @@ const VideoUploadModal = ({
       setUploadStatus("Saving metadata...");
 
       if (isEditMode) {
-        await updateVideo({
+        const result = await updateVideo({
           id: currentVideo._id,
           videoData: videoData,
         }).unwrap();
+        if (result.success) {
+          message.success(
+            `Video ${isEditMode ? "updated" : "added"} successfully`,
+          );
+        }
       } else {
-        await addVideo(videoData).unwrap();
+        const result = await addVideo(videoData).unwrap();
+        if (result.success) {
+          message.success(
+            `Video ${isEditMode ? "updated" : "added"} successfully`,
+          );
+        }
       }
-
-      message.success(`Video ${isEditMode ? "updated" : "added"} successfully`);
 
       setUploadingVideo(false);
       resetUploadState();
@@ -688,7 +696,7 @@ const VideoUploadModal = ({
 
                 {currentFile === "processing" ? (
                   <p className="text-xs text-amber-600 font-medium">
-                    ⚠️ Processing may take 1-2 minutes. Please wait...
+                    ⚠️ Processing may take 1-5 minutes. Please wait...
                   </p>
                 ) : (
                   <p className="text-xs text-gray-500">
