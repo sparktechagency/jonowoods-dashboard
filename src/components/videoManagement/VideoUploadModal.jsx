@@ -371,7 +371,7 @@ const VideoUploadModal = ({
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await fetch(
-          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/verify/${uploadId}`,
+          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/verify-upload/${uploadId}`,
           {
             method: "GET",
             headers: {
