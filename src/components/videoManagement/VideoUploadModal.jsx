@@ -32,19 +32,10 @@ const getOptimalChunkSize = (fileSize) => {
   const MB = 1024 * 1024;
   const GB = 1024 * MB;
 
-  // Small files (< 100MB): 5MB chunks
   if (fileSize < 100 * MB) return 5 * MB;
-
-  // Medium files (100MB - 500MB): 10MB chunks
   if (fileSize < 500 * MB) return 10 * MB;
-
-  // Large files (500MB - 2GB): 15MB chunks
   if (fileSize < 2 * GB) return 15 * MB;
-
-  // Very large files (2GB - 5GB): 20MB chunks
   if (fileSize < 5 * GB) return 20 * MB;
-
-  // Huge files (> 5GB): 25MB chunks
   return 25 * MB;
 };
 
@@ -55,11 +46,13 @@ const formatFileSize = (bytes) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
+
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
+const POST_UPLOAD_BUFFER = 20000;
 
-// Add delay after all chunks uploaded before calling complete
-const POST_UPLOAD_BUFFER = 20000; // 20 seconds buffer
+// Sleep helper
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const VideoUploadModal = ({
   visible,
@@ -91,7 +84,6 @@ const VideoUploadModal = ({
 
   const isLoading = isAdding || isUpdating || uploadingVideo;
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -141,14 +133,6 @@ const VideoUploadModal = ({
     }
   };
 
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
-  };
-
   const validateImageFile = (file) => {
     const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     return validTypes.includes(file.type);
@@ -196,13 +180,12 @@ const VideoUploadModal = ({
       return;
     }
 
-    const maxSize = 10 * 1024 * 1024 * 1024; // 10GB
+    const maxSize = 10 * 1024 * 1024 * 1024;
     if (fileObj.size > maxSize) {
       message.error("Video file must be less than 10GB");
       return;
     }
 
-    // Calculate optimal chunk size
     const optimalChunkSize = getOptimalChunkSize(fileObj.size);
     const calculatedTotalChunks = Math.ceil(fileObj.size / optimalChunkSize);
 
@@ -210,12 +193,10 @@ const VideoUploadModal = ({
     setTotalChunks(calculatedTotalChunks);
     setVideoFile(fileObj);
 
-    // Show chunk info
     message.success(
       `Video selected: ${formatFileSize(fileObj.size)} | Chunk size: ${formatFileSize(optimalChunkSize)} | Total chunks: ${calculatedTotalChunks}`,
     );
 
-    // Clean up previous video element
     if (videoElementRef.current?.src) {
       URL.revokeObjectURL(videoElementRef.current.src);
     }
@@ -277,10 +258,6 @@ const VideoUploadModal = ({
     return 0;
   };
 
-  // Sleep helper for retry delays
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-  // Upload single chunk with retry logic
   const uploadChunkWithRetry = async (
     formData,
     chunkIndex,
@@ -289,7 +266,6 @@ const VideoUploadModal = ({
   ) => {
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
-        // Check if cancelled
         if (abortControllerRef.current?.signal.aborted) {
           throw new Error("Upload cancelled");
         }
@@ -315,8 +291,6 @@ const VideoUploadModal = ({
 
         const result = await response.json();
 
-        // CRITICAL: Wait for backend confirmation before proceeding
-        // Backend should return { success: true, chunkReceived: true }
         if (!result.success) {
           throw new Error("Chunk upload not confirmed by backend");
         }
@@ -330,14 +304,6 @@ const VideoUploadModal = ({
           throw error;
         }
 
-        // Check network connectivity
-        if (!navigator.onLine) {
-          throw new Error(
-            "Network connection lost. Please check your internet.",
-          );
-        }
-
-        // Retry logic
         if (attempt < retries - 1) {
           const delay = RETRY_DELAY * (attempt + 1);
           console.log(
@@ -351,7 +317,6 @@ const VideoUploadModal = ({
     }
   };
 
-  // Upload file in chunks
   const uploadFileInChunks = async (file, fileType) => {
     const currentChunkSize = fileType === "video" ? chunkSize : 5 * 1024 * 1024;
     const totalChunks = Math.ceil(file.size / currentChunkSize);
@@ -360,7 +325,6 @@ const VideoUploadModal = ({
     setCurrentFile(fileType === "video" ? "Video" : "Thumbnail");
 
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-      // Check if cancelled
       if (abortControllerRef.current?.signal.aborted) {
         throw new Error("Upload cancelled");
       }
@@ -377,10 +341,8 @@ const VideoUploadModal = ({
       formData.append("uploadId", uploadId);
       formData.append("fileType", fileType);
 
-      // Upload with retry and WAIT for backend confirmation
       await uploadChunkWithRetry(formData, chunkIndex, totalChunks);
 
-      // Update progress
       const fileProgress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
       setUploadProgress(fileProgress);
 
@@ -391,36 +353,25 @@ const VideoUploadModal = ({
         `Uploading ${fileType}: ${fileProgress}% (${chunkIndex + 1}/${totalChunks} chunks)`,
       );
 
-      console.log(
-        `✓ Chunk ${chunkIndex + 1}/${totalChunks} uploaded and confirmed`,
-      );
+      console.log(`✓ Chunk ${chunkIndex + 1}/${totalChunks} uploaded`);
     }
 
     console.log(
       `✓ All ${fileType} chunks sent. Waiting for backend finalization...`,
     );
 
-    // CRITICAL FIX: Add buffer time for backend to finalize disk writes
     setUploadStatus(`Finalizing ${fileType} on server...`);
     await sleep(POST_UPLOAD_BUFFER);
 
     console.log(`✓ ${fileType} upload complete and finalized`);
   };
 
-  // Verify upload status with exponential retry logic (10s increments)
-  const verifyUploadStatus = async (uploadId) => {
-    let attempt = 0;
-    let delaySeconds = 5; // Start with 5 seconds
-
-    while (true) {
+  // NEW: Verify upload status function
+  const verifyUploadStatus = async (uploadId, maxRetries = 5) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        attempt++;
-
-        console.log(`🔍 Verification attempt ${attempt}...`);
-        setUploadStatus(`Verifying upload... (Attempt ${attempt})`);
-
         const response = await fetch(
-          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/verify-upload/${uploadId}`,
+          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/verify/${uploadId}`,
           {
             method: "GET",
             headers: {
@@ -430,58 +381,57 @@ const VideoUploadModal = ({
         );
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          throw new Error(`Verification failed: ${response.status}`);
         }
 
         const result = await response.json();
 
-        // Check if both files are ready
         if (result.data?.ready) {
-          console.log(`✅ Upload verified on attempt ${attempt}`);
+          console.log(`✅ Verification passed on attempt ${attempt}`);
           return result.data;
         }
 
-        // Log missing files
-        const missing = result.data?.missingFiles?.join(", ") || "unknown";
-        console.log(`⚠️ Not ready. Missing: ${missing}`);
-
-        // Wait before next attempt
-        await sleep(delaySeconds * 1000);
-
-        // Increase delay (max 30 seconds)
-        delaySeconds = Math.min(delaySeconds + 5, 30);
-      } catch (error) {
-        if (abortControllerRef.current?.signal.aborted) {
-          throw new Error("Upload cancelled");
+        if (attempt < maxRetries) {
+          console.log(
+            `Verification not ready, retrying in 3s... (${attempt}/${maxRetries})`,
+          );
+          await sleep(3000);
         }
-
-        console.error(`Verification error:`, error);
-        await sleep(5000);
+      } catch (error) {
+        if (attempt === maxRetries) {
+          throw new Error(
+            `Verification failed after ${maxRetries} attempts: ${error.message}`,
+          );
+        }
+        await sleep(3000);
       }
     }
+
+    throw new Error("Files not ready after verification retries");
   };
 
-  // Complete upload and process with retry logic
-  const completeUpload = async (retries = 3) => {
-    // STEP 1: Verify all files are ready on backend with infinite retry
+  // FIXED: Complete upload with proper error handling
+  const completeUpload = async (maxRetries = 3) => {
     setUploadStatus("Verifying upload completion...");
 
+    // STEP 1: Verify files are ready
     try {
-      // This will retry indefinitely until success or cancellation
-      const verification = await verifyUploadStatus(uploadIdRef.current);
+      const verification = await verifyUploadStatus(uploadIdRef.current, 5);
       console.log("✅ Backend confirmed all files ready:", verification);
     } catch (error) {
-      // Only throws on cancellation
+      message.error(error.message);
       throw error;
     }
 
     // STEP 2: Call complete upload API
-    for (let attempt = 1; attempt <= retries; attempt++) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        setUploadStatus(`Processing files... (Attempt ${attempt}/${retries})`);
+        setUploadStatus(
+          `Processing files... (Attempt ${attempt}/${maxRetries})`,
+        );
         setCurrentFile("processing");
 
-        const processingProgress = Math.round((attempt / retries) * 100);
+        const processingProgress = Math.round((attempt / maxRetries) * 100);
         setOverallProgress(
           calculateOverallProgress("processing", processingProgress),
         );
@@ -506,34 +456,65 @@ const VideoUploadModal = ({
 
         clearTimeout(timeoutId);
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
+        const result = await response.json();
 
-          if (errorData.message?.includes("already uploaded")) {
+        // Handle 409 Conflict - already processing
+        if (response.status === 409) {
+          console.log(
+            `[Attempt ${attempt}] Upload already processing, waiting...`,
+          );
+
+          if (attempt < maxRetries) {
+            const waitTime = 10000 * attempt; // 10s, 20s, 30s
+            console.log(`Waiting ${waitTime}ms before checking status...`);
+            await sleep(waitTime);
+
+            // Check if processing completed
+            try {
+              const status = await verifyUploadStatus(uploadIdRef.current, 1);
+              if (status.processed) {
+                console.log("Upload completed by another process");
+                setOverallProgress(100);
+                return { alreadyProcessed: true };
+              }
+            } catch (e) {
+              console.log("Status check failed, will retry complete upload");
+            }
+            continue;
+          }
+          throw new Error(
+            "Upload is being processed. Please refresh the page in a moment.",
+          );
+        }
+
+        if (!response.ok) {
+          // Handle already processed case
+          if (
+            result.message?.includes("already uploaded") ||
+            result.data?.alreadyProcessed
+          ) {
             console.log("Upload already processed");
+            setOverallProgress(100);
             return { alreadyProcessed: true };
           }
 
-          throw new Error(errorData.message || `HTTP ${response.status}`);
+          throw new Error(result.message || `HTTP ${response.status}`);
         }
 
-        const result = await response.json();
         console.log("✅ Complete upload successful:", result);
-
         setOverallProgress(100);
         return result.data;
       } catch (error) {
         console.error(`Complete upload error (attempt ${attempt}):`, error);
 
-        if (
-          error.name === "AbortError" ||
-          error.message?.includes("currently being processed")
-        ) {
-          throw error;
+        if (error.name === "AbortError") {
+          throw new Error(
+            "Upload processing timeout. Please check your network.",
+          );
         }
 
-        if (attempt < retries) {
-          const delay = Math.min(5000 * attempt, 15000);
+        if (attempt < maxRetries) {
+          const delay = 5000 * attempt;
           console.log(`Retrying in ${delay}ms...`);
           await sleep(delay);
         } else {
@@ -541,6 +522,8 @@ const VideoUploadModal = ({
         }
       }
     }
+
+    throw new Error("Upload completion failed after all retries");
   };
 
   const cancelUpload = () => {
@@ -582,16 +565,16 @@ const VideoUploadModal = ({
           .toString(36)
           .substr(2, 9)}`;
 
-        // Upload thumbnail with backend confirmation
+        // Upload thumbnail
         setUploadStatus("Uploading thumbnail...");
         await uploadFileInChunks(thumbnailFile, "thumbnail");
 
-        // Upload video with backend confirmation
+        // Upload video
         setUploadStatus("Uploading video...");
         setUploadProgress(0);
         await uploadFileInChunks(videoFile, "video");
 
-        // Complete upload with verification
+        // Complete upload
         setUploadStatus("Verifying and processing upload...");
         const uploadResult = await completeUpload(3);
 
@@ -632,16 +615,12 @@ const VideoUploadModal = ({
           videoData: videoData,
         }).unwrap();
         if (result.success) {
-          message.success(
-            `Video ${isEditMode ? "updated" : "added"} successfully`,
-          );
+          message.success("Video updated successfully");
         }
       } else {
         const result = await addVideo(videoData).unwrap();
         if (result.success) {
-          message.success(
-            `Video ${isEditMode ? "updated" : "added"} successfully`,
-          );
+          message.success("Video added successfully");
         }
       }
 
@@ -659,6 +638,7 @@ const VideoUploadModal = ({
         `Failed to ${isEditMode ? "update" : "add"} video`;
 
       message.error(errorMessage);
+      console.error("Upload error:", error);
     }
   };
 
@@ -767,10 +747,7 @@ const VideoUploadModal = ({
         <Form.Item
           label="Video Title"
           name="title"
-          rules={[
-            { required: true, message: "Please enter video title" },
-            { min: 3, message: "Title must be at least 3 characters" },
-          ]}
+          rules={[{ required: true, message: "Please enter video title" }]}
         >
           <Input
             placeholder="Enter video title"
@@ -937,10 +914,7 @@ const VideoUploadModal = ({
         <Form.Item
           label="Description"
           name="description"
-          rules={[
-            { required: true, message: "Please enter description" },
-            { min: 10, message: "Minimum 10 characters" },
-          ]}
+          rules={[{ required: true, message: "Please enter description" }]}
         >
           <TextArea
             rows={4}
