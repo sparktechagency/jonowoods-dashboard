@@ -395,7 +395,7 @@ const VideoUploadModal = ({
           console.log(
             `Verification not ready, retrying in 3s... (${attempt}/${maxRetries})`,
           );
-          await sleep(3000);
+          await sleep(15000);
         }
       } catch (error) {
         if (attempt === maxRetries) {
