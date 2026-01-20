@@ -29,7 +29,7 @@ const { TextArea } = Input;
 const { Dragger } = Upload;
 
 // Chunk size: 5MB
-const CHUNK_SIZE = 5 * 1024 * 1024;
+const CHUNK_SIZE = 10 * 1024 * 1024;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 
