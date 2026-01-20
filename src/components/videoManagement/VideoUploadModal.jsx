@@ -18,13 +18,16 @@ import {
   VideoCameraOutlined,
   CloseCircleOutlined,
 } from "@ant-design/icons";
+import {
+  useAddVideoMutation,
+  useUpdateVideoMutation,
+} from "../../redux/apiSlices/videoApi";
+import { getBaseUrl } from "../../redux/api/baseUrl";
+import { isProduction } from "../../redux/api/baseApi";
 
 const { TextArea } = Input;
 const { Dragger } = Upload;
 
-// ==========================================
-// DYNAMIC CHUNK SIZE CONFIGURATION
-// ==========================================
 const getOptimalChunkSize = (fileSize) => {
   const MB = 1024 * 1024;
   const GB = 1024 * MB;
@@ -52,10 +55,11 @@ const formatFileSize = (bytes) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
-
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
-const POST_UPLOAD_BUFFER = 20000; // 20 seconds
+
+// Add delay after all chunks uploaded before calling complete
+const POST_UPLOAD_BUFFER = 20000; // 20 seconds buffer
 
 const VideoUploadModal = ({
   visible,
@@ -76,15 +80,16 @@ const VideoUploadModal = ({
   const [overallProgress, setOverallProgress] = useState(0);
   const [chunkSize, setChunkSize] = useState(5 * 1024 * 1024);
   const [totalChunks, setTotalChunks] = useState(0);
-
   const abortControllerRef = useRef(null);
   const uploadIdRef = useRef(null);
   const videoElementRef = useRef(null);
 
   const isEditMode = !!currentVideo?._id;
 
-  // Sleep helper
-  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const [addVideo, { isLoading: isAdding }] = useAddVideoMutation();
+  const [updateVideo, { isLoading: isUpdating }] = useUpdateVideoMutation();
+
+  const isLoading = isAdding || isUpdating || uploadingVideo;
 
   // Cleanup on unmount
   useEffect(() => {
@@ -92,7 +97,7 @@ const VideoUploadModal = ({
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      if (videoElementRef.current?.src) {
+      if (videoElementRef.current && videoElementRef.current.src) {
         URL.revokeObjectURL(videoElementRef.current.src);
       }
     };
@@ -105,9 +110,11 @@ const VideoUploadModal = ({
         duration: currentVideo.duration || "",
         description: currentVideo.description || "",
       });
+
       if (currentVideo.equipment?.length) {
         setEquipmentTags(currentVideo.equipment);
       }
+
       resetUploadState();
     } else if (visible) {
       form.resetFields();
@@ -128,10 +135,18 @@ const VideoUploadModal = ({
     setTotalChunks(0);
     uploadIdRef.current = null;
 
-    if (videoElementRef.current?.src) {
+    if (videoElementRef.current && videoElementRef.current.src) {
       URL.revokeObjectURL(videoElementRef.current.src);
       videoElementRef.current = null;
     }
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   const validateImageFile = (file) => {
@@ -262,6 +277,10 @@ const VideoUploadModal = ({
     return 0;
   };
 
+  // Sleep helper for retry delays
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  // Upload single chunk with retry logic
   const uploadChunkWithRetry = async (
     formData,
     chunkIndex,
@@ -270,27 +289,22 @@ const VideoUploadModal = ({
   ) => {
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
+        // Check if cancelled
         if (abortControllerRef.current?.signal.aborted) {
           throw new Error("Upload cancelled");
         }
 
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
-
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/v1/admin/videos/library/upload-chunk`,
+          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/upload-chunk`,
           {
             method: "POST",
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: formData,
-            signal: controller.signal,
-            keepalive: true,
+            signal: abortControllerRef.current?.signal,
           },
         );
-
-        clearTimeout(timeoutId);
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
@@ -301,6 +315,8 @@ const VideoUploadModal = ({
 
         const result = await response.json();
 
+        // CRITICAL: Wait for backend confirmation before proceeding
+        // Backend should return { success: true, chunkReceived: true }
         if (!result.success) {
           throw new Error("Chunk upload not confirmed by backend");
         }
@@ -314,33 +330,28 @@ const VideoUploadModal = ({
           throw error;
         }
 
+        // Check network connectivity
         if (!navigator.onLine) {
-          console.log("Network offline, waiting...");
-          setUploadStatus("⚠️ Network offline. Waiting to reconnect...");
-          await sleep(5000);
-          attempt--;
-          continue;
+          throw new Error(
+            "Network connection lost. Please check your internet.",
+          );
         }
 
-        const delay = Math.min(RETRY_DELAY * Math.pow(2, attempt), 10000);
-
+        // Retry logic
         if (attempt < retries - 1) {
+          const delay = RETRY_DELAY * (attempt + 1);
           console.log(
             `Retrying chunk ${chunkIndex + 1}/${totalChunks} after ${delay}ms...`,
           );
-          setUploadStatus(
-            `Retry chunk ${chunkIndex + 1}/${totalChunks} in ${delay}ms...`,
-          );
           await sleep(delay);
         } else {
-          throw new Error(
-            `Chunk ${chunkIndex + 1} failed after ${retries} attempts: ${error.message}`,
-          );
+          throw error;
         }
       }
     }
   };
 
+  // Upload file in chunks
   const uploadFileInChunks = async (file, fileType) => {
     const currentChunkSize = fileType === "video" ? chunkSize : 5 * 1024 * 1024;
     const totalChunks = Math.ceil(file.size / currentChunkSize);
@@ -348,11 +359,8 @@ const VideoUploadModal = ({
 
     setCurrentFile(fileType === "video" ? "Video" : "Thumbnail");
 
-    console.log(
-      `📦 Starting ${fileType} upload: ${formatFileSize(file.size)} in ${totalChunks} chunks of ${formatFileSize(currentChunkSize)}`,
-    );
-
     for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+      // Check if cancelled
       if (abortControllerRef.current?.signal.aborted) {
         throw new Error("Upload cancelled");
       }
@@ -369,8 +377,10 @@ const VideoUploadModal = ({
       formData.append("uploadId", uploadId);
       formData.append("fileType", fileType);
 
+      // Upload with retry and WAIT for backend confirmation
       await uploadChunkWithRetry(formData, chunkIndex, totalChunks);
 
+      // Update progress
       const fileProgress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
       setUploadProgress(fileProgress);
 
@@ -380,17 +390,27 @@ const VideoUploadModal = ({
       setUploadStatus(
         `Uploading ${fileType}: ${fileProgress}% (${chunkIndex + 1}/${totalChunks} chunks)`,
       );
+
+      console.log(
+        `✓ Chunk ${chunkIndex + 1}/${totalChunks} uploaded and confirmed`,
+      );
     }
 
+    console.log(
+      `✓ All ${fileType} chunks sent. Waiting for backend finalization...`,
+    );
+
+    // CRITICAL FIX: Add buffer time for backend to finalize disk writes
     setUploadStatus(`Finalizing ${fileType} on server...`);
     await sleep(POST_UPLOAD_BUFFER);
 
-    console.log(`✓ ${fileType} upload complete`);
+    console.log(`✓ ${fileType} upload complete and finalized`);
   };
 
+  // Verify upload status with exponential retry logic (10s increments)
   const verifyUploadStatus = async (uploadId) => {
     let attempt = 0;
-    let delaySeconds = 5;
+    let delaySeconds = 5; // Start with 5 seconds
 
     while (true) {
       try {
@@ -400,7 +420,7 @@ const VideoUploadModal = ({
         setUploadStatus(`Verifying upload... (Attempt ${attempt})`);
 
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/v1/admin/videos/library/verify-upload/${uploadId}`,
+          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/verify-upload/${uploadId}`,
           {
             method: "GET",
             headers: {
@@ -415,15 +435,20 @@ const VideoUploadModal = ({
 
         const result = await response.json();
 
+        // Check if both files are ready
         if (result.data?.ready) {
           console.log(`✅ Upload verified on attempt ${attempt}`);
           return result.data;
         }
 
+        // Log missing files
         const missing = result.data?.missingFiles?.join(", ") || "unknown";
         console.log(`⚠️ Not ready. Missing: ${missing}`);
 
+        // Wait before next attempt
         await sleep(delaySeconds * 1000);
+
+        // Increase delay (max 30 seconds)
         delaySeconds = Math.min(delaySeconds + 5, 30);
       } catch (error) {
         if (abortControllerRef.current?.signal.aborted) {
@@ -436,16 +461,21 @@ const VideoUploadModal = ({
     }
   };
 
+  // Complete upload and process with retry logic
   const completeUpload = async (retries = 3) => {
+    // STEP 1: Verify all files are ready on backend with infinite retry
     setUploadStatus("Verifying upload completion...");
 
     try {
-      await verifyUploadStatus(uploadIdRef.current);
-      console.log("✅ Backend confirmed all files ready");
+      // This will retry indefinitely until success or cancellation
+      const verification = await verifyUploadStatus(uploadIdRef.current);
+      console.log("✅ Backend confirmed all files ready:", verification);
     } catch (error) {
+      // Only throws on cancellation
       throw error;
     }
 
+    // STEP 2: Call complete upload API
     for (let attempt = 1; attempt <= retries; attempt++) {
       try {
         setUploadStatus(`Processing files... (Attempt ${attempt}/${retries})`);
@@ -460,7 +490,7 @@ const VideoUploadModal = ({
         const timeoutId = setTimeout(() => controller.abort(), 30 * 60 * 1000);
 
         const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/api/v1/admin/videos/library/complete-upload`,
+          `${getBaseUrl(isProduction)}/api/v1/admin/videos/library/complete-upload`,
           {
             method: "POST",
             headers: {
@@ -552,16 +582,16 @@ const VideoUploadModal = ({
           .toString(36)
           .substr(2, 9)}`;
 
-        // Upload thumbnail
+        // Upload thumbnail with backend confirmation
         setUploadStatus("Uploading thumbnail...");
         await uploadFileInChunks(thumbnailFile, "thumbnail");
 
-        // Upload video with dynamic chunk size
+        // Upload video with backend confirmation
         setUploadStatus("Uploading video...");
         setUploadProgress(0);
         await uploadFileInChunks(videoFile, "video");
 
-        // Complete upload
+        // Complete upload with verification
         setUploadStatus("Verifying and processing upload...");
         const uploadResult = await completeUpload(3);
 
@@ -596,8 +626,24 @@ const VideoUploadModal = ({
 
       setUploadStatus("Saving metadata...");
 
-      // Save to database (your existing API call)
-      message.success(`Video ${isEditMode ? "updated" : "added"} successfully`);
+      if (isEditMode) {
+        const result = await updateVideo({
+          id: currentVideo._id,
+          videoData: videoData,
+        }).unwrap();
+        if (result.success) {
+          message.success(
+            `Video ${isEditMode ? "updated" : "added"} successfully`,
+          );
+        }
+      } else {
+        const result = await addVideo(videoData).unwrap();
+        if (result.success) {
+          message.success(
+            `Video ${isEditMode ? "updated" : "added"} successfully`,
+          );
+        }
+      }
 
       setUploadingVideo(false);
       resetUploadState();
@@ -614,6 +660,24 @@ const VideoUploadModal = ({
 
       message.error(errorMessage);
     }
+  };
+
+  const uploadProps = {
+    beforeUpload: () => false,
+    maxCount: 1,
+    showUploadList: false,
+  };
+
+  const thumbnailProps = {
+    ...uploadProps,
+    accept: "image/jpeg,image/jpg,image/png,image/webp",
+    onChange: handleThumbnailUpload,
+  };
+
+  const videoProps = {
+    ...uploadProps,
+    accept: "video/mp4,video/webm,video/quicktime,video/x-msvideo",
+    onChange: handleVideoUpload,
   };
 
   return (
@@ -675,7 +739,7 @@ const VideoUploadModal = ({
 
                 {currentFile === "processing" ? (
                   <p className="text-xs text-amber-600 font-medium">
-                    ⚠️ Processing may take 1-2 minutes. Please wait...
+                    ⚠️ Processing may take 1-5 minutes. Please wait...
                   </p>
                 ) : (
                   <p className="text-xs text-gray-500">
@@ -767,20 +831,16 @@ const VideoUploadModal = ({
                   ))}
                 </div>
               )}
+              {equipmentTags.length === 0 && (
+                <p className="text-xs text-red-500">At least one required</p>
+              )}
             </div>
           </Form.Item>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <Form.Item label="Thumbnail" required={!isEditMode}>
-            <Dragger
-              beforeUpload={() => false}
-              maxCount={1}
-              showUploadList={false}
-              accept="image/jpeg,image/jpg,image/png,image/webp"
-              onChange={handleThumbnailUpload}
-              disabled={uploadingVideo}
-            >
+            <Dragger {...thumbnailProps} disabled={uploadingVideo}>
               <p className="ant-upload-drag-icon">
                 <FileImageOutlined
                   style={{ color: thumbnailFile ? "#52c41a" : "#CA3939" }}
@@ -832,14 +892,7 @@ const VideoUploadModal = ({
               </div>
             ) : (
               <>
-                <Dragger
-                  beforeUpload={() => false}
-                  maxCount={1}
-                  showUploadList={false}
-                  accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
-                  onChange={handleVideoUpload}
-                  disabled={uploadingVideo}
-                >
+                <Dragger {...videoProps} disabled={uploadingVideo}>
                   <p className="ant-upload-drag-icon">
                     <VideoCameraOutlined
                       style={{ color: videoFile ? "#52c41a" : "#CA3939" }}
@@ -861,8 +914,7 @@ const VideoUploadModal = ({
                             {videoFile.name}
                           </p>
                           <p className="text-xs text-green-600">
-                            {formatFileSize(videoFile.size)} • {totalChunks}{" "}
-                            chunks × {formatFileSize(chunkSize)}
+                            {formatFileSize(videoFile.size)}
                           </p>
                         </div>
                       </div>
@@ -870,10 +922,7 @@ const VideoUploadModal = ({
                         type="text"
                         size="small"
                         icon={<CloseCircleOutlined />}
-                        onClick={() => {
-                          setVideoFile(null);
-                          setTotalChunks(0);
-                        }}
+                        onClick={() => setVideoFile(null)}
                         disabled={uploadingVideo}
                         danger
                       />
