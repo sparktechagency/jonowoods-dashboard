@@ -25,14 +25,20 @@ import {
 const { TextArea } = Input;
 const { Dragger } = Upload;
 
-// React Component or any JS/TS file
-
-// --- Bunny.net Credentials ---
+// --- Bunny.net Credentials from ENV ---
 const STORAGE_API_KEY = import.meta.env.VITE_STORAGE_API_KEY;
 const STORAGE_ZONE = import.meta.env.VITE_STORAGE_ZONE;
 const STORAGE_PULL_ZONE = import.meta.env.VITE_STORAGE_PULL_ZONE;
 const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 const STREAM_LIBRARY_ID = import.meta.env.VITE_STREAM_LIBRARY_ID;
+
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+};
 
 const VideoUploadModal = ({
   visible,
@@ -48,8 +54,6 @@ const VideoUploadModal = ({
   const [tagInput, setTagInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState("");
-
-  // Progress states
   const [storageProgress, setStorageProgress] = useState(0);
   const [streamProgress, setStreamProgress] = useState(0);
 
@@ -70,67 +74,66 @@ const VideoUploadModal = ({
       setEquipmentTags([]);
       setThumbnailFile(null);
       setVideoFile(null);
+      setStorageProgress(0);
+      setStreamProgress(0);
     }
   }, [visible, currentVideo]);
 
-  // --- Helper: Format File Size ---
-  const formatFileSize = (bytes) => {
-    if (!bytes) return "0 B";
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  // ভিডিও সিলেক্ট করলে অটো ডিউরেশন বের করার ফাংশন
+  const handleVideoSelection = (info) => {
+    const file = info.fileList[0]?.originFileObj || info.file;
+    if (!file) return;
+
+    setVideoFile(file);
+    const video = document.createElement("video");
+    video.preload = "metadata";
+    video.onloadedmetadata = () => {
+      const duration = Math.floor(video.duration);
+      const minutes = Math.floor(duration / 60);
+      const seconds = duration % 60;
+      form.setFieldsValue({
+        duration: `${minutes}:${seconds.toString().padStart(2, "0")}`,
+      });
+      URL.revokeObjectURL(video.src);
+    };
+    video.src = URL.createObjectURL(file);
   };
 
-  // --- 1. Upload Thumbnail to Bunny Storage ---
+  // --- Upload Logics ---
   const uploadThumbnail = async (file) => {
-    const fileName = `thumbnails/${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+    const fileName = `thumbnails/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
     const url = `https://storage.bunnycdn.com/${STORAGE_ZONE}/${fileName}`;
-
     setStatus("Uploading thumbnail...");
     const response = await fetch(url, {
       method: "PUT",
-      headers: {
-        AccessKey: STORAGE_API_KEY,
-        "Content-Type": file.type,
-      },
+      headers: { AccessKey: STORAGE_API_KEY, "Content-Type": file.type },
       body: file,
     });
-
     if (!response.ok) throw new Error("Thumbnail upload failed");
     return `https://${STORAGE_PULL_ZONE}/${fileName}`;
   };
 
-  // --- 2. Upload Video to Bunny Storage (Original File) ---
-  const uploadVideoToStorage = async (file) => {
-    const fileName = `videos/${Date.now()}-${file.name.replace(/\s+/g, "_")}`;
+  const uploadToStorage = (file) => {
+    const fileName = `videos/${Date.now()}_${file.name.replace(/\s+/g, "_")}`;
     const url = `https://storage.bunnycdn.com/${STORAGE_ZONE}/${fileName}`;
-
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open("PUT", url);
       xhr.setRequestHeader("AccessKey", STORAGE_API_KEY);
-      xhr.setRequestHeader("Content-Type", file.type);
-
       xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
+        if (e.lengthComputable)
           setStorageProgress(Math.round((e.loaded / e.total) * 100));
-        }
       };
-
       xhr.onload = () => {
-        if (xhr.status === 201 || xhr.status === 200)
+        if (xhr.status === 200 || xhr.status === 201)
           resolve(`https://${STORAGE_PULL_ZONE}/${fileName}`);
         else reject(new Error("Storage upload failed"));
       };
-      xhr.onerror = () => reject(new Error("Storage Network Error"));
       xhr.send(file);
     });
   };
 
-  // --- 3. Upload Video to Bunny Stream (Player Library) ---
-  const uploadToBunnyStream = async (file, title) => {
-    // A. Create video entry
+  const uploadToStream = async (file, title) => {
     const createRes = await fetch(
       `https://video.bunnycdn.com/library/${STREAM_LIBRARY_ID}/videos`,
       {
@@ -139,13 +142,10 @@ const VideoUploadModal = ({
           AccessKey: STREAM_API_KEY,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title: title }),
+        body: JSON.stringify({ title }),
       },
     );
-    const videoData = await createRes.json();
-    const videoId = videoData.guid;
-
-    // B. Upload file chunks
+    const { guid: videoId } = await createRes.json();
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.open(
@@ -153,20 +153,74 @@ const VideoUploadModal = ({
         `https://video.bunnycdn.com/library/${STREAM_LIBRARY_ID}/videos/${videoId}`,
       );
       xhr.setRequestHeader("AccessKey", STREAM_API_KEY);
-
       xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
+        if (e.lengthComputable)
           setStreamProgress(Math.round((e.loaded / e.total) * 100));
-        }
       };
-
       xhr.onload = () => {
         if (xhr.status === 200) resolve(videoId);
         else reject(new Error("Stream upload failed"));
       };
-      xhr.onerror = () => reject(new Error("Stream Network Error"));
       xhr.send(file);
     });
+  };
+
+  const handleSubmit = async (values) => {
+    if (!isEditMode && (!thumbnailFile || !videoFile))
+      return message.error("Please select both files");
+    if (equipmentTags.length === 0)
+      return message.error("Add at least one equipment");
+
+    try {
+      setUploading(true);
+      let thumbUrl = currentVideo?.thumbnailUrl;
+      let downloadUrl = currentVideo?.downloadUrl;
+      let videoId = currentVideo?.videoId;
+
+      // আপলোড প্রসেস
+      if (thumbnailFile) thumbUrl = await uploadThumbnail(thumbnailFile);
+
+      if (videoFile && !isEditMode) {
+        setStatus("Uploading video to cloud servers...");
+        const [sUrl, vId] = await Promise.all([
+          uploadToStorage(videoFile),
+          uploadToStream(videoFile, values.title),
+        ]);
+        downloadUrl = sUrl;
+        videoId = vId;
+      }
+
+      setStatus("Finalizing...");
+      const payload = {
+        title: values.title,
+        description: values.description,
+        duration: values.duration.includes("Min")
+          ? values.duration
+          : `${values.duration} Min`,
+        equipment: equipmentTags,
+        thumbnailUrl: thumbUrl,
+        downloadUrl: downloadUrl,
+        videoId: videoId,
+        videoUrl: `https://iframe.mediadelivery.net/embed/${STREAM_LIBRARY_ID}/${videoId}`,
+      };
+
+      const res = isEditMode
+        ? await updateVideo({
+            id: currentVideo._id,
+            videoData: payload,
+          }).unwrap()
+        : await addVideo(payload).unwrap();
+
+      if (res.success) {
+        message.success("Successfully saved!");
+        onSuccess();
+        onCancel();
+      }
+    } catch (err) {
+      message.error(err.message || "Failed to process");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const addTag = () => {
@@ -176,148 +230,57 @@ const VideoUploadModal = ({
     }
   };
 
-  const handleSubmit = async (values) => {
-    if (!isEditMode && (!thumbnailFile || !videoFile)) {
-      return message.error("Please select both thumbnail and video files");
-    }
-    if (equipmentTags.length === 0) {
-      return message.error("Please add at least one equipment tag");
-    }
-
-    try {
-      setUploading(true);
-      setStorageProgress(0);
-      setStreamProgress(0);
-
-      let finalThumbnailUrl = currentVideo?.thumbnailUrl;
-      let finalDownloadUrl = currentVideo?.downloadUrl;
-      let finalVideoId = currentVideo?.videoId;
-
-      // 1. Thumbnail Upload
-      if (thumbnailFile) {
-        finalThumbnailUrl = await uploadThumbnail(thumbnailFile);
-      }
-
-      // 2. Storage & Stream Upload (Parallel)
-      if (videoFile) {
-        setStatus("Uploading video to cloud...");
-        const [storageUrl, streamId] = await Promise.all([
-          uploadVideoToStorage(videoFile),
-          uploadToBunnyStream(videoFile, values.title),
-        ]);
-        finalDownloadUrl = storageUrl;
-        finalVideoId = streamId;
-      }
-
-      // 3. Final Metadata save to Backend
-      setStatus("Saving metadata to server...");
-      const payload = {
-        title: values.title,
-        duration: values.duration.includes("Min")
-          ? values.duration
-          : `${values.duration} Min`,
-        description: values.description,
-        equipment: equipmentTags,
-        thumbnailUrl: finalThumbnailUrl,
-        downloadUrl: finalDownloadUrl,
-        videoId: finalVideoId,
-        videoUrl: `https://iframe.mediadelivery.net/embed/${STREAM_LIBRARY_ID}/${finalVideoId}`,
-      };
-
-      if (isEditMode) {
-        await updateVideo({
-          id: currentVideo._id,
-          videoData: payload,
-        }).unwrap();
-        message.success("Video updated successfully");
-      } else {
-        await addVideo(payload).unwrap();
-        message.success("Video uploaded and added successfully");
-      }
-
-      onSuccess();
-      onCancel();
-    } catch (error) {
-      console.error(error);
-      message.error(error.message || "Something went wrong during upload");
-    } finally {
-      setUploading(false);
-      setStatus("");
-    }
-  };
-
   return (
     <Modal
-      title={isEditMode ? "Edit Video Info" : "Upload Video to Cloud"}
+      title={isEditMode ? "Edit Video" : "Upload Video"}
       open={visible}
       onCancel={uploading ? null : onCancel}
       footer={null}
       width={850}
-      maskClosable={!uploading}
     >
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         {uploading && (
           <Alert
-            className="mb-6"
-            message={<span className="font-bold">{status}</span>}
+            className="mb-4"
+            message={status}
             description={
-              <div className="space-y-4 py-2">
+              <div className="space-y-3 mt-2">
                 <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>Storage Backup</span>
-                    <span>{storageProgress}%</span>
-                  </div>
-                  <Progress
-                    percent={storageProgress}
-                    size="small"
-                    status="active"
-                  />
+                  <p className="text-xs mb-1">
+                    Backup Storage: {storageProgress}%
+                  </p>
+                  <Progress percent={storageProgress} size="small" />
                 </div>
                 <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span>Streaming Server</span>
-                    <span>{streamProgress}%</span>
-                  </div>
+                  <p className="text-xs mb-1">
+                    Stream Server: {streamProgress}%
+                  </p>
                   <Progress
                     percent={streamProgress}
                     size="small"
-                    status="active"
                     strokeColor="#52c41a"
                   />
                 </div>
-                <p className="text-[10px] text-gray-400 italic">
-                  Please do not close this window until finished.
-                </p>
               </div>
             }
             type="info"
             showIcon
-            icon={<CloudUploadOutlined />}
           />
         )}
 
-        <Form.Item
-          name="title"
-          label="Video Title"
-          rules={[{ required: true }]}
-        >
-          <Input
-            size="large"
-            disabled={uploading}
-            placeholder="Enter video title"
-          />
+        <Form.Item label="Title" name="title" rules={[{ required: true }]}>
+          <Input size="large" disabled={uploading} />
         </Form.Item>
 
         <div className="grid grid-cols-2 gap-4">
           <Form.Item
+            label="Duration (MM:SS)"
             name="duration"
-            label="Duration (e.g. 10:30)"
-            rules={[{ required: true }]}
+            rules={[{ required: true, pattern: /^\d+:[0-5]\d$/ }]}
           >
-            <Input size="large" disabled={uploading} placeholder="MM:SS" />
+            <Input size="large" disabled={uploading} />
           </Form.Item>
-
-          <Form.Item label="Equipment Tags">
+          <Form.Item label="Equipment">
             <Input
               size="large"
               value={tagInput}
@@ -327,7 +290,6 @@ const VideoUploadModal = ({
                 addTag();
               }}
               disabled={uploading}
-              placeholder="Type and press Enter"
               suffix={
                 <Button type="text" onClick={addTag}>
                   Add
@@ -352,7 +314,7 @@ const VideoUploadModal = ({
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Form.Item label="Thumbnail Image (Storage)" required={!isEditMode}>
+          <Form.Item label="Thumbnail" required={!isEditMode}>
             <Dragger
               accept="image/*"
               beforeUpload={(file) => {
@@ -361,53 +323,37 @@ const VideoUploadModal = ({
               }}
               showUploadList={false}
               disabled={uploading}
-              className={thumbnailFile ? "border-green-400" : ""}
             >
               {thumbnailFile ? (
-                <div className="py-2">
-                  <CheckCircleOutlined className="text-green-500 text-2xl" />
-                  <p className="text-xs mt-1">{thumbnailFile.name}</p>
+                <div>
+                  <CheckCircleOutlined className="text-green-500 text-xl" />
+                  <p>{thumbnailFile.name}</p>
                 </div>
               ) : (
-                <div className="py-2">
-                  <FileImageOutlined className="text-2xl text-gray-300" />
-                  <p className="ant-upload-text text-xs">Select Thumbnail</p>
+                <div>
+                  <FileImageOutlined className="text-xl" />
+                  <p>Select Image</p>
                 </div>
               )}
             </Dragger>
           </Form.Item>
-
-          <Form.Item
-            label="Video File (Storage & Stream)"
-            required={!isEditMode}
-          >
+          <Form.Item label="Video File" required={!isEditMode}>
             <Dragger
               accept="video/*"
-              beforeUpload={(file) => {
-                setVideoFile(file);
-                return false;
-              }}
+              beforeUpload={() => false}
+              onChange={handleVideoSelection}
               showUploadList={false}
               disabled={uploading || isEditMode}
-              className={videoFile ? "border-green-400" : ""}
             >
-              {isEditMode ? (
-                <div className="py-2">
-                  <p className="text-gray-400 text-xs">
-                    Video cannot be changed in edit mode
-                  </p>
-                </div>
-              ) : videoFile ? (
-                <div className="py-2">
-                  <CheckCircleOutlined className="text-green-500 text-2xl" />
-                  <p className="text-xs mt-1">
-                    {videoFile.name} ({formatFileSize(videoFile.size)})
-                  </p>
+              {videoFile ? (
+                <div>
+                  <CheckCircleOutlined className="text-green-500 text-xl" />
+                  <p>{videoFile.name}</p>
                 </div>
               ) : (
-                <div className="py-2">
-                  <VideoCameraOutlined className="text-2xl text-gray-300" />
-                  <p className="ant-upload-text text-xs">Select Video File</p>
+                <div>
+                  <VideoCameraOutlined className="text-xl" />
+                  <p>{isEditMode ? "Video Locked" : "Select Video"}</p>
                 </div>
               )}
             </Dragger>
@@ -415,30 +361,24 @@ const VideoUploadModal = ({
         </div>
 
         <Form.Item
-          name="description"
           label="Description"
+          name="description"
           rules={[{ required: true }]}
         >
-          <TextArea
-            rows={4}
-            disabled={uploading}
-            placeholder="Describe the video..."
-          />
+          <TextArea rows={4} disabled={uploading} />
         </Form.Item>
 
-        <div className="flex justify-end gap-3 mt-6">
-          <Button onClick={onCancel} disabled={uploading} size="large">
+        <div className="flex justify-end gap-2 mt-4">
+          <Button onClick={onCancel} disabled={uploading}>
             Cancel
           </Button>
           <Button
             type="primary"
             htmlType="submit"
-            loading={uploading}
-            size="large"
-            icon={<CloudUploadOutlined />}
+            loading={isAdding || isUpdating || uploading}
             style={{ backgroundColor: "#CA3939", borderColor: "#CA3939" }}
           >
-            {isEditMode ? "Save Changes" : "Start Cloud Upload"}
+            {isEditMode ? "Update" : "Upload"}
           </Button>
         </div>
       </Form>
