@@ -3,5 +3,5 @@ export const getBaseUrl = (production) => {
 }
 
 export const getConfigUrl = (production) => {
-    return production ? '69.62.67.86' : "10.10.7.48";
+    return production ? '69.62.67.86' : "10.10.7.62";
 }

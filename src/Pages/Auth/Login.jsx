@@ -18,14 +18,14 @@ const Login = () => {
         email: values.email,
         password: values.password,
       }).unwrap();
-      
+
       if (response.success) {
         const token = response.data.accessToken;
         localStorage.setItem("token", token);
-        
+
         // Decode token to get user role
         const decoded = jwtDecode(token);
-        
+
         // Navigate based on role
         if (decoded.role === "ADMIN") {
           navigate("/category-management");
@@ -52,10 +52,16 @@ const Login = () => {
       <div className="text-center mb-8">
         <img src={image4} alt="logo" className="h-40 w-60 mx-auto mb-4" />
         {/* <h1 className="text-[25px] font-semibold mb-6">Login</h1> */}
-        <p>Welcome back! Please enter your details.</p>
+        <p className="text-white">Welcome back! Please enter your details.</p>
       </div>
       <Form onFinish={onFinish} layout="vertical">
-        <FormItem name={"email"} label={<p className="text-white">Email</p>} />
+        {/* <FormItem name={"email"} label={<p className="text-white">Email</p>} placeholder="Enter your email" /> */}
+        <Form.Item name="email" label={<p className="text-white">Email</p>}>
+          <Input 
+          placeholder="Enter your email" 
+          // size="large" 
+          className="h-[45px] border-none outline-none rounded-lg " />
+        </Form.Item>
 
         <Form.Item
           name="password"

@@ -62,7 +62,7 @@ export default function SubscriptionPackagesManagement() {
     useUpdateSubscriptionPackageMutation();
   const [deletePackage] = useDeleteSubscriptionPackageMutation();
 
-  console.log(subscriptionPackages);
+  // console.log(subscriptionPackages);
 
   // Form validation function
   const isFormValid = () => {
@@ -259,7 +259,7 @@ export default function SubscriptionPackagesManagement() {
           pkg.subscriptionType.toLowerCase() === selectedType.toLowerCase()
       );
 
-  console.log(filteredPackages);
+  // console.log(filteredPackages);
   // Filter menu items
   const typeFilterMenu = (
     <Menu>
@@ -339,7 +339,7 @@ export default function SubscriptionPackagesManagement() {
 
                 {/* Discount Badge */}
                 {hasDiscount && (
-                  <div className="absolute top-2 right-2 px-2 py-1 text-xs text-white bg-red-500 rounded-full">
+                  <div className="absolute top-2 right-2 px-2 py-1 text-xs text-white bg-primary rounded-full">
                     {pkg.discount}% OFF
                   </div>
                 )}
@@ -352,7 +352,7 @@ export default function SubscriptionPackagesManagement() {
                     <Pencil size={18} />
                   </button>
                   <button
-                    className="p-1 text-red-500"
+                    className="p-1 text-primary"
                     onClick={() => confirmDeletePackage(pkg.id || pkg._id)}
                   >
                     <svg
@@ -418,7 +418,7 @@ export default function SubscriptionPackagesManagement() {
                 )} */}
 
                 <p className="mb-8 text-xs text-center">{pkg.description}</p>
-                <button className="w-full py-2 text-white bg-red-500 rounded-md">
+                <button className="w-full py-2 text-white bg-primary  rounded-md">
                   Subscribe
                 </button>
               </div>
@@ -439,7 +439,7 @@ export default function SubscriptionPackagesManagement() {
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-2xl font-bold text-red-500">
+              <h2 className="text-2xl font-bold text-primary">
                 {editingPackageId !== null
                   ? "Edit Package"
                   : "Add New Package"}
@@ -463,7 +463,7 @@ export default function SubscriptionPackagesManagement() {
                       name="title"
                       value={currentPackage.title}
                       onChange={handlePackageChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                       placeholder="e.g. Basic Plan, Premium Plan"
                       required
                     />
@@ -478,7 +478,7 @@ export default function SubscriptionPackagesManagement() {
                       name="duration"
                       value={currentPackage.duration}
                       onChange={handlePackageChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                       required
                     >
                       {DURATION_OPTIONS.map((option) => (
@@ -499,7 +499,7 @@ export default function SubscriptionPackagesManagement() {
                       name="price"
                       value={currentPackage.price}
                       onChange={handlePackageChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                       placeholder="e.g. 60.99"
                       min="0"
                       step="0.01"
@@ -515,7 +515,7 @@ export default function SubscriptionPackagesManagement() {
                       name="paymentType"
                       value={currentPackage.paymentType}
                       onChange={handlePackageChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                       required
                     >
                       {PAYMENT_TYPE_OPTIONS.map((option) => (
@@ -582,7 +582,7 @@ export default function SubscriptionPackagesManagement() {
                             discountPercentage: value,
                           }));
                         }}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                         placeholder="e.g. 20 (for 20% off)"
                         min="0"
                         max="99"
@@ -596,13 +596,13 @@ export default function SubscriptionPackagesManagement() {
                   {/* Description */}
                   <div>
                     <label className="block mb-1 text-sm font-medium text-gray-700">
-                      Description <span className="text-red-500">*</span>
+                      Description <span className="text-primary">*</span>
                     </label>
                     <textarea
                       name="description"
                       value={currentPackage.description}
                       onChange={handlePackageChange}
-                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                       rows="4"
                       placeholder="Enter package description"
                       required
@@ -613,13 +613,13 @@ export default function SubscriptionPackagesManagement() {
                 {/* Subscription Type */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
-                    Subscription Type <span className="text-red-500">*</span>
+                    Subscription Type <span className="text-primary">*</span>
                   </label>
                   <select
                     name="subscriptionType"
                     value={currentPackage.subscriptionType}
                     onChange={handlePackageChange}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                     required
                   >
                     <option value="app">App</option>
@@ -637,7 +637,7 @@ export default function SubscriptionPackagesManagement() {
                     {/* Platform Selection */}
                     <div className="mb-4">
                       <label className="block mb-2 text-sm font-medium text-gray-700">
-                        Platform <span className="text-red-500">*</span>
+                        Platform <span className="text-primary">*</span>
                       </label>
                       <div className="flex items-center gap-6">
                         <label className="flex items-center gap-2 cursor-pointer">
@@ -651,7 +651,7 @@ export default function SubscriptionPackagesManagement() {
                                 isGoogle: true,
                               }))
                             }
-                            className="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500"
+                            className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                           />
                           <span className="text-sm text-gray-700">Google Play</span>
                         </label>
@@ -667,7 +667,7 @@ export default function SubscriptionPackagesManagement() {
                                 isGoogle: false,
                               }))
                             }
-                            className="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500"
+                            className="w-4 h-4 text-primary border-gray-300 focus:ring-primary"
                           />
                           <span className="text-sm text-gray-700">Apple App Store</span>
                         </label>
@@ -680,7 +680,7 @@ export default function SubscriptionPackagesManagement() {
                         {currentPackage.isGoogle
                           ? "Google Product ID"
                           : "Apple Product ID"}{" "}
-                        <span className="text-red-500">*</span>
+                        <span className="text-primary">*</span>
                       </label>
                       <input
                         type="text"
@@ -698,7 +698,7 @@ export default function SubscriptionPackagesManagement() {
                               val,
                           }));
                         }}
-                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary"
                         placeholder={
                           currentPackage.isGoogle
                             ? "e.g. basic_03"
@@ -726,7 +726,7 @@ export default function SubscriptionPackagesManagement() {
               <button
                 className={`w-full py-3 font-medium text-white rounded-md transition-colors ${!isFormValid() || isCreating || isUpdating
                   ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-red-500 hover:bg-red-600"
+                    : "bg-primary hover:bg-primary/80"
                   }`}
                 onClick={savePackage}
                 disabled={!isFormValid() || isCreating || isUpdating}
@@ -736,7 +736,7 @@ export default function SubscriptionPackagesManagement() {
 
               {/* Validation message */}
               {!isFormValid() && (
-                <p className="mt-2 text-sm text-red-600 text-center">
+                <p className="mt-2 text-sm text-primary text-center">
                   Please fill in all required fields with valid values
                 </p>
               )}

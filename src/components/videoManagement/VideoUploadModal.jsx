@@ -269,7 +269,7 @@ const VideoUploadModal = ({
         )}
 
         <Form.Item label="Title" name="title" rules={[{ required: true }]}>
-          <Input size="large" disabled={uploading} />
+          <Input size="large" disabled={uploading} className="h-[45px]  rounded-md" />
         </Form.Item>
 
         <div className="grid grid-cols-2 gap-4">
@@ -278,7 +278,7 @@ const VideoUploadModal = ({
             name="duration"
             rules={[{ required: true, pattern: /^\d+:[0-5]\d$/ }]}
           >
-            <Input size="large" disabled={uploading} />
+            <Input size="large" disabled={uploading} className="h-[45px]  rounded-md" />
           </Form.Item>
           <Form.Item label="Equipment">
             <Input
@@ -295,6 +295,7 @@ const VideoUploadModal = ({
                   Add
                 </Button>
               }
+              className="h-[45px]  rounded-md"
             />
             <div className="mt-2 flex flex-wrap gap-1">
               {equipmentTags.map((tag) => (
@@ -369,16 +370,17 @@ const VideoUploadModal = ({
         </Form.Item>
 
         <div className="flex justify-end gap-2 mt-4">
-          <Button onClick={onCancel} disabled={uploading}>
+          {/* <Button onClick={onCancel} disabled={uploading} className="h-[45px] px-8  rounded-md">
             Cancel
-          </Button>
+          </Button> */}
           <Button
             type="primary"
             htmlType="submit"
             loading={isAdding || isUpdating || uploading}
             style={{ backgroundColor: "#CA3939", borderColor: "#CA3939" }}
+            className="h-[45px] px-10  rounded-md"
           >
-            {isEditMode ? "Update" : "Upload"}
+            {isEditMode ? "Update Video" : "Upload Video"}
           </Button>
         </div>
       </Form>
