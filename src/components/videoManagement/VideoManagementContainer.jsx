@@ -585,14 +585,14 @@ const VideoManagementContainer = () => {
   return (
     <div>
       <div className="flex justify-end gap-6 mb-6">
-        <GradientButton
+        <button
           type="primary"
           onClick={() => showFormModal()}
-          className="py-5"
+          className="h-[45px] px-10  rounded-md bg-primary text-white "
           icon={<PlusOutlined />}
         >
           Upload New Video
-        </GradientButton>
+        </button>
       </div>
 
       <div className="border-2 rounded-lg">

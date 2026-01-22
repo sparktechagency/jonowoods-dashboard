@@ -51,40 +51,111 @@ const VideoUploadModal = ({
   const [form] = Form.useForm();
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const [videoFile, setVideoFile] = useState(null);
+  const [thumbnailPreview, setThumbnailPreview] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
+  const [videoKey, setVideoKey] = useState(0); // Key to force video re-render
   const [tagInput, setTagInput] = useState("");
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState("");
   const [storageProgress, setStorageProgress] = useState(0);
   const [streamProgress, setStreamProgress] = useState(0);
+  
+  // Refs to track blob URLs for cleanup
+  const thumbnailBlobRef = useRef(null);
+  const videoBlobRef = useRef(null);
 
   const isEditMode = !!currentVideo?._id;
   const [addVideo, { isLoading: isAdding }] = useAddVideoMutation();
   const [updateVideo, { isLoading: isUpdating }] = useUpdateVideoMutation();
 
+  // Cleanup blob URLs helper
+  const cleanupBlobUrls = () => {
+    if (thumbnailBlobRef.current) {
+      URL.revokeObjectURL(thumbnailBlobRef.current);
+      thumbnailBlobRef.current = null;
+    }
+    if (videoBlobRef.current) {
+      URL.revokeObjectURL(videoBlobRef.current);
+      videoBlobRef.current = null;
+    }
+  };
+
   useEffect(() => {
     if (visible && currentVideo) {
+      // Cleanup any existing blob URLs first
+      cleanupBlobUrls();
+      
       form.setFieldsValue({
         title: currentVideo.title,
         duration: currentVideo.duration?.replace(" Min", "") || "",
         description: currentVideo.description || "",
       });
       setEquipmentTags(currentVideo.equipment || []);
+      // Set preview URLs for existing video/thumbnail in edit mode
+      if (currentVideo.thumbnailUrl) {
+        setThumbnailPreview(currentVideo.thumbnailUrl);
+      }
+      if (currentVideo.videoUrl || currentVideo.downloadUrl) {
+        setVideoPreview(currentVideo.videoUrl || currentVideo.downloadUrl);
+        setVideoKey(prev => prev + 1); // Force re-render
+      }
     } else if (visible) {
+      // Cleanup preview URLs before reset
+      cleanupBlobUrls();
       form.resetFields();
       setEquipmentTags([]);
       setThumbnailFile(null);
       setVideoFile(null);
+      setThumbnailPreview(null);
+      setVideoPreview(null);
+      setVideoKey(0);
       setStorageProgress(0);
       setStreamProgress(0);
     }
   }, [visible, currentVideo]);
 
-  // ভিডিও সিলেক্ট করলে অটো ডিউরেশন বের করার ফাংশন
-  const handleVideoSelection = (info) => {
-    const file = info.fileList[0]?.originFileObj || info.file;
-    if (!file) return;
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      cleanupBlobUrls();
+    };
+  }, []);
 
-    setVideoFile(file);
+  const handleThumbnailSelection = (file) => {
+    // Cleanup old preview URL if it's a blob URL
+    if (thumbnailBlobRef.current) {
+      URL.revokeObjectURL(thumbnailBlobRef.current);
+      thumbnailBlobRef.current = null;
+    }
+    setThumbnailFile(file);
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(file);
+    thumbnailBlobRef.current = previewUrl;
+    setThumbnailPreview(previewUrl);
+  };
+
+  const handleVideoSelection = (info) => {
+    // Get the latest file from fileList (last item is the newest)
+    const fileList = info.fileList || [];
+    const latestFile = fileList.length > 0 
+      ? fileList[fileList.length - 1]?.originFileObj 
+      : info.file;
+    
+    if (!latestFile) return;
+
+    // Cleanup old preview URL if it's a blob URL
+    if (videoBlobRef.current) {
+      URL.revokeObjectURL(videoBlobRef.current);
+      videoBlobRef.current = null;
+    }
+
+    setVideoFile(latestFile);
+    // Create preview URL
+    const previewUrl = URL.createObjectURL(latestFile);
+    videoBlobRef.current = previewUrl;
+    setVideoPreview(previewUrl);
+    setVideoKey(prev => prev + 1); // Force video element re-render
+
     const video = document.createElement("video");
     video.preload = "metadata";
     video.onloadedmetadata = () => {
@@ -94,9 +165,13 @@ const VideoUploadModal = ({
       form.setFieldsValue({
         duration: `${minutes}:${seconds.toString().padStart(2, "0")}`,
       });
+      // Cleanup the temporary video element
       URL.revokeObjectURL(video.src);
     };
-    video.src = URL.createObjectURL(file);
+    video.onerror = () => {
+      URL.revokeObjectURL(video.src);
+    };
+    video.src = previewUrl;
   };
 
   // --- Upload Logics ---
@@ -177,7 +252,7 @@ const VideoUploadModal = ({
       let downloadUrl = currentVideo?.downloadUrl;
       let videoId = currentVideo?.videoId;
 
-      // আপলোড প্রসেস
+      
       if (thumbnailFile) thumbUrl = await uploadThumbnail(thumbnailFile);
 
       if (videoFile && !isEditMode) {
@@ -317,44 +392,73 @@ const VideoUploadModal = ({
         <div className="grid grid-cols-2 gap-4">
           <Form.Item label="Thumbnail" required={!isEditMode}>
             <Dragger
+              key={`thumbnail-${thumbnailFile?.name || 'empty'}`}
               accept="image/*"
               beforeUpload={(file) => {
-                setThumbnailFile(file);
+                handleThumbnailSelection(file);
                 return false;
               }}
               showUploadList={false}
               disabled={uploading}
             >
-              {thumbnailFile ? (
-                <div>
-                  <CheckCircleOutlined className="text-green-500 text-xl" />
-                  <p>{thumbnailFile.name}</p>
+              {thumbnailPreview ? (
+                <div className="relative w-full h-[200px]">
+                  <img
+                    key={`thumb-${thumbnailFile?.name || currentVideo?.thumbnailUrl || ''}`}
+                    src={thumbnailPreview}
+                    alt="Thumbnail preview"
+                    className="w-full h-full object-cover rounded"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <CheckCircleOutlined className="text-green-500 text-xl bg-white rounded-full" />
+                  </div>
+                  {thumbnailFile && (
+                    <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-50 text-white text-xs p-1 rounded">
+                      {thumbnailFile.name}
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div>
-                  <FileImageOutlined className="text-xl" />
-                  <p>Select Image</p>
+                <div className="flex flex-col items-center justify-center py-8">
+                  <FileImageOutlined className="text-4xl text-gray-400 mb-2" />
+                  <p className="text-gray-500">Select Image</p>
                 </div>
               )}
             </Dragger>
           </Form.Item>
           <Form.Item label="Video File" required={!isEditMode}>
             <Dragger
+              key={`video-${videoFile?.name || 'empty'}`}
               accept="video/*"
               beforeUpload={() => false}
               onChange={handleVideoSelection}
               showUploadList={false}
               disabled={uploading || isEditMode}
             >
-              {videoFile ? (
-                <div>
-                  <CheckCircleOutlined className="text-green-500 text-xl" />
-                  <p>{videoFile.name}</p>
+              {videoPreview ? (
+                <div className="relative w-full h-[200px]">
+                  <video
+                    key={`video-${videoKey}-${videoFile?.name || ''}-${videoFile?.lastModified || Date.now()}`}
+                    src={videoPreview}
+                    controls
+                    className="w-full h-full object-cover rounded"
+                    preload="auto"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <CheckCircleOutlined className="text-green-500 text-xl bg-white rounded-full" />
+                  </div>
+                  {videoFile && (
+                    <div className="absolute bottom-2 left-2 right-2 bg-black bg-opacity-50 text-white text-xs p-1 rounded">
+                      {videoFile.name}
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div>
-                  <VideoCameraOutlined className="text-xl" />
-                  <p>{isEditMode ? "Video Locked" : "Select Video"}</p>
+                <div className="flex flex-col items-center justify-center py-8">
+                  <VideoCameraOutlined className="text-4xl text-gray-400 mb-2" />
+                  <p className="text-gray-500">
+                    {isEditMode ? "Video Locked" : "Select Video"}
+                  </p>
                 </div>
               )}
             </Dragger>
